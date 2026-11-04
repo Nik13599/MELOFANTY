@@ -19,8 +19,10 @@ styles.textContent=[
 '.mf-empty{min-height:240px;border:1px solid #185e49;border-radius:23px;padding:36px 22px;display:flex;align-items:center;justify-content:center;text-align:center;grid-column:1/-1;background:linear-gradient(145deg,#02130f,#0a2920)}',
 '.mf-empty strong{font:700 26px Oswald,sans-serif}.mf-empty p{color:#afcec4;margin-top:8px;font-size:17px}',
 '.mf-description{border:1px solid #286d52;border-radius:13px;background:#09271a;padding:12px;color:#cce9d7;line-height:1.4;white-space:pre-wrap;margin:3px 0 18px}',
-'.event-list.mf-single-event{grid-template-columns:minmax(0,min(410px,100%))!important;justify-content:center}',
+'.event-list.mf-single-event{grid-template-columns:minmax(0,min(410px,100%))!important;justify-content:start}',
 '.mf-event-hint{font:600 12px Oswald,sans-serif;color:#a9ff83;border:1px solid #7cffa060;border-radius:9px;padding:4px 7px;position:absolute;right:9px;top:9px;background:#012018cc}',
+'.mf-demo-event{background:radial-gradient(ellipse at 20% 25%,#195d4e 0%,#03271c 40%,#010907 100%)!important}',
+'.mf-demo-event .mf-event-hint{color:#ffe3a6;border-color:#fcd095aa;background:#3e2b13e9}',
 '@media(max-width:760px){.mf-overlay{padding:8px}.mf-dialog{max-height:calc(100dvh - 16px)}.mf-title{font-size:29px}.mf-field input{min-height:45px}}'
 ].join('');
 document.head.appendChild(styles);
@@ -38,12 +40,13 @@ backdrop.addEventListener('click',function(e){if(e.target===backdrop)close();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!backdrop.hidden)close();});
 function eventForm(e){
  active=e;receipt=null;dialogBody.replaceChildren();
- dialogBody.append(el('span','mf-tag','СВОБОДНАЯ РЕГИСТРАЦИЯ'));
+ dialogBody.append(el('span','mf-tag',e.is_demo?'ДЕМО · ТЕСТОВАЯ РЕГИСТРАЦИЯ':'СВОБОДНАЯ РЕГИСТРАЦИЯ'));
  dialogBody.append(el('h2','mf-title',e.title));
  dialogBody.append(el('p','mf-meta',localDate(e.starts_at)+' · '+e.venue));
  if(e.description)dialogBody.append(el('p','mf-description',e.description));
  var f=el('form','mf-form');
  f.innerHTML='<label class="mf-field">ВАШЕ ИМЯ<input name="name" autocomplete="name" maxlength="100" required minlength="2" placeholder="Как к вам обращаться?"></label><label class="mf-field">НОМЕР ТЕЛЕФОНА<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" required placeholder="+375 29 000 00 00"></label><label class="mf-field">КОЛИЧЕСТВО ЧЕЛОВЕК<input name="party_size" type="number" inputmode="numeric" min="1" max="50" step="1" value="1" required></label><label class="mf-field">КОММЕНТАРИЙ / ПОЖЕЛАНИЯ (НЕОБЯЗАТЕЛЬНО)<textarea name="guest_comment" maxlength="500" rows="3" placeholder="Например, место для компании или особые пожелания"></textarea></label><input name="website" style="display:none" tabindex="-1" autocomplete="off"><p class="mf-note">Данные используются организаторами для обработки регистрации на выбранное мероприятие. Личный кабинет не требуется.</p><div class="mf-error" role="alert"></div><button type="submit" class="mf-submit">ЗАРЕГИСТРИРОВАТЬСЯ →</button>';
+ if(e.is_demo){var note=f.querySelector('.mf-note');if(note)note.textContent='Тестовая регистрация: используйте вымышленные данные. Заявка появится в админ-панели с пометкой ДЕМО и не является настоящим бронированием.';}
  dialogBody.append(f);open();
  f.addEventListener('submit',async function(ev){
   ev.preventDefault();var btn=f.querySelector('button[type=submit]'),err=f.querySelector('.mf-error');
@@ -59,17 +62,18 @@ function eventForm(e){
 }
 function showReceipt(d){
  dialogBody.replaceChildren();
- dialogBody.append(el('span','mf-tag','РЕГИСТРАЦИЯ УСПЕШНО ПРОЙДЕНА'));
+ dialogBody.append(el('span','mf-tag',d.is_demo?'ТЕСТОВАЯ ЗАЯВКА СОЗДАНА':'РЕГИСТРАЦИЯ УСПЕШНО ПРОЙДЕНА'));
  dialogBody.append(el('h2','mf-title','ВАШ НОМЕР РЕГИСТРАЦИИ'));
  var ticket=el('div','mf-ticket');
  var logo=document.querySelector('.brand-icon');if(logo){var copy=logo.cloneNode(true);copy.removeAttribute('class');ticket.append(copy);}
  ticket.append(el('div','mf-tbrand','МЕЛОФАНТЫ'));
+ if(d.is_demo)ticket.append(el('div','mf-tag','ДЕМО · НЕ БИЛЕТ'));
  ticket.append(el('div','mf-status','✓ ВАША ЗАЯВКА ПРИНЯТА'));
  ticket.append(el('div','mf-number','ID '+d.code));
  ticket.append(el('div','mf-people',peopleText(d.party_size)));
  ticket.append(el('div','mf-when',d.title+' · '+localDate(d.starts_at)));
  dialogBody.append(ticket);
- dialogBody.append(el('p','mf-note','Регистрация отправлена организатору и ожидает подтверждения. Сохраните номер ID, чтобы предъявить его при необходимости.'));
+ dialogBody.append(el('p','mf-note',d.is_demo?'Это тестовая заявка, её можно проверить в админ-панели. Она не подтверждает участие в реальном мероприятии.':'Регистрация отправлена организатору и ожидает подтверждения. Сохраните номер ID, чтобы предъявить его при необходимости.'));
  var actions=el('div','mf-download');
  var save=el('button','mf-submit','СОХРАНИТЬ В ГАЛЕРЕЮ');
  save.type='button';save.addEventListener('click',function(){saveTicket(d);});
@@ -90,7 +94,7 @@ async function saveTicket(d){
  c.fillStyle='#d0eade';c.font='38px Arial,sans-serif';c.fillText(localDate(d.starts_at),500,935);
  c.font='bold 39px Oswald,Arial,sans-serif';
  var title=String(d.title||'').slice(0,32);c.fillText(title,500,1010,820);
- c.fillStyle='#a2caba';c.font='28px Arial,sans-serif';c.fillText('Сохраните эту карточку до мероприятия',500,1145);
+ c.fillStyle='#a2caba';c.font='28px Arial,sans-serif';c.fillText(d.is_demo?'ДЕМО · Не является билетом':'Сохраните эту карточку до мероприятия',500,1145);
  var blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png');});
  if(!blob)return;
  var file=new File([blob],'MELOFANTY-'+d.code+'.png',{type:'image/png'});
@@ -103,9 +107,9 @@ async function saveTicket(d){
  var msg=el('p','mf-note','Если изображение открылось отдельно, удерживайте его и выберите «Сохранить в Фото».');dialogBody.append(msg);
 }
 function buildCard(e){
- var button=el('button','event-card');button.type='button';
+ var button=el('button','event-card'+(e.is_demo?' mf-demo-event':''));button.type='button';
  var poster=e.poster;if(poster){var img=el('img');img.src=poster;img.alt='Афиша: '+e.title;img.loading='lazy';button.append(img);}
- button.append(el('span','mf-event-hint','РЕГИСТРАЦИЯ'));
+ button.append(el('span','mf-event-hint',e.is_demo?'ДЕМО · РЕГИСТРАЦИЯ':'РЕГИСТРАЦИЯ'));
  var info=el('span','event-info');info.append(el('span','event-title',e.title));
  info.append(el('span','event-date',new Date(e.starts_at).toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit'})+' / '+new Date(e.starts_at).toLocaleTimeString('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'})));
  info.append(el('span','event-place','♧ '+e.venue));button.append(info);
@@ -118,8 +122,8 @@ function drawEvents(){
   var box=el('div','mf-empty');var inside=el('div');inside.append(el('strong','','СКОРО НОВЫЕ ИГРЫ'));inside.append(el('p','','Следите за анонсами. Регистрация откроется после публикации нового мероприятия.'));box.append(inside);list.append(box);
   document.getElementById('eventsPrev').hidden=true;document.getElementById('eventsNext').hidden=true;return;
  }
- document.getElementById('eventsPrev').hidden=events.length<=3;document.getElementById('eventsNext').hidden=events.length<=3;
- var width=window.matchMedia('(max-width:760px)').matches?3:3;
+ document.getElementById('eventsPrev').hidden=events.length<=5;document.getElementById('eventsNext').hidden=events.length<=5;
+ var width=5;
  var start=events.length<=width?0:Math.min(index,events.length-width);
  var visible=events.slice(start,start+width);
  list.classList.toggle('mf-single-event',visible.length===1);
@@ -128,7 +132,7 @@ function drawEvents(){
  for(var i=0;i<events.length;i++){
   var dot=el('button');dot.type='button';dot.className=i===Math.min(index,events.length-1)?'current':'';
   dot.setAttribute('aria-label','Мероприятие '+(i+1));
-  (function(n){dot.addEventListener('click',function(){index=n;drawEvents();});})(i);dots.append(dot);
+  (function(n){dot.addEventListener('click',function(){index=n;drawEvents();var card=list.children[n-(events.length<=width?0:Math.min(index,events.length-width))];if(card&&card.scrollIntoView)card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});});})(i);dots.append(dot);
  }
 }
 function move(n){if(!events.length)return;index=(index+n+events.length)%events.length;drawEvents();}
@@ -152,6 +156,7 @@ async function refreshEvents(){
   if(fingerprint!==eventsFingerprint){
    var oldId=events[index]&&events[index].id;
    events=next;
+   if(all)all.textContent='ВСЕ МЕРОПРИЯТИЯ ('+events.length+') →';
    index=Math.max(0,oldId?events.findIndex(function(e){return e.id===oldId;}):0);
    eventsFingerprint=fingerprint;
    drawEvents();
