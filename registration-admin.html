@@ -325,7 +325,13 @@ body{display:flex;flex-direction:column;min-height:0}
  .field textarea{min-height:65px!important}
 }
 
-</style></head><body>
+</style><style id="disable-double-tap-zoom">
+@media (pointer:coarse) {
+  html, body, button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
+  .view-scroll { touch-action: manipulation !important; }
+}
+</style>
+</head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
 <div id="bottomBar" class="bottom-bar" role="toolbar" aria-label="Управление регистрацией" hidden></div>
