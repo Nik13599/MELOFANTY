@@ -224,6 +224,7 @@ body{display:flex;flex-direction:column;min-height:0}
  .events-scroll .event-card .poster img{object-position:center 35%!important}
 }
 
+.demo-note{padding:5px 9px;color:#ffdda3;font:500 12px Oswald,sans-serif;letter-spacing:.03em;line-height:1.2}
 </style></head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
@@ -358,6 +359,7 @@ function renderDetails(){
  app.replaceChildren();
  var top=el('div','view-top details-top');
  top.append(head(d.event.title,d.event.venue+' · '+wrapDate(d.event.starts_at)));
+ if(Number(d.stats.demo_apps||0)>0)top.append(el('div','demo-note','ДЕМОВЕРСИЯ · '+d.stats.demo_apps+' тестовых заявок. Эти записи не принадлежат реальным гостям.'));
  var stats=el('div','stats');
  stats.append(summary('ДАТА',day(d.event.starts_at),wrapDate(d.event.starts_at).slice(12)));
  stats.append(summary('ВСЕГО ЗАЯВОК',d.stats.total_apps||0,'Включая отменённые'));
@@ -392,7 +394,7 @@ function renderRegList(){
   var card=el('article','registration'),info=el('div');
   info.append(el('div','reg-code','ID '+r.code));
   if(r.source==='demo'){card.classList.add('demo-entry');info.append(el('span','demo-mark','ТЕСТОВАЯ ЗАЯВКА'));}
-  var person=el('div','person');person.append(document.createTextNode(r.name+' · '));var phone=el('a','',r.phone);phone.href='tel:'+r.phone.replace(/[^\d+]/g,'');person.append(phone);info.append(person);
+  var person=el('div','person');person.append(document.createTextNode(r.name+' · '));var phone=el(r.source==='demo'?'span':'a','',r.phone);if(r.source!=='demo')phone.href='tel:'+r.phone.replace(/[^\d+]/g,'');person.append(phone);info.append(person);
   info.append(el('div','people',persons(r.party_size)));
   info.append(el('div','date-mini',(r.source==='admin'?'Добавлено вручную · ':'')+r.created_at));
   var side=el('div','reg-side'),statusNames={pending:'НОВАЯ',confirmed:'ПОДТВЕРЖДЕНА',cancelled:'ОТМЕНЕНА'};
