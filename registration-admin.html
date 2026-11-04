@@ -262,6 +262,22 @@ function editRegistration(r){personEditor(r);}
 document.getElementById('archiveBtn').addEventListener('click',function(){state.selected=null;state.archive=!state.archive;this.textContent=state.archive?'← АКТИВНЫЕ':'АРХИВ';history.replaceState(null,'',location.pathname);loadEvents();});
 document.getElementById('addEventBtn').addEventListener('click',function(){eventEditor(null);});
 document.getElementById('logoutBtn').addEventListener('click',async function(){try{await api('/logout',{method:'POST'});}catch(e){}loggedIn(false);state.selected=null;showLogin();});
+async function liveRefresh(){
+ if(document.hidden||!modal.hidden)return;
+ if(document.activeElement&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;
+ try{
+  if(state.selected){
+   var details=await api('/events/'+encodeURIComponent(state.selected));
+   if(JSON.stringify(details)!==JSON.stringify(state.details)){state.details=details;renderDetails();}
+  }else if(!document.querySelector('.login')){
+   var data=await api('/events?archive='+(state.archive?'1':'0'));
+   if(JSON.stringify(data.events||[])!==JSON.stringify(state.events)){state.events=data.events||[];renderEvents();}
+  }
+ }catch(e){/* Keep the existing screen if a background refresh fails. */}
+}
+window.addEventListener('focus',liveRefresh);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)liveRefresh();});
+setInterval(liveRefresh,20000);
 init();
 })();
 </script></body></html>
