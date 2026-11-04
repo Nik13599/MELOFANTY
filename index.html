@@ -200,6 +200,12 @@ main{padding-top:var(--header)}.hero{position:relative;height:clamp(354px,35.5vw
 }
 
 </style>
+<style id="disable-double-tap-zoom">
+@media (pointer:coarse) {
+  html, body, button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
+  main#scrollRoot, main { touch-action: manipulation !important; }
+}
+</style>
 </head>
 <body>
 <div class="backdrop" aria-hidden="true"></div>
