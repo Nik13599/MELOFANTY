@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS registrations (
  party_size INTEGER NOT NULL CHECK (party_size BETWEEN 1 AND 50),
  status TEXT NOT NULL CHECK (status IN ('pending','confirmed','cancelled','deleted')),
  source TEXT NOT NULL DEFAULT 'site',
+ guest_comment TEXT NOT NULL DEFAULT '',
+ admin_comment TEXT NOT NULL DEFAULT '',
  created_at TEXT NOT NULL DEFAULT (datetime('now')),
  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
  PRIMARY KEY(event_id,seq)
@@ -31,3 +33,7 @@ CREATE TABLE IF NOT EXISTS registrations (
 CREATE INDEX IF NOT EXISTS idx_reg_status ON registrations(event_id,status,created_at);
 CREATE TABLE IF NOT EXISTS admin_attempts (ip_hash TEXT NOT NULL, at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_attempts ON admin_attempts(ip_hash,at);
+
+-- Migration for databases created before comments were introduced:
+-- ALTER TABLE registrations ADD COLUMN guest_comment TEXT NOT NULL DEFAULT '';
+-- ALTER TABLE registrations ADD COLUMN admin_comment TEXT NOT NULL DEFAULT '';
