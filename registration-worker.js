@@ -28,7 +28,7 @@ function regIdFor(e,n){return regDayMonth(e.starts_at)+'-'+n;}
 function regSameDay(a,b){return regDayMonth(a)===regDayMonth(b);}
 function regActive(e){return !!e&&!e.archived&&new Date(e.ends_at).getTime()>Date.now();}
 function regEventPublic(e){
- return {id:e.id,title:e.title,starts_at:e.starts_at,ends_at:e.ends_at,venue:e.venue,description:e.description,poster:e.poster||'',capacity:e.capacity,registered_guests:e.registered_guests||0};
+ return {id:e.id,title:e.title,starts_at:e.starts_at,ends_at:e.ends_at,venue:e.venue,description:e.description,poster:e.poster||'',capacity:e.capacity,is_demo:!!e.is_demo,registered_guests:e.registered_guests||0};
 }
 async function regHmac(value,secret){
  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
@@ -85,8 +85,8 @@ async function regInsert(env,event,person,manual){
  if(!next)return regError('Регистрация закрыта или свободных мест недостаточно',409);
  const seq=next.next_seq,code=regIdFor(next,seq);
  await env.DB.prepare('INSERT INTO registrations(event_id,seq,code,name,phone,party_size,status,source,guest_comment,admin_comment) VALUES(?,?,?,?,?,?,?,?,?,?)')
-  .bind(event.id,seq,code,name,phone,party,manual?'confirmed':'pending',manual?'admin':'site',guestComment,adminComment).run();
- return regJson({ok:true,id:code,code,event_id:event.id,title:event.title,starts_at:event.starts_at,venue:event.venue,party_size:party,status:manual?'confirmed':'pending'},201);
+  .bind(event.id,seq,code,name,phone,party,manual?'confirmed':'pending',event.is_demo?'demo':manual?'admin':'site',guestComment,adminComment).run();
+ return regJson({ok:true,id:code,code,event_id:event.id,title:event.title,starts_at:event.starts_at,venue:event.venue,party_size:party,is_demo:!!event.is_demo,status:manual?'confirmed':'pending'},201);
 }
 async function regEvents(env,admin,archive){
  const sql="SELECT e.*, (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests, (SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.status!='deleted') applications, (SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.source='demo' AND r.status!='deleted') demo_applications FROM events e ORDER BY e.starts_at DESC";
@@ -118,17 +118,19 @@ async function regSaveEvent(env,b,id){
  const capacity=b.capacity===''||b.capacity==null?null:Number(b.capacity);
  if(capacity!==null&&(!Number.isInteger(capacity)||capacity<1||capacity>100000))throw new Error('Некорректная вместимость');
  const poster=regPoster(b.poster||'');
+  const isDemo=b.is_demo?1:0;
  if(id){
   const old=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
   if(!old)return regError('Мероприятие не найдено',404);
   if(old.next_seq>0&&!regSameDay(old.starts_at,starts))throw new Error('После появления заявок нельзя изменять день и месяц мероприятия: изменятся ID');
-  await env.DB.prepare("UPDATE events SET title=?,starts_at=?,ends_at=?,venue=?,description=?,poster=?,capacity=?,archived=?,updated_at=datetime('now') WHERE id=?")
-   .bind(title,starts,ends,venue,description,poster,capacity,b.archived?1:0,id).run();
+   if(old.next_seq>0&&Number(old.is_demo||0)!==isDemo)throw new Error('Нельзя менять тестовый статус мероприятия после появления заявок');
+  await env.DB.prepare("UPDATE events SET title=?,starts_at=?,ends_at=?,venue=?,description=?,poster=?,capacity=?,is_demo=?,archived=?,updated_at=datetime('now') WHERE id=?")
+   .bind(title,starts,ends,venue,description,poster,capacity,isDemo,b.archived?1:0,id).run();
   return regJson({ok:true,id});
  }
  const newId=crypto.randomUUID();
- await env.DB.prepare('INSERT INTO events(id,title,starts_at,ends_at,venue,description,poster,capacity) VALUES(?,?,?,?,?,?,?,?)')
-  .bind(newId,title,starts,ends,venue,description,poster,capacity).run();
+ await env.DB.prepare('INSERT INTO events(id,title,starts_at,ends_at,venue,description,poster,capacity,is_demo) VALUES(?,?,?,?,?,?,?,?,?)')
+  .bind(newId,title,starts,ends,venue,description,poster,capacity,isDemo).run();
  return regJson({ok:true,id:newId},201);
 }
 async function regManageRegistration(env,b){
