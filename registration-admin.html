@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#06150f"><title>REGISTRATION · МЕЛОФАНТЫ</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#020d09;--panel:#082119;--panel2:#051810;--line:#225946;--lime:#a5ff79;--sea:#55dcbb;--text:#f3fff3;--muted:#a9c8ba;--red:#ff7973;--amber:#ffc873;--green:#80f2ab}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% -15%,#124c341f,transparent 50%),var(--bg);font:17px 'Roboto Condensed',Arial,sans-serif;color:var(--text);min-height:100vh}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:wait}a{color:inherit}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--lime);outline-offset:2px}[hidden]{display:none!important}
+.mast{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:space-between;background:#02110dec;backdrop-filter:blur(15px);border-bottom:1px solid #2e775c7d;padding:14px clamp(15px,3.2vw,52px)}
+.logo{display:flex;align-items:center;gap:11px;font:700 clamp(21px,2.4vw,31px) Oswald,sans-serif;letter-spacing:.04em}.logo-mark{width:38px;height:38px;border:2px solid var(--lime);border-radius:12px;display:grid;place-items:center;color:var(--lime);font-size:25px}
+.logo small{font-size:12px;display:block;color:var(--sea);letter-spacing:.15em;line-height:1.4}.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.btn{border-radius:40px;border:1px solid #448368;background:#123428;color:white;padding:11px 18px;min-height:43px;font:600 15px Oswald,sans-serif;letter-spacing:.02em}.btn:hover{border-color:var(--lime)}.btn.primary{background:linear-gradient(120deg,#77ef81,#b9ff7c);border:0;color:#051d13}.btn.danger{background:#341c1e;border-color:#a95053;color:#ffadaa}.btn.ghost{background:transparent}
+main{max-width:1400px;margin:auto;padding:clamp(16px,3.6vw,54px)}.heading{display:flex;justify-content:space-between;gap:18px;align-items:end;margin:0 0 20px}.eyebrow{color:var(--sea);font:600 13px Oswald,sans-serif;letter-spacing:.16em}.heading h1{font:700 clamp(32px,4.4vw,61px)/1.08 Oswald,sans-serif;margin:6px 0}.heading h1 em{font-style:normal;color:var(--lime)}.sub{color:var(--muted);font-size:17px}
+.event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.event-card{display:grid;grid-template-columns:175px 1fr;gap:20px;padding:16px;border:1px solid #267c5b;border-radius:22px;background:linear-gradient(135deg,#0d3426,#07180f 70%);box-shadow:0 11px 36px #0004;min-width:0}.poster{min-height:205px;aspect-ratio:4/5;border-radius:15px;background:linear-gradient(145deg,#10482c,#06140f 75%);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #2c865b;color:var(--lime);font:700 23px Oswald,sans-serif;text-align:center}.poster img{height:100%;width:100%;object-fit:cover}.event-info{min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:9px}.event-day{color:var(--lime);font:700 clamp(29px,3.5vw,42px) Oswald,sans-serif;line-height:1}.event-title{font:700 clamp(22px,2.1vw,31px)/1.08 Oswald,sans-serif;overflow-wrap:anywhere}.event-venue{color:#b0cebf}.metric-value{font:700 25px Oswald,sans-serif;color:var(--text)}.metric-caption{font:500 15px Oswald,sans-serif;color:var(--muted)}.event-info .btn{margin-top:5px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:22px 0 26px}.stat{border:1px solid #28644d;background:linear-gradient(155deg,#0c3325,#051810);border-radius:17px;padding:20px 15px;min-height:116px}.stat span{display:block;font:500 13px Oswald,sans-serif;color:var(--sea);letter-spacing:.06em}.stat strong{display:block;font:700 clamp(25px,3.2vw,41px) Oswald,sans-serif;margin-top:9px}.stat small{display:block;color:var(--muted);font-size:14px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 15px}.toolbar h2{font:600 27px Oswald,sans-serif;margin:0}.filters{display:flex;gap:8px;flex-wrap:wrap}.field{display:grid;gap:7px;color:#cef0e0;font:500 16px Oswald,sans-serif}.field input,.field textarea,.field select,.search{color:var(--text);border:1px solid #358365;border-radius:12px;background:#071d15;padding:12px 13px;width:100%;min-height:46px;outline:none}.field textarea{min-height:100px;resize:vertical}.search{width:min(100%,310px)}.list{display:grid;gap:12px}.registration{position:relative;border:1px solid #35634e;border-radius:20px;background:linear-gradient(120deg,#09291e,#06180f);padding:17px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px 20px}.reg-code{font:700 clamp(21px,2.6vw,29px) Oswald,sans-serif}.person{font-size:19px;margin:3px 0;overflow-wrap:anywhere}.person a{color:#b8ffd2;text-decoration:none}.people{font:600 16px Oswald,sans-serif;color:#a9fbce}.date-mini{color:var(--muted);font-size:13px}.status{display:inline-flex;align-items:center;gap:6px;border:1px solid #8b7845;border-radius:99px;color:#ffd58c;padding:4px 9px;font:500 12px Oswald,sans-serif;width:max-content}.status:before{content:'';background:currentColor;width:7px;height:7px;border-radius:50%}.status.confirmed{color:#8ef0b6;border-color:#38895b}.status.cancelled{color:#ff958f;border-color:#9a4b4b}.reg-side{align-self:start;display:flex;align-items:center;gap:8px}.reg-actions{grid-column:1/-1;border-top:1px solid #245742;padding-top:12px;display:flex;gap:9px;justify-content:flex-end;align-items:center;flex-wrap:wrap}.reg-actions .btn{min-width:115px}.menu-box{position:relative}.dots-btn{width:40px;height:36px;border:1px solid #4c9470;border-radius:10px;background:#0c3023;color:white;font-size:25px;line-height:1}.menu-popup{position:absolute;right:0;top:42px;z-index:4;display:grid;gap:2px;padding:6px;background:#082b20;border:1px solid #57b08c;border-radius:13px;box-shadow:0 14px 32px #0009;min-width:160px}.menu-popup button{text-align:left;background:none;border:0;color:white;padding:9px 11px;border-radius:8px}.menu-popup button:hover{background:#245641}.menu-popup .red{color:#ffa1a1}
+.bottom-add{display:flex;justify-content:center;margin:23px 0 10px}.bottom-add .btn{min-width:250px}.empty{border:1px dashed #3b7e60;border-radius:19px;text-align:center;padding:44px 20px;color:#b7d1c6;background:#061811}
+.shade{position:fixed;inset:0;z-index:99;background:#000c;backdrop-filter:blur(9px);display:flex;align-items:center;justify-content:center;padding:12px;overflow-y:auto}.sheet{background:linear-gradient(150deg,#0b3426,#06150f);border:1px solid #52c79c;border-radius:24px;padding:clamp(19px,4vw,30px);width:min(100%,580px);max-height:calc(100dvh - 24px);overflow:auto;box-shadow:0 16px 90px #000b}.sheet h2{font:700 32px Oswald,sans-serif;margin:0 0 20px}.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.close{height:38px;width:38px;border-radius:50%;border:1px solid #419975;background:#123a29;color:white;font-size:23px}.form{display:grid;gap:14px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.preview{width:120px;height:150px;object-fit:cover;border:1px solid #53ae83;border-radius:13px;background:#0b3427}.form-buttons{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;margin-top:9px}.login{max-width:420px}.login .eyebrow{font-size:12px}.toast{position:fixed;z-index:150;left:50%;bottom:20px;transform:translateX(-50%);padding:13px 18px;border:1px solid #7cffa5;border-radius:13px;background:#10422e;color:white;box-shadow:0 12px 40px #000a;max-width:90vw}.back{margin-bottom:13px}
+@media(max-width:850px){.event-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.mast{padding:10px 13px}.logo{font-size:20px}.logo-mark{width:32px;height:32px}.actions{gap:6px}.actions .btn{font-size:12px;padding:8px 10px;min-height:36px}.event-card{grid-template-columns:105px 1fr;gap:12px;padding:11px;border-radius:16px}.poster{min-height:157px}.event-info{gap:5px}.event-info .btn{min-height:35px;padding:7px 14px}.event-day{font-size:29px}.event-title{font-size:20px}.metric-value{font-size:21px}.stats{gap:8px;margin:13px 0 20px}.stat{padding:13px 10px;min-height:90px}.stat strong{font-size:26px}.stat span{font-size:11px}.registration{padding:13px;gap:7px}.reg-code{font-size:23px}.person{font-size:16px}.reg-actions{justify-content:space-between;gap:6px}.reg-actions .btn{flex:1;padding:8px;min-width:0;font-size:14px}.form-row{grid-template-columns:1fr}.search{width:100%}main{padding:18px 12px}}
+</style></head><body>
+<header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button></div></header>
+<main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
+<div id="dialog" class="shade" hidden><div class="sheet"><div class="sheet-head"><h2 id="dialogTitle">Добавить</h2><button type="button" id="dialogClose" class="close" aria-label="Закрыть">×</button></div><div id="dialogBody"></div></div></div>
+<div id="toast" class="toast" hidden role="status"></div>
+<script>
+(function(){
+'use strict';
+var base='/api/registration/admin',state={archive:false,events:[],selected:null,details:null,query:'',status:'all'},modal=document.getElementById('dialog'),app=document.getElementById('app'),toastTimer;
+function el(tag,className,text){var e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;}
+function button(text,cls,action){var b=el('button','btn '+(cls||''),text);b.type='button';if(action)b.addEventListener('click',action);return b;}
+function wrapDate(s){return new Date(s).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Minsk'});}
+function day(s){return new Date(s).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',timeZone:'Europe/Minsk'});}
+function persons(n){return n+' '+(n%10===1&&n%100!==11?'человек':n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?'человека':'человек');}
+function localInput(s){return new Date(new Date(s).getTime()+10800000).toISOString().slice(0,16);}
+function fromInput(s){return new Date(s+':00+03:00').toISOString();}
+function toast(s){var t=document.getElementById('toast');t.textContent=s;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.hidden=true;},3500);}
+function errMessage(e){toast(e&&e.message||'Не удалось выполнить действие');}
+async function api(path,options){
+ var r=await fetch(base+path,Object.assign({cache:'no-store',credentials:'same-origin'},options||{}));
+ var d=await r.json().catch(function(){return {error:'Ошибка ответа сервера'};});
+ if(!r.ok)throw new Error(d.error||'Ошибка '+r.status);return d;
+}
+function mutation(method,data){return {method:method,headers:{'Content-Type':'application/json'},body:JSON.stringify(data)};}
+function head(title,subtitle){
+ var h=el('div','heading'),l=el('div');l.append(el('div','eyebrow','МЕЛОФАНТЫ · РЕГИСТРАЦИЯ'));var t=el('h1');t.append(el('span','',title));l.append(t);if(subtitle)l.append(el('p','sub',subtitle));h.append(l);return h;
+}
+function showModal(title,body){document.getElementById('dialogTitle').textContent=title;document.getElementById('dialogBody').replaceChildren(body);modal.hidden=false;}
+function closeModal(){modal.hidden=true;document.getElementById('dialogBody').replaceChildren();}
+document.getElementById('dialogClose').addEventListener('click',closeModal);
+modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!modal.hidden)closeModal();});
+async function init(){
+ try{await api('/session');loggedIn(true);await loadEvents();}
+ catch(e){loggedIn(false);showLogin();}
+}
+function loggedIn(yes){['archiveBtn','addEventBtn','logoutBtn'].forEach(function(id){document.getElementById(id).hidden=!yes;});}
+function showLogin(){
+ app.replaceChildren();var c=el('div','sheet login');c.append(el('div','eyebrow','ЗАКРЫТАЯ ПАНЕЛЬ'));c.append(el('h2','','ВХОД АДМИНИСТРАТОРА'));
+ var f=el('form','form');f.innerHTML='<label class="field">ПАРОЛЬ<input type="password" name="password" required autocomplete="current-password" placeholder="Пароль администратора"></label><button class="btn primary" type="submit">ВОЙТИ →</button><p class="sub">Доступ только для организаторов. Гостям авторизация не нужна.</p>';
+ c.append(f);app.append(c);
+ f.addEventListener('submit',async function(e){e.preventDefault();var btn=f.querySelector('button');btn.disabled=true;try{await api('/login',mutation('POST',{password:f.elements.password.value}));loggedIn(true);await loadEvents();}catch(x){errMessage(x);}finally{btn.disabled=false;}});
+}
+async function loadEvents(){
+ try{var d=await api('/events?archive='+(state.archive?'1':'0'));state.events=d.events||[];if(!state.selected)renderEvents();}
+ catch(e){if(e.message.indexOf('вход')>=0){loggedIn(false);showLogin();}else errMessage(e);}
+}
+function renderEvents(){
+ state.selected=null;state.details=null;app.replaceChildren();
+ var h=head(state.archive?'АРХИВ МЕРОПРИЯТИЙ':'МЕРОПРИЯТИЯ',state.archive?'Завершённые игры и их регистрации':'Все мероприятия с открытой регистрацией, включая опубликованные афиши');
+ app.append(h);var grid=el('div','event-grid');app.append(grid);
+ if(!state.events.length){grid.append(el('div','empty',state.archive?'В архиве пока нет мероприятий.':'Мероприятий пока нет. Нажмите «Добавить», чтобы создать первую афишу.'));return;}
+ state.events.forEach(function(e){
+  var card=el('article','event-card'),poster=el('div','poster');
+  if(e.poster){var img=el('img');img.src=e.poster;img.alt='Афиша '+e.title;poster.append(img);}else poster.textContent='МЕЛОФАНТЫ';
+  var body=el('div','event-info');body.append(el('div','event-day',day(e.starts_at)));body.append(el('div','event-title',e.title));body.append(el('div','event-venue',e.venue+' · '+wrapDate(e.starts_at)));
+  var metric=el('div');metric.append(el('strong','metric-value',persons(e.registered_guests||0)));metric.append(el('span','metric-caption',' · зарегистрировано'));body.append(metric);
+  var actions=el('div','filters');actions.append(button('ПОДРОБНЕЕ →','primary',function(){openDetails(e.id);}));
+  actions.append(button('ИЗМЕНИТЬ','ghost',function(){eventEditor(e);}));body.append(actions);
+  card.append(poster,body);grid.append(card);
+ });
+}
+async function openDetails(id){
+ state.selected=id;state.query='';state.status='all';
+ await reloadDetails();location.hash='event='+encodeURIComponent(id);
+}
+async function reloadDetails(){
+ try{state.details=await api('/events/'+encodeURIComponent(state.selected));renderDetails();}
+ catch(e){errMessage(e);}
+}
+function summary(label,value,small){
+ var b=el('article','stat');b.append(el('span','',label));b.append(el('strong','',String(value)));if(small)b.append(el('small','',small));return b;
+}
+function renderDetails(){
+ var d=state.details;if(!d)return;app.replaceChildren();
+ app.append(button('← К МЕРОПРИЯТИЯМ','ghost back',function(){state.selected=null;state.details=null;history.replaceState(null,'',location.pathname);loadEvents();}));
+ app.append(head(d.event.title,d.event.venue+' · '+wrapDate(d.event.starts_at)));
+ var stats=el('div','stats');
+ stats.append(summary('ДАТА МЕРОПРИЯТИЯ',day(d.event.starts_at),wrapDate(d.event.starts_at).slice(12)));
+ stats.append(summary('ВСЕГО ЗАЯВОК',d.stats.total_apps||0,'Включая отменённые'));
+ stats.append(summary('ЗАРЕГИСТРИРОВАНО ГОСТЕЙ',d.stats.guests||0,'Новые и подтверждённые заявки'));
+ stats.append(summary('ОТМЕНЫ',d.stats.cancelled_apps||0,(d.stats.cancelled_guests||0)+' человек'));
+ app.append(stats);
+ var toolbar=el('div','toolbar'),name=el('h2','','ЗАЯВКИ');
+ var controls=el('div','filters'),search=el('input','search');search.type='search';search.placeholder='Поиск: ID, имя, телефон';search.value=state.query;
+ search.addEventListener('input',function(){state.query=this.value;renderRegList();});
+ var statuses=el('select','search');statuses.style.maxWidth='180px';[['all','Все статусы'],['pending','Новые'],['confirmed','Подтверждены'],['cancelled','Отменены']].forEach(function(pair){var o=document.createElement('option');o.value=pair[0];o.textContent=pair[1];statuses.append(o);});statuses.value=state.status;
+ statuses.addEventListener('change',function(){state.status=this.value;renderRegList();});
+ controls.append(search,statuses);toolbar.append(name,controls);app.append(toolbar);
+ var list=el('div','list');list.id='regList';app.append(list);renderRegList();
+ var bottom=el('div','bottom-add');bottom.append(button('+ ДОБАВИТЬ КОМПАНИЮ','primary',manualEditor));app.append(bottom);
+}
+function renderRegList(){
+ var list=document.getElementById('regList');if(!list||!state.details)return;list.replaceChildren();
+ var q=state.query.trim().toLowerCase(),arr=(state.details.registrations||[]).filter(function(r){
+ return (state.status==='all'||r.status===state.status)&&(!q||[r.code,r.name,r.phone].join(' ').toLowerCase().indexOf(q)>=0);
+ });
+ if(!arr.length){list.append(el('div','empty','Заявок по выбранным условиям пока нет.'));return;}
+ arr.forEach(function(r){
+  var card=el('article','registration'),info=el('div');
+  info.append(el('div','reg-code','ID '+r.code));
+  var person=el('div','person');person.append(document.createTextNode(r.name+' · '));var phone=el('a','',r.phone);phone.href='tel:'+r.phone.replace(/[^\d+]/g,'');person.append(phone);info.append(person);
+  info.append(el('div','people',persons(r.party_size)));
+  info.append(el('div','date-mini',(r.source==='admin'?'Добавлено вручную · ':'')+r.created_at));
+  var side=el('div','reg-side'),statusNames={pending:'НОВАЯ',confirmed:'ПОДТВЕРЖДЕНА',cancelled:'ОТМЕНЕНА'};
+  side.append(el('span','status '+r.status,statusNames[r.status]||r.status));
+  var menu=el('div','menu-box'),dots=el('button','dots-btn','•••');dots.type='button';dots.title='Действия';
+  var popup=el('div','menu-popup');popup.hidden=true;
+  var edit=el('button','','Изменить');edit.addEventListener('click',function(){popup.hidden=true;editRegistration(r);});
+  var cancel=el('button','','Отменить');cancel.addEventListener('click',function(){popup.hidden=true;changeStatus(r,'cancelled');});
+  var remove=el('button','red','Удалить');remove.addEventListener('click',function(){popup.hidden=true;if(confirm('Удалить заявку ID '+r.code+'? Восстановить удалённую заявку нельзя.'))changeStatus(r,'deleted');});
+  popup.append(edit,cancel,remove);dots.addEventListener('click',function(){document.querySelectorAll('.menu-popup').forEach(function(p){if(p!==popup)p.hidden=true;});popup.hidden=!popup.hidden;});
+  menu.append(dots,popup);side.append(menu);card.append(info,side);
+  var actions=el('div','reg-actions');
+  if(r.status==='pending'||r.status==='cancelled')actions.append(button('ПОДТВЕРДИТЬ','primary',function(){changeStatus(r,'confirmed');}));
+  if(r.status!=='cancelled')actions.append(button('ОТМЕНИТЬ','danger',function(){changeStatus(r,'cancelled');}));
+  if(r.status==='confirmed')actions.append(el('span','people','✓ Подтверждено'));
+  card.append(actions);list.append(card);
+ });
+}
+async function changeStatus(r,status){
+ try{await api('/registration',mutation('PATCH',{event_id:state.selected,seq:r.seq,status:status}));await reloadDetails();toast(status==='confirmed'?'Заявка подтверждена':status==='deleted'?'Заявка удалена':'Заявка отменена');}
+ catch(e){errMessage(e);}
+}
+function eventEditor(existing){
+ var title=existing?'ИЗМЕНИТЬ МЕРОПРИЯТИЕ':'НОВОЕ МЕРОПРИЯТИЕ',f=el('form','form');
+ f.innerHTML='<label class="field">НАЗВАНИЕ<input name="title" required maxlength="120" placeholder="МЕЛОФАНТЫ · Музыкальная игра"></label><div class="form-row"><label class="field">ДАТА И ВРЕМЯ НАЧАЛА<input name="starts_at" type="datetime-local" required></label><label class="field">ОКОНЧАНИЕ МЕРОПРИЯТИЯ<input name="ends_at" type="datetime-local" required></label></div><label class="field">МЕСТО ПРОВЕДЕНИЯ<input name="venue" maxlength="160" required placeholder="Минск, название площадки"></label><label class="field">ОПИСАНИЕ<textarea name="description" maxlength="1800" placeholder="Информация, которая будет показана гостям"></textarea></label><label class="field">ЛИМИТ ГОСТЕЙ (НЕОБЯЗАТЕЛЬНО)<input name="capacity" type="number" min="1" max="100000" placeholder="Без лимита"></label><label class="field">АФИША (JPG, PNG, WEBP)<input name="image" type="file" accept="image/png,image/jpeg,image/webp"></label><img class="preview" id="posterPreview" alt="Предпросмотр афиши" hidden><label class="field" id="archiveField" hidden><input name="archived" type="checkbox" style="width:auto;min-height:0"> В архиве</label><div class="form-buttons"><button type="button" class="btn ghost" id="cancelForm">ОТМЕНА</button><button type="submit" class="btn primary">СОХРАНИТЬ</button></div>';
+ if(existing){f.elements.title.value=existing.title;f.elements.starts_at.value=localInput(existing.starts_at);f.elements.ends_at.value=localInput(existing.ends_at);f.elements.venue.value=existing.venue;f.elements.description.value=existing.description;f.elements.capacity.value=existing.capacity||'';f.elements.archived.checked=!!existing.archived;f.querySelector('#archiveField').hidden=false;if(existing.poster){f.querySelector('#posterPreview').src=existing.poster;f.querySelector('#posterPreview').hidden=false;}}
+ else{var start=new Date(Date.now()+86400000),end=new Date(start.getTime()+14400000);start.setMinutes(0,0,0);end.setMinutes(0,0,0);f.elements.starts_at.value=localInput(start.toISOString());f.elements.ends_at.value=localInput(end.toISOString());}
+ f.querySelector('#cancelForm').addEventListener('click',closeModal);
+ f.elements.image.addEventListener('change',async function(){try{var photo=await compressImage(this.files[0]);f.dataset.poster=photo||'';if(photo){f.querySelector('#posterPreview').src=photo;f.querySelector('#posterPreview').hidden=false;}}catch(e){errMessage(e);}});
+ f.addEventListener('submit',async function(e){
+  e.preventDefault();var submit=f.querySelector('[type=submit]');submit.disabled=true;
+  try{
+   var data={title:f.elements.title.value,starts_at:fromInput(f.elements.starts_at.value),ends_at:fromInput(f.elements.ends_at.value),venue:f.elements.venue.value,description:f.elements.description.value,capacity:f.elements.capacity.value,poster:f.dataset.poster||existing&&existing.poster||'',archived:!!f.elements.archived.checked};
+   await api(existing?'/events/'+existing.id:'/events',mutation(existing?'PATCH':'POST',data));closeModal();toast(existing?'Мероприятие обновлено':'Мероприятие создано');if(state.selected)await reloadDetails();else await loadEvents();
+  }catch(e){errMessage(e);}finally{submit.disabled=false;}
+ });
+ showModal(title,f);
+}
+async function compressImage(file){
+ if(!file)return '';
+ if(!/^image\/(png|jpeg|webp)$/.test(file.type))throw new Error('Выберите изображение JPG, PNG или WebP');
+ var url=URL.createObjectURL(file),image=new Image();
+ try{
+  await new Promise(function(resolve,reject){image.onload=resolve;image.onerror=reject;image.src=url;});
+  var scale=Math.min(1,1050/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+  var data='';
+  for(var quality=.82;quality>=.41;quality-=.12){data=canvas.toDataURL('image/webp',quality);if(data.startsWith('data:image/webp')&&data.length<280000)return data;}
+  throw new Error('Афиша слишком большая. Попробуйте фотографию с меньшим разрешением.');
+ }finally{URL.revokeObjectURL(url);}
+}
+function personEditor(existing){
+ var f=el('form','form');
+ f.innerHTML='<label class="field">ИМЯ<input name="name" required minlength="2" maxlength="100" autocomplete="off"></label><label class="field">НОМЕР ТЕЛЕФОНА<input name="phone" type="tel" required maxlength="40"></label><label class="field">КОЛИЧЕСТВО ЧЕЛОВЕК<input name="party_size" type="number" min="1" max="50" required></label><div class="form-buttons"><button type="button" id="cancelPerson" class="btn ghost">ОТМЕНА</button><button class="btn primary" type="submit">СОХРАНИТЬ</button></div>';
+ f.elements.name.value=existing?existing.name:'';f.elements.phone.value=existing?existing.phone:'';f.elements.party_size.value=existing?existing.party_size:1;
+ f.querySelector('#cancelPerson').addEventListener('click',closeModal);
+ f.addEventListener('submit',async function(e){
+  e.preventDefault();var submit=f.querySelector('[type=submit]');submit.disabled=true;
+  try{
+   var b={name:f.elements.name.value,phone:f.elements.phone.value,party_size:Number(f.elements.party_size.value)};
+   if(existing){b.seq=existing.seq;b.event_id=state.selected;await api('/registration',mutation('PATCH',b));}
+   else await api('/events/'+state.selected+'/manual',mutation('POST',b));
+   closeModal();toast(existing?'Заявка изменена':'Компания добавлена');await reloadDetails();
+  }catch(x){errMessage(x);}finally{submit.disabled=false;}
+ });
+ showModal(existing?'ИЗМЕНИТЬ · ID '+existing.code:'ДОБАВИТЬ КОМПАНИЮ',f);
+}
+function manualEditor(){personEditor(null);}
+function editRegistration(r){personEditor(r);}
+document.getElementById('archiveBtn').addEventListener('click',function(){state.selected=null;state.archive=!state.archive;this.textContent=state.archive?'← АКТИВНЫЕ':'АРХИВ';history.replaceState(null,'',location.pathname);loadEvents();});
+document.getElementById('addEventBtn').addEventListener('click',function(){eventEditor(null);});
+document.getElementById('logoutBtn').addEventListener('click',async function(){try{await api('/logout',{method:'POST'});}catch(e){}loggedIn(false);state.selected=null;showLogin();});
+init();
+})();
+</script></body></html>
