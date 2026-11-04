@@ -271,6 +271,50 @@ body{display:flex;flex-direction:column;min-height:0}
 .export-choice .btn{min-height:52px;display:flex;align-items:center;justify-content:center}
 .export-hint{font-size:13px;color:#bfd5c8;line-height:1.45;margin:10px 0}
 @media(max-width:500px){.export-choice{grid-template-columns:1fr 1fr;gap:7px}.export-choice .btn{font-size:13px;padding:8px}}
+
+/* v6: denser administration on every screen while keeping touch controls legible. */
+.mast{min-height:48px!important;padding-top:5px!important;padding-bottom:5px!important}
+.view-top{padding-top:5px!important;padding-bottom:5px!important}
+.view-top .heading h1{margin:1px 0!important;font-size:clamp(21px,2.35vw,31px)!important}
+.view-top .heading .sub{font-size:12px!important}
+.events-scroll .event-page .event-grid{max-width:760px!important;column-gap:10px!important;row-gap:10px!important}
+.events-scroll .event-card .event-day{font-size:clamp(25px,2.6vw,39px)!important}
+.events-scroll .event-card .event-title{font-size:clamp(12px,1.25vw,18px)!important}
+.events-scroll .event-card .guest-count strong{font-size:clamp(22px,2.5vw,30px)!important}
+.events-scroll .event-card .event-actions{height:33px!important}
+.events-scroll .event-card .event-actions .btn{min-height:33px!important;height:33px!important;max-height:33px!important}
+.details-top .stats{margin:4px 0!important}
+.details-top .stat{min-height:52px!important}
+.details-top .toolbar{margin-top:3px!important}
+.registrations-scroll .list{gap:5px!important}
+.registrations-scroll .registration{padding:7px 10px!important}
+.registrations-scroll .reg-comment{padding:4px 6px!important;margin:2px 0!important}
+.sheet{max-width:550px!important;border-radius:17px!important;padding:clamp(12px,2.5vw,20px)!important}
+.sheet h2{font-size:clamp(22px,3vw,28px)!important;margin-bottom:10px!important}
+.form{gap:9px!important}
+.form-row{gap:9px!important}
+.field{gap:4px!important;font-size:14px!important}
+.field input,.field textarea,.field select{padding:8px 10px!important;min-height:40px!important;border-radius:9px!important}
+.field textarea{min-height:70px!important}
+.form-buttons{margin-top:4px!important}
+.bottom-bar{min-height:56px!important;padding-top:6px!important;padding-bottom:max(6px,env(safe-area-inset-bottom))!important}
+.bottom-bar .btn{min-height:39px!important}
+@media(max-width:650px){
+ .mast{min-height:45px!important}
+ .view-top .heading h1{font-size:clamp(20px,5vw,24px)!important}
+ .events-scroll .event-page .event-grid{max-width:100%!important}
+ .events-scroll .event-card .event-day{font-size:clamp(23px,6.1vw,29px)!important}
+ .events-scroll .event-card .event-title{font-size:clamp(11px,3vw,14px)!important}
+ .events-scroll .event-card .event-actions{height:32px!important}
+ .events-scroll .event-card .event-actions .btn{min-height:32px!important;height:32px!important;max-height:32px!important}
+ .details-top .stat{min-height:46px!important}
+ .registrations-scroll .registration{padding:7px 8px!important}
+ .bottom-bar{min-height:52px!important}
+ .bottom-bar .btn{min-height:38px!important}
+ .sheet{border-radius:15px!important;padding:13px!important}
+ .field textarea{min-height:65px!important}
+}
+
 </style></head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
@@ -599,7 +643,7 @@ function fitEventGrid(){
   var gap=parseFloat(getComputedStyle(grid).rowGap)||10;
   var width=Math.min(grid.clientWidth,900);
   var cardWidth=(width-gap)/2;
-  var tall=matchMedia('(max-width:650px)').matches?1.08:0.58;
+  var tall=matchMedia('(max-width:650px)').matches?0.98:0.54;
   var page=grid.closest('.event-page');
   var available=Math.min(viewport.clientHeight,page?page.clientHeight:viewport.clientHeight);
   var height=Math.floor(Math.min((available-gap-14)/2,cardWidth*tall));
