@@ -319,6 +319,37 @@ html,body{width:100%;max-width:100%;min-width:0}
  .cta .cta-img-mobile p{font-size:13px}
 }
 
+
+/* Desktop + mobile: exact-logo size must override the historic .brand img{width:100%} */
+.nav .brand img.brand-logo-exact{width:clamp(44px,3.7vw,62px)!important;height:clamp(44px,3.7vw,62px)!important;min-width:0;max-width:none;object-fit:contain;flex:0 0 auto;border-radius:50%}
+.nav .brand{flex:0 0 auto;max-width:min(46vw,310px)}
+.nav .brand-label{display:inline-block;white-space:nowrap}
+@media (min-width:761px) and (max-width:1300px){
+ .nav{gap:clamp(8px,1vw,16px);padding-inline:clamp(14px,2.4vw,32px)}
+ .nav-links{display:none;position:absolute;top:calc(var(--header-h) - 5px);left:auto;right:clamp(15px,2.5vw,34px);min-width:220px;
+  flex-direction:column;align-items:stretch;gap:0;margin:0;background:#041b13;border:1px solid #26cba1;
+  border-radius:15px;padding:9px;box-shadow:0 15px 36px #000b;z-index:101}
+ .nav-links.open{display:flex}
+ .nav-links a{padding:11px 12px}
+ .menu-toggle{display:grid;place-items:center;order:3;border:1px solid #2ae1ab;
+  background:#061d15;color:white;border-radius:11px;width:42px;height:42px;flex:0 0 auto;margin:0}
+ .menu-toggle svg{width:23px}
+ .nav-actions{margin-left:auto}
+ .brand-label{font-size:clamp(19px,2vw,24px)}
+}
+@media(min-width:761px) and (max-width:1060px){
+ .nav-actions .icon-round{display:none}
+}
+@media(max-width:760px){
+ .nav .brand{flex:0 1 auto;max-width:100%}
+ .nav .brand img.brand-logo-exact{width:clamp(36px,10vw,43px)!important;height:clamp(36px,10vw,43px)!important}
+ .nav .brand-label{font-size:clamp(14px,4vw,20px)}
+}
+@media(max-width:370px){
+ .nav .brand img.brand-logo-exact{width:36px!important;height:36px!important}
+ .nav .brand-label{font-size:13px}
+}
+
 </style>
 </head>
 <body>
