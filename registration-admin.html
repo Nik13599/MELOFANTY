@@ -63,9 +63,129 @@ main{max-width:1400px;margin:auto;padding:clamp(16px,3.6vw,54px)}.heading{displa
  main{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 }
 
+
+/* v4: fixed registration chrome and one scrollable content viewport on both screens. */
+html,body{height:100%;height:100dvh;width:100%;overflow:hidden}
+body{display:flex;flex-direction:column;min-height:0}
+.mast{position:relative;top:auto;flex:0 0 auto;min-height:58px;flex-wrap:nowrap;z-index:20;padding:9px clamp(12px,2.6vw,34px)}
+.mast .actions{margin-left:auto}
+.mast .actions #archiveBtn,.mast .actions #addEventBtn{display:none!important}
+.mast .actions #logoutBtn{display:inline-flex;align-items:center;justify-content:center}
+.admin-page-label{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;pointer-events:none}
+#app{flex:1 1 auto;min-height:0;min-width:0;max-width:none;width:100%;margin:0;padding:0 clamp(12px,3vw,42px);display:flex;flex-direction:column;overflow:hidden}
+#app:has(.login){align-items:center;justify-content:center;padding:20px;overflow:auto}
+#app .login{width:min(100%,420px)}
+.view-top{flex:0 0 auto;min-height:0;padding:clamp(10px,1.7vh,20px) 0 clamp(7px,1.2vh,14px);border-bottom:1px solid #2b5e486c;background:var(--bg)}
+.view-top .heading{margin:0;align-items:center}
+.view-top .heading h1{margin:3px 0;font-size:clamp(25px,3vw,40px);line-height:1.05}
+.view-top .eyebrow{font-size:11px}
+.view-top .sub{font-size:14px;line-height:1.2}
+.view-scroll{flex:1 1 auto;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#316e51 transparent;padding:clamp(9px,1.7vh,16px) 0 12px}
+.view-scroll::-webkit-scrollbar{width:5px}
+.view-scroll::-webkit-scrollbar-thumb{background:#316e51;border-radius:10px}
+.view-scroll.events-scroll{display:flex;flex-direction:column;align-items:stretch}
+.view-scroll.events-scroll .event-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:var(--event-row-height,240px);gap:clamp(9px,1.6vw,17px);width:100%;max-width:900px;margin: auto;align-content:start}
+.view-scroll.events-scroll.has-many .event-grid{margin-top:0;margin-bottom:0}
+.view-scroll.events-scroll .event-card{height:100%;min-height:0;min-width:0;max-height:100%;display:grid;grid-template-columns:44% minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:0;padding:0;overflow:hidden;border-radius:clamp(13px,1.4vw,18px)}
+.view-scroll.events-scroll .poster{height:100%;min-height:0;max-height:100%;aspect-ratio:auto;overflow:hidden;border-right:1px solid #32664c;border-bottom:0;position:relative}
+.view-scroll.events-scroll .poster img{width:100%;height:100%;object-fit:cover}
+.view-scroll.events-scroll .event-info{height:100%;min-height:0;min-width:0;display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;padding:clamp(9px,1.5vw,16px);gap:4px;overflow:hidden}
+.view-scroll.events-scroll .event-day{font-size:clamp(26px,3vw,44px);line-height:1}
+.view-scroll.events-scroll .event-title{font-size:clamp(16px,2vw,27px);line-height:1.05;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.view-scroll.events-scroll .event-venue{font-size:clamp(11px,1.2vw,15px);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.view-scroll.events-scroll .guest-count{display:flex;align-items:baseline;gap:5px}
+.view-scroll.events-scroll .guest-count strong{font-size:clamp(22px,2.8vw,32px);line-height:1}
+.view-scroll.events-scroll .guest-count span{font-size:clamp(11px,1.1vw,15px)}
+.view-scroll.events-scroll .event-card .filters{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin:0}
+.view-scroll.events-scroll .event-card .filters .btn{min-height:35px;font-size:clamp(11px,1.1vw,15px);padding:6px 9px;white-space:nowrap}
+.view-scroll.events-scroll .event-card .filters .btn:last-child{min-width:37px;padding-inline:7px}
+.view-scroll.events-scroll .poster-badge{font-size:10px;right:6px;top:6px;padding:3px 7px}
+.view-scroll .empty{width:100%;max-width:900px;min-height:180px;margin:auto}
+.bottom-bar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(5px,1.5vw,14px);flex:0 0 auto;padding:10px clamp(12px,3vw,42px) max(10px,env(safe-area-inset-bottom));background:#04160fea;border-top:1px solid #377758;box-shadow:0 -9px 25px #0005;backdrop-filter:blur(15px);position:relative;z-index:15;min-height:64px}
+.bottom-bar[hidden]{display:none!important}
+.bottom-bar .btn{min-width:0;min-height:43px;padding:7px clamp(6px,1.6vw,18px);font-size:clamp(12px,1.7vw,17px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bottom-bar[data-mode="events"] .dock-add{grid-column:2;grid-row:1}
+.bottom-bar[data-mode="events"] .dock-archive{grid-column:3;grid-row:1;justify-self:stretch}
+.bottom-bar[data-mode="details"] .dock-back{grid-column:1;grid-row:1}
+.bottom-bar[data-mode="details"] .dock-add{grid-column:2;grid-row:1}
+.details-top{padding-top:7px;padding-bottom:9px}
+.details-top .heading .sub{display:block}
+.details-top .stats{margin:9px 0 6px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(5px,1vw,11px)}
+.details-top .stat{min-height:74px;padding:clamp(7px,.9vw,11px);border-radius:12px}
+.details-top .stat span{font-size:clamp(10px,.9vw,13px);line-height:1.15}
+.details-top .stat strong{font-size:clamp(18px,2.3vw,31px);margin-top:3px;line-height:1.2}
+.details-top .stat small{font-size:clamp(10px,1vw,13px)}
+.details-top .toolbar{margin:9px 0 0}
+.details-top .toolbar h2{font-size:clamp(16px,1.9vw,24px)}
+.details-top .toolbar .search{min-height:37px;padding:8px 10px;font-size:14px}
+.registrations-scroll .list{width:100%;max-width:960px;margin:0 auto;display:grid;gap:11px}
+.registrations-scroll .registration{padding:clamp(11px,1.5vw,16px);border-radius:15px;gap:8px 12px}
+.registrations-scroll .reg-side{align-items:flex-start}
+.registrations-scroll .reg-actions{justify-content:flex-start;flex-wrap:nowrap}
+.registrations-scroll .reg-actions .btn{min-height:35px}
+.registrations-scroll .reg-actions .menu-box{margin-left:auto}
+.registrations-scroll .reg-actions .dots-btn{width:40px;min-height:35px}
+.registrations-scroll .reg-actions .menu-popup{top:auto;bottom:42px;right:0}
+@media(max-width:650px){
+ .mast{min-height:52px;padding:7px 10px}
+ .logo{font-size:clamp(16px,4.8vw,21px);gap:6px}
+ .logo small{font-size:9px;letter-spacing:.03em}
+ .logo-mark{width:31px;height:31px;font-size:19px}
+ .mast .actions #logoutBtn{font-size:11px;min-height:32px;padding:5px 8px}
+ .admin-page-label{font-size:clamp(12px,3.3vw,17px);letter-spacing:.06em}
+ #app{padding:0 9px}
+ .view-top{padding:7px 0 6px}
+ .view-top .heading h1{font-size:clamp(21px,6vw,29px)}
+ .view-top .eyebrow,.view-top .sub{display:none}
+ .view-scroll{padding:8px 0 10px}
+ .view-scroll.events-scroll .event-grid{gap:9px;max-width:100%}
+ .view-scroll.events-scroll .event-card{display:flex;flex-direction:column;gap:0;border-radius:13px}
+ .view-scroll.events-scroll .poster{flex:0 0 40%;height:40%;width:100%;border:0;border-bottom:1px solid #32664c}
+ .view-scroll.events-scroll .event-info{flex:1 1 auto;padding:7px 8px;gap:2px;justify-content:space-between;height:auto;min-height:0}
+ .view-scroll.events-scroll .event-day{font-size:clamp(22px,6.2vw,29px)}
+ .view-scroll.events-scroll .event-title{font-size:clamp(13px,3.6vw,19px);-webkit-line-clamp:1;line-height:1.08}
+ .view-scroll.events-scroll .event-venue{display:none}
+ .view-scroll.events-scroll .guest-count strong{font-size:clamp(20px,5.8vw,26px)}
+ .view-scroll.events-scroll .guest-count span{font-size:11px}
+ .view-scroll.events-scroll .event-card .filters .btn{min-height:30px;padding:4px 5px;font-size:11px}
+ .view-scroll.events-scroll .event-card .filters .btn:last-child{min-width:30px;padding:4px}
+ .view-scroll.events-scroll .poster-badge{font-size:8px;top:4px;right:4px;padding:2px 5px}
+ .bottom-bar{min-height:58px;padding:7px 9px max(7px,env(safe-area-inset-bottom));gap:6px}
+ .bottom-bar .btn{font-size:clamp(11px,3.25vw,15px);min-height:38px;padding:5px 6px}
+ .details-top .heading h1{font-size:clamp(19px,5.3vw,27px)}
+ .details-top .heading .sub{font-size:11px}
+ .details-top .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:7px 0 5px}
+ .details-top .stat{min-height:65px;padding:6px 5px;border-radius:9px}
+ .details-top .stat span{font-size:9px;line-height:1.1}
+ .details-top .stat strong{font-size:clamp(17px,5vw,23px);margin-top:3px}
+ .details-top .stat small{display:none}
+ .details-top .toolbar{gap:5px;margin:6px 0 0}
+ .details-top .toolbar h2{display:none}
+ .details-top .toolbar .filters{width:100%;display:grid;grid-template-columns:minmax(0,1fr) 111px;gap:7px}
+ .details-top .toolbar .search{font-size:12px;width:100%;min-height:34px;padding:6px}
+ .details-top .toolbar .search:last-child{max-width:none!important}
+ .registrations-scroll .registration{grid-template-columns:minmax(0,1fr) auto;padding:10px;gap:6px;border-radius:13px}
+ .registrations-scroll .reg-code{font-size:clamp(18px,5.1vw,23px)}
+ .registrations-scroll .person{font-size:clamp(14px,3.8vw,17px)}
+ .registrations-scroll .people{font-size:14px}
+ .registrations-scroll .reg-side .status{font-size:9px;padding:3px 6px}
+ .registrations-scroll .reg-actions{gap:6px}
+ .registrations-scroll .reg-actions .btn{padding:6px;font-size:12px;min-width:0;flex:1 1 0}
+ .registrations-scroll .reg-actions .dots-btn{width:36px}
+}
+@media(max-height:660px){
+ .view-scroll.events-scroll .poster{flex-basis:32%;height:32%}
+ .view-scroll.events-scroll .event-info{padding:5px 7px}
+ .view-scroll.events-scroll .event-day{font-size:20px}
+ .view-scroll.events-scroll .guest-count strong{font-size:20px}
+ .view-scroll.events-scroll .event-card .filters .btn{min-height:27px}
+ .details-top .stats{margin:4px 0}
+}
+
 </style></head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
+<div id="bottomBar" class="bottom-bar" role="toolbar" aria-label="Управление регистрацией" hidden></div>
 <div id="dialog" class="shade" hidden><div class="sheet"><div class="sheet-head"><h2 id="dialogTitle">Добавить</h2><button type="button" id="dialogClose" class="close" aria-label="Закрыть">×</button></div><div id="dialogBody"></div></div></div>
 <div id="toast" class="toast" hidden role="status"></div>
 <script>
@@ -99,8 +219,9 @@ async function init(){
  try{await api('/session');loggedIn(true);await loadEvents();}
  catch(e){loggedIn(false);showLogin();}
 }
-function loggedIn(yes){['archiveBtn','addEventBtn','logoutBtn'].forEach(function(id){document.getElementById(id).hidden=!yes;});}
+function loggedIn(yes){['archiveBtn','addEventBtn','logoutBtn'].forEach(function(id){document.getElementById(id).hidden=!yes;});if(!yes)document.getElementById('bottomBar').hidden=true;}
 function showLogin(){
+ document.getElementById('bottomBar').hidden=true;
  app.replaceChildren();var c=el('div','sheet login');c.append(el('div','eyebrow','ЗАКРЫТАЯ ПАНЕЛЬ'));c.append(el('h2','','ВХОД АДМИНИСТРАТОРА'));
  var f=el('form','form');f.innerHTML='<label class="field">ПАРОЛЬ<input type="password" name="password" required autocomplete="current-password" placeholder="Пароль администратора"></label><button class="btn primary" type="submit">ВОЙТИ →</button><p class="sub">Доступ только для организаторов. Гостям авторизация не нужна.</p>';
  c.append(f);app.append(c);
@@ -111,43 +232,63 @@ async function loadEvents(){
  catch(e){if(e.message.indexOf('вход')>=0){loggedIn(false);showLogin();}else errMessage(e);}
 }
 function renderEvents(){
+ var previous=document.querySelector('.events-scroll');
+ var oldScroll=previous?previous.scrollTop:0;
  state.selected=null;state.details=null;app.replaceChildren();
- app.append(head(state.archive?'АРХИВ МЕРОПРИЯТИЙ':'МЕРОПРИЯТИЯ',state.archive?'Завершённые игры и сохранённые заявки':'Актуальные игры и количество зарегистрированных гостей'));
- var grid=el('div','event-grid');app.append(grid);
+ var top=el('div','view-top');top.append(head(state.archive?'АРХИВ МЕРОПРИЯТИЙ':'МЕРОПРИЯТИЯ',state.archive?'Завершённые игры и сохранённые заявки':'Актуальные игры и количество зарегистрированных гостей'));
+ app.append(top);
+ var viewport=el('div','view-scroll events-scroll');
+ viewport.classList.toggle('has-many',state.events.length>4);
+ var grid=el('div','event-grid');viewport.append(grid);app.append(viewport);
  if(!state.events.length){
-   grid.append(el('div','empty',state.archive?'В архиве пока нет мероприятий.':'Мероприятий пока нет. Нажмите «Добавить», чтобы создать первую афишу.'));
+  grid.append(el('div','empty',state.archive?'В архиве пока нет мероприятий.':'Мероприятий пока нет. Нажмите «Добавить», чтобы создать первую афишу.'));
  }else{
-   state.events.forEach(function(e){
-     var card=el('article','event-card'),poster=el('div','poster');
-     if(e.poster){var img=el('img');img.src=e.poster;img.loading='lazy';img.alt='Афиша: '+e.title;poster.append(img);}
-     else poster.textContent='МЕЛОФАНТЫ';
-     poster.append(el('span','poster-badge',state.archive?'АРХИВ':'РЕГИСТРАЦИЯ'));
-     var body=el('div','event-info'),row=el('div','event-topline');
-     row.append(el('div','event-day',day(e.starts_at)));
-     body.append(row,el('div','event-title',e.title));
-     body.append(el('div','event-venue',e.venue+' · '+wrapDate(e.starts_at)));
-     var guests=el('div','guest-count');
-     guests.append(el('strong','',String(e.registered_guests||0)));
-     guests.append(el('span','',persons(e.registered_guests||0).replace(/^\\d+\\s*/,'')));
-     body.append(guests);
-     var actions=el('div','filters');
-     actions.append(button('ПОДРОБНЕЕ','primary',function(){openDetails(e.id);}));
-     actions.append(button('•••','ghost',function(){eventEditor(e);}));
-     body.append(actions);card.append(poster,body);grid.append(card);
-   });
+  state.events.forEach(function(e){
+   var card=el('article','event-card'),poster=el('div','poster');
+   if(e.poster){var img=el('img');img.src=e.poster;img.loading='lazy';img.alt='Афиша: '+e.title;poster.append(img);}
+   else poster.textContent='МЕЛОФАНТЫ';
+   poster.append(el('span','poster-badge',state.archive?'АРХИВ':'РЕГИСТРАЦИЯ'));
+   var body=el('div','event-info'),date=el('div','event-topline');
+   date.append(el('div','event-day',day(e.starts_at)));
+   body.append(date,el('div','event-title',e.title));
+   body.append(el('div','event-venue',e.venue+' · '+wrapDate(e.starts_at)));
+   var guests=el('div','guest-count');
+   guests.append(el('strong','',String(e.registered_guests||0)));
+   guests.append(el('span','',persons(e.registered_guests||0).replace(/^\d+\s*/,'')));
+   body.append(guests);
+   var actions=el('div','filters');
+   actions.append(button('ПОДРОБНЕЕ','primary',function(){openDetails(e.id);}));
+   actions.append(button('•••','ghost',function(){eventEditor(e);}));
+   body.append(actions);card.append(poster,body);grid.append(card);
+  });
  }
  bottomDock('events');
+ fitEventGrid();
+ viewport.scrollTop=oldScroll;
+}
+function fitEventGrid(){
+ var viewport=document.querySelector('.events-scroll'),grid=viewport&&viewport.querySelector('.event-grid');
+ if(!grid||!viewport)return;
+ var gap=parseFloat(getComputedStyle(grid).rowGap)||10;
+ var width=Math.min(grid.clientWidth,900);
+ var cardWidth=(width-gap)/2;
+ var tall=matchMedia('(max-width:650px)').matches?1.32:0.77;
+ var height=Math.floor(Math.min((viewport.clientHeight-gap-4)/2,cardWidth*tall));
+ // Keep two rows within the viewport even on very short displays.
+ grid.style.setProperty('--event-row-height',Math.max(90,height)+'px');
 }
 function bottomDock(mode){
- var dock=el('div','mf-dock');
+ var bar=document.getElementById('bottomBar');
+ bar.replaceChildren();bar.dataset.mode=mode;bar.hidden=false;
  if(mode==='details'){
-   dock.append(button('← НАЗАД','ghost',function(){state.selected=null;state.details=null;history.replaceState(null,'',location.pathname);loadEvents();}));
-   dock.append(button('+ ДОБАВИТЬ','primary',manualEditor));
+  var back=button('← НАЗАД','ghost dock-back',function(){state.selected=null;state.details=null;history.replaceState(null,'',location.pathname);loadEvents();});
+  back.setAttribute('aria-label','Вернуться к списку мероприятий');
+  bar.append(back);
+  bar.append(button('+ ДОБАВИТЬ','primary dock-add',manualEditor));
  }else{
-   dock.append(button(state.archive?'← К СОБЫТИЯМ':'АРХИВ','ghost',function(){document.getElementById('archiveBtn').click();}));
-   dock.append(button('+ ДОБАВИТЬ','primary',function(){eventEditor(null);}));
+  bar.append(button('+ ДОБАВИТЬ','primary dock-add',function(){eventEditor(null);}));
+  bar.append(button(state.archive?'← СОБЫТИЯ':'АРХИВ','ghost dock-archive',function(){document.getElementById('archiveBtn').click();}));
  }
- app.append(dock);
 }
 async function openDetails(id){
  state.selected=id;state.query='';state.status='all';
@@ -161,23 +302,35 @@ function summary(label,value,small){
  var b=el('article','stat');b.append(el('span','',label));b.append(el('strong','',String(value)));if(small)b.append(el('small','',small));return b;
 }
 function renderDetails(){
- var d=state.details;if(!d)return;app.replaceChildren();
- app.append(button('← К МЕРОПРИЯТИЯМ','ghost back',function(){state.selected=null;state.details=null;history.replaceState(null,'',location.pathname);loadEvents();}));
- app.append(head(d.event.title,d.event.venue+' · '+wrapDate(d.event.starts_at)));
+ var d=state.details;if(!d)return;
+ var oldList=document.querySelector('.registrations-scroll');
+ var oldScroll=oldList?oldList.scrollTop:0;
+ app.replaceChildren();
+ var top=el('div','view-top details-top');
+ top.append(head(d.event.title,d.event.venue+' · '+wrapDate(d.event.starts_at)));
  var stats=el('div','stats');
- stats.append(summary('ДАТА МЕРОПРИЯТИЯ',day(d.event.starts_at),wrapDate(d.event.starts_at).slice(12)));
+ stats.append(summary('ДАТА',day(d.event.starts_at),wrapDate(d.event.starts_at).slice(12)));
  stats.append(summary('ВСЕГО ЗАЯВОК',d.stats.total_apps||0,'Включая отменённые'));
- stats.append(summary('ЗАРЕГИСТРИРОВАНО ГОСТЕЙ',d.stats.guests||0,'Новые и подтверждённые заявки'));
+ stats.append(summary('КОЛ-ВО ЧЕЛОВЕК',d.stats.guests||0,'Новые и подтверждённые'));
  stats.append(summary('ОТМЕНЫ',d.stats.cancelled_apps||0,(d.stats.cancelled_guests||0)+' человек'));
- app.append(stats);
+ top.append(stats);
  var toolbar=el('div','toolbar'),name=el('h2','','ЗАЯВКИ');
  var controls=el('div','filters'),search=el('input','search');search.type='search';search.placeholder='Поиск: ID, имя, телефон';search.value=state.query;
  search.addEventListener('input',function(){state.query=this.value;renderRegList();});
- var statuses=el('select','search');statuses.style.maxWidth='180px';[['all','Все статусы'],['pending','Новые'],['confirmed','Подтверждены'],['cancelled','Отменены']].forEach(function(pair){var o=document.createElement('option');o.value=pair[0];o.textContent=pair[1];statuses.append(o);});statuses.value=state.status;
+ var statuses=el('select','search');
+ statuses.setAttribute('aria-label','Фильтр заявок по статусу');
+ statuses.style.maxWidth='180px';
+ [['all','Все статусы'],['pending','Новые'],['confirmed','Подтверждены'],['cancelled','Отменены']].forEach(function(pair){
+  var o=document.createElement('option');o.value=pair[0];o.textContent=pair[1];statuses.append(o);
+ });
+ statuses.value=state.status;
  statuses.addEventListener('change',function(){state.status=this.value;renderRegList();});
- controls.append(search,statuses);toolbar.append(name,controls);app.append(toolbar);
- var list=el('div','list');list.id='regList';app.append(list);renderRegList();
- var bottom=el('div','bottom-add');bottom.append(button('+ ДОБАВИТЬ КОМПАНИЮ','primary',manualEditor));app.append(bottom);bottomDock('details');
+ controls.append(search,statuses);toolbar.append(name,controls);top.append(toolbar);app.append(top);
+ var viewport=el('div','view-scroll registrations-scroll');
+ var list=el('div','list');list.id='regList';viewport.append(list);app.append(viewport);
+ renderRegList();
+ bottomDock('details');
+ viewport.scrollTop=oldScroll;
 }
 function renderRegList(){
  var list=document.getElementById('regList');if(!list||!state.details)return;list.replaceChildren();
@@ -199,12 +352,12 @@ function renderRegList(){
   var cancel=el('button','','Отменить');cancel.addEventListener('click',function(){popup.hidden=true;changeStatus(r,'cancelled');});
   var remove=el('button','red','Удалить');remove.addEventListener('click',function(){popup.hidden=true;if(confirm('Удалить заявку ID '+r.code+'? Восстановить удалённую заявку нельзя.'))changeStatus(r,'deleted');});
   popup.append(edit,cancel,remove);dots.addEventListener('click',function(){document.querySelectorAll('.menu-popup').forEach(function(p){if(p!==popup)p.hidden=true;});popup.hidden=!popup.hidden;});
-  menu.append(dots,popup);side.append(menu);card.append(info,side);
+  menu.append(dots,popup);card.append(info,side);
   var actions=el('div','reg-actions');
   if(r.status==='pending'||r.status==='cancelled')actions.append(button('ПОДТВЕРДИТЬ','primary',function(){changeStatus(r,'confirmed');}));
   if(r.status!=='cancelled')actions.append(button('ОТМЕНИТЬ','danger',function(){changeStatus(r,'cancelled');}));
   if(r.status==='confirmed')actions.append(el('span','people','✓ Подтверждено'));
-  card.append(actions);list.append(card);
+  actions.append(menu);card.append(actions);list.append(card);
  });
 }
 async function changeStatus(r,status){
@@ -278,6 +431,8 @@ async function liveRefresh(){
 window.addEventListener('focus',liveRefresh);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)liveRefresh();});
 setInterval(liveRefresh,20000);
+window.addEventListener('resize',fitEventGrid);
+if(window.visualViewport)window.visualViewport.addEventListener('resize',fitEventGrid);
 init();
 })();
 </script></body></html>
