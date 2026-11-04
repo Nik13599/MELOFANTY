@@ -225,8 +225,10 @@ body{display:flex;flex-direction:column;min-height:0}
 }
 
 .demo-note{padding:5px 9px;color:#ffdda3;font:500 12px Oswald,sans-serif;letter-spacing:.03em;line-height:1.2}
+.mast .header-refresh{order:99;width:38px;height:38px;padding:0!important;border-radius:50%!important;font:700 25px Arial,sans-serif;line-height:1;display:grid;place-items:center;color:#e8ffe8;border-color:#5bbd8b}
+@media(max-width:650px){.mast .header-refresh{width:32px;height:32px;font-size:23px}}
 </style></head><body>
-<header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button></div></header>
+<header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
 <div id="bottomBar" class="bottom-bar" role="toolbar" aria-label="Управление регистрацией" hidden></div>
 <div id="dialog" class="shade" hidden><div class="sheet"><div class="sheet-head"><h2 id="dialogTitle">Добавить</h2><button type="button" id="dialogClose" class="close" aria-label="Закрыть">×</button></div><div id="dialogBody"></div></div></div>
@@ -262,7 +264,7 @@ async function init(){
  try{await api('/session');loggedIn(true);await loadEvents();}
  catch(e){loggedIn(false);showLogin();}
 }
-function loggedIn(yes){['archiveBtn','addEventBtn','logoutBtn'].forEach(function(id){document.getElementById(id).hidden=!yes;});if(!yes)document.getElementById('bottomBar').hidden=true;}
+function loggedIn(yes){['archiveBtn','addEventBtn','logoutBtn','refreshBtn'].forEach(function(id){document.getElementById(id).hidden=!yes;});if(!yes)document.getElementById('bottomBar').hidden=true;}
 function showLogin(){
  document.getElementById('bottomBar').hidden=true;
  app.replaceChildren();var c=el('div','sheet login');c.append(el('div','eyebrow','ЗАКРЫТАЯ ПАНЕЛЬ'));c.append(el('h2','','ВХОД АДМИНИСТРАТОРА'));
@@ -467,6 +469,7 @@ function manualEditor(){personEditor(null);}
 function editRegistration(r){personEditor(r);}
 document.getElementById('archiveBtn').addEventListener('click',function(){state.selected=null;state.archive=!state.archive;this.textContent=state.archive?'← АКТИВНЫЕ':'АРХИВ';history.replaceState(null,'',location.pathname);loadEvents();});
 document.getElementById('addEventBtn').addEventListener('click',function(){eventEditor(null);});
+document.getElementById('refreshBtn').addEventListener('click',async function(){this.disabled=true;try{if(state.selected)await reloadDetails();else await loadEvents();toast('Данные обновлены');}catch(e){errMessage(e)}finally{this.disabled=false}});
 document.getElementById('logoutBtn').addEventListener('click',async function(){try{await api('/logout',{method:'POST'});}catch(e){}loggedIn(false);state.selected=null;showLogin();});
 async function liveRefresh(){
  if(document.hidden||!modal.hidden)return;
