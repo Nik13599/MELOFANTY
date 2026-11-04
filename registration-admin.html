@@ -273,6 +273,9 @@ body{display:flex;flex-direction:column;min-height:0}
 .export-hint{font-size:13px;color:#bfd5c8;line-height:1.45;margin:10px 0}
 @media(max-width:500px){.export-choice{grid-template-columns:1fr 1fr;gap:7px}.export-choice .btn{font-size:13px;padding:8px}}
 
+.registrations-scroll .person a.phone-link{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:2px 5px;margin:-2px -5px;color:#a9ffd1;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;border-radius:7px;touch-action:manipulation}
+.registrations-scroll .person a.phone-link::before{content:'☎';font-size:14px;text-decoration:none;display:inline-block}
+.registrations-scroll .person a.phone-link:hover,.registrations-scroll .person a.phone-link:focus-visible{color:#e8ffed;background:#1f6044}
 /* v6: denser administration on every screen while keeping touch controls legible. */
 .mast{min-height:48px!important;padding-top:5px!important;padding-bottom:5px!important}
 .view-top{padding-top:5px!important;padding-bottom:5px!important}
@@ -721,7 +724,11 @@ function renderRegList(){
   var card=el('article','registration'),info=el('div');
   info.append(el('div','reg-code','ID '+r.code));
   if(r.source==='demo'){card.classList.add('demo-entry');info.append(el('span','demo-mark','ТЕСТОВАЯ ЗАЯВКА'));}
-  var person=el('div','person');person.append(document.createTextNode(r.name+' · '));var phone=el(r.source==='demo'?'span':'a','',r.phone);if(r.source!=='demo')phone.href='tel:'+r.phone.replace(/[^\d+]/g,'');person.append(phone);info.append(person);
+  var person=el('div','person');person.append(document.createTextNode(r.name+' · '));
+   var rawPhone=String(r.phone||'').trim(),digits=rawPhone.replace(/\D/g,'');
+   var phone=el(digits.length>=7?'a':'span','phone-link',rawPhone||'Номер не указан');
+   if(digits.length>=7){phone.href='tel:'+(rawPhone.charAt(0)==='+'?'+':'')+digits;phone.setAttribute('aria-label','Позвонить по номеру '+rawPhone);phone.title=r.source==='demo'?'Тестовый номер · Открыть набор номера':'Позвонить';}
+   person.append(phone);info.append(person);
   info.append(el('div','people',persons(r.party_size)));
   if(r.guest_comment)info.append(el('div','reg-comment','ГОСТЬ: '+r.guest_comment));
   if(r.admin_comment)info.append(el('div','reg-comment reg-comment-admin','АДМИНИСТРАТОР: '+r.admin_comment));
