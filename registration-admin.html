@@ -264,6 +264,13 @@ body{display:flex;flex-direction:column;min-height:0}
  .registrations-scroll .reg-actions .dots-btn{min-height:29px!important}
  .registrations-scroll .demo-mark{font-size:9px!important;padding:1px 4px!important}
 }
+
+.registrations-scroll .reg-comment{font:400 clamp(12px,1.2vw,15px)/1.32 'Roboto Condensed',Arial,sans-serif;color:#dbf2e4;background:#16413074;border-left:3px solid #75ddab;border-radius:4px;padding:5px 7px;margin:3px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+.registrations-scroll .reg-comment-admin{color:#f7e7c0;border-left-color:#f1c678;background:#48392150}
+.export-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.export-choice .btn{min-height:52px;display:flex;align-items:center;justify-content:center}
+.export-hint{font-size:13px;color:#bfd5c8;line-height:1.45;margin:10px 0}
+@media(max-width:500px){.export-choice{grid-template-columns:1fr 1fr;gap:7px}.export-choice .btn{font-size:13px;padding:8px}}
 </style></head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
@@ -458,7 +465,7 @@ function renderEvents(){
    body.append(guests);
    var actions=el('div','event-actions');
    actions.append(button('ПОДРОБНЕЕ','card-detail',function(){openDetails(e.id);}));
-   actions.append(button('СОХРАНИТЬ','card-save',function(){saveEventReport(e);}));
+   actions.append(button('СОХРАНИТЬ','card-save',function(){chooseEventExport(e);}));
    body.append(actions);
    card.append(poster,body);
    var more=button('•••','card-more',function(){eventEditor(e);});
@@ -552,6 +559,8 @@ function renderRegList(){
   if(r.source==='demo'){card.classList.add('demo-entry');info.append(el('span','demo-mark','ТЕСТОВАЯ ЗАЯВКА'));}
   var person=el('div','person');person.append(document.createTextNode(r.name+' · '));var phone=el(r.source==='demo'?'span':'a','',r.phone);if(r.source!=='demo')phone.href='tel:'+r.phone.replace(/[^\d+]/g,'');person.append(phone);info.append(person);
   info.append(el('div','people',persons(r.party_size)));
+  if(r.guest_comment)info.append(el('div','reg-comment','ГОСТЬ: '+r.guest_comment));
+  if(r.admin_comment)info.append(el('div','reg-comment reg-comment-admin','АДМИНИСТРАТОР: '+r.admin_comment));
   info.append(el('div','date-mini',(r.source==='admin'?'Добавлено вручную · ':'')+r.created_at));
   var side=el('div','reg-side'),statusNames={pending:'НОВАЯ',confirmed:'ПОДТВЕРЖДЕНА',cancelled:'ОТМЕНЕНА'};
   side.append(el('span','status '+r.status,statusNames[r.status]||r.status));
@@ -605,13 +614,13 @@ async function compressImage(file){
 }
 function personEditor(existing){
  var f=el('form','form');
- f.innerHTML='<label class="field">ИМЯ<input name="name" required minlength="2" maxlength="100" autocomplete="off"></label><label class="field">НОМЕР ТЕЛЕФОНА<input name="phone" type="tel" required maxlength="40"></label><label class="field">КОЛИЧЕСТВО ЧЕЛОВЕК<input name="party_size" type="number" min="1" max="50" required></label><div class="form-buttons"><button type="button" id="cancelPerson" class="btn ghost">ОТМЕНА</button><button class="btn primary" type="submit">СОХРАНИТЬ</button></div>';
- f.elements.name.value=existing?existing.name:'';f.elements.phone.value=existing?existing.phone:'';f.elements.party_size.value=existing?existing.party_size:1;
+ f.innerHTML='<label class="field">ИМЯ<input name="name" required minlength="2" maxlength="100" autocomplete="off"></label><label class="field">НОМЕР ТЕЛЕФОНА<input name="phone" type="tel" required maxlength="40"></label><label class="field">КОЛИЧЕСТВО ЧЕЛОВЕК<input name="party_size" type="number" min="1" max="50" required></label><label class="field">КОММЕНТАРИЙ ГОСТЯ<textarea name="guest_comment" maxlength="500" rows="3" placeholder="Пожелания, полученные от гостя"></textarea></label><label class="field">КОММЕНТАРИЙ АДМИНИСТРАТОРА<textarea name="admin_comment" maxlength="1000" rows="3" placeholder="Внутренняя заметка, доступна только администраторам"></textarea></label><div class="form-buttons"><button type="button" id="cancelPerson" class="btn ghost">ОТМЕНА</button><button class="btn primary" type="submit">СОХРАНИТЬ</button></div>';
+ f.elements.name.value=existing?existing.name:'';f.elements.phone.value=existing?existing.phone:'';f.elements.party_size.value=existing?existing.party_size:1;f.elements.guest_comment.value=existing?existing.guest_comment||'':'';f.elements.admin_comment.value=existing?existing.admin_comment||'':'';
  f.querySelector('#cancelPerson').addEventListener('click',closeModal);
  f.addEventListener('submit',async function(e){
   e.preventDefault();var submit=f.querySelector('[type=submit]');submit.disabled=true;
   try{
-   var b={name:f.elements.name.value,phone:f.elements.phone.value,party_size:Number(f.elements.party_size.value)};
+   var b={name:f.elements.name.value,phone:f.elements.phone.value,party_size:Number(f.elements.party_size.value),guest_comment:f.elements.guest_comment.value,admin_comment:f.elements.admin_comment.value};
    if(existing){b.seq=existing.seq;b.event_id=state.selected;await api('/registration',mutation('PATCH',b));}
    else await api('/events/'+state.selected+'/manual',mutation('POST',b));
    closeModal();toast(existing?'Заявка изменена':'Компания добавлена');await reloadDetails();
