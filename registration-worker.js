@@ -88,7 +88,7 @@ async function regInsert(env,event,person,manual){
  return regJson({ok:true,id:code,code,event_id:event.id,title:event.title,starts_at:event.starts_at,venue:event.venue,party_size:party,status:manual?'confirmed':'pending'},201);
 }
 async function regEvents(env,admin,archive){
- const sql="SELECT e.*, (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests, (SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.status!='deleted') applications FROM events e ORDER BY e.starts_at DESC";
+ const sql="SELECT e.*, (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests, (SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.status!='deleted') applications, (SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.source='demo' AND r.status!='deleted') demo_applications FROM events e ORDER BY e.starts_at DESC";
  const items=(await env.DB.prepare(sql).all()).results||[];
  const now=Date.now();
  const filtered=items.filter(e=>{
@@ -105,7 +105,7 @@ async function regEventDetails(env,id){
    "SELECT seq,code,name,phone,party_size,status,source,created_at,updated_at FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'confirmed' THEN 1 ELSE 2 END,seq DESC"
  ).bind(id).all()).results||[];
  const stats=(await env.DB.prepare(
-   "SELECT COUNT(CASE WHEN status!='deleted' THEN 1 END) total_apps, COALESCE(SUM(CASE WHEN status IN ('pending','confirmed') THEN party_size ELSE 0 END),0) guests, COUNT(CASE WHEN status='cancelled' THEN 1 END) cancelled_apps, COALESCE(SUM(CASE WHEN status='cancelled' THEN party_size ELSE 0 END),0) cancelled_guests, COUNT(CASE WHEN status='pending' THEN 1 END) pending_apps, COUNT(CASE WHEN status='confirmed' THEN 1 END) confirmed_apps FROM registrations WHERE event_id=?"
+   "SELECT COUNT(CASE WHEN status!='deleted' THEN 1 END) total_apps, COALESCE(SUM(CASE WHEN status IN ('pending','confirmed') THEN party_size ELSE 0 END),0) guests, COUNT(CASE WHEN status='cancelled' THEN 1 END) cancelled_apps, COALESCE(SUM(CASE WHEN status='cancelled' THEN party_size ELSE 0 END),0) cancelled_guests, COUNT(CASE WHEN status='pending' THEN 1 END) pending_apps, COUNT(CASE WHEN status='confirmed' THEN 1 END) confirmed_apps, COUNT(CASE WHEN source='demo' AND status!='deleted' THEN 1 END) demo_apps FROM registrations WHERE event_id=?"
  ).bind(id).first())||{};
  return regJson({event:e,registrations,stats});
 }
