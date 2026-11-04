@@ -64,6 +64,13 @@ main{max-width:1400px;margin:auto;padding:clamp(16px,3.6vw,54px)}.heading{displa
 }
 
 
+
+/* Each vertical snap page contains at most four compact event cards. */
+.view-scroll.events-scroll{scroll-snap-type:y mandatory;scroll-padding-top:0}
+.event-page{flex:0 0 100%;width:100%;height:100%;min-height:100%;display:flex;justify-content:center;align-items:center;scroll-snap-align:start;scroll-snap-stop:always}
+.event-page .event-grid{margin:auto!important}
+.events-scroll .event-page .event-grid{max-width:900px}
+
 /* v4: fixed registration chrome and one scrollable content viewport on both screens. */
 html,body{height:100%;height:100dvh;width:100%;overflow:hidden}
 body{display:flex;flex-direction:column;min-height:0}
@@ -239,11 +246,13 @@ function renderEvents(){
  app.append(top);
  var viewport=el('div','view-scroll events-scroll');
  viewport.classList.toggle('has-many',state.events.length>4);
- var grid=el('div','event-grid');viewport.append(grid);app.append(viewport);
+ var grid=null;app.append(viewport);
  if(!state.events.length){
+  var emptyPage=el('div','event-page');grid=el('div','event-grid');emptyPage.append(grid);viewport.append(emptyPage);
   grid.append(el('div','empty',state.archive?'В архиве пока нет мероприятий.':'Мероприятий пока нет. Нажмите «Добавить», чтобы создать первую афишу.'));
  }else{
-  state.events.forEach(function(e){
+  state.events.forEach(function(e,i){
+   if(i%4===0){var page=el('section','event-page');page.setAttribute('aria-label','Мероприятия '+(i+1)+'–'+Math.min(i+4,state.events.length));grid=el('div','event-grid');page.append(grid);viewport.append(page);}
    var card=el('article','event-card'),poster=el('div','poster');
    if(e.poster){var img=el('img');img.src=e.poster;img.loading='lazy';img.alt='Афиша: '+e.title;poster.append(img);}
    else poster.textContent='МЕЛОФАНТЫ';
@@ -267,15 +276,16 @@ function renderEvents(){
  viewport.scrollTop=oldScroll;
 }
 function fitEventGrid(){
- var viewport=document.querySelector('.events-scroll'),grid=viewport&&viewport.querySelector('.event-grid');
- if(!grid||!viewport)return;
- var gap=parseFloat(getComputedStyle(grid).rowGap)||10;
- var width=Math.min(grid.clientWidth,900);
- var cardWidth=(width-gap)/2;
- var tall=matchMedia('(max-width:650px)').matches?1.32:0.77;
- var height=Math.floor(Math.min((viewport.clientHeight-gap-4)/2,cardWidth*tall));
- // Keep two rows within the viewport even on very short displays.
- grid.style.setProperty('--event-row-height',Math.max(90,height)+'px');
+ var viewport=document.querySelector('.events-scroll');
+ if(!viewport)return;
+ viewport.querySelectorAll('.event-grid').forEach(function(grid){
+  var gap=parseFloat(getComputedStyle(grid).rowGap)||10;
+  var width=Math.min(grid.clientWidth,900);
+  var cardWidth=(width-gap)/2;
+  var tall=matchMedia('(max-width:650px)').matches?1.32:0.77;
+  var height=Math.floor(Math.min((viewport.clientHeight-gap-4)/2,cardWidth*tall));
+  grid.style.setProperty('--event-row-height',Math.max(90,height)+'px');
+ });
 }
 function bottomDock(mode){
  var bar=document.getElementById('bottomBar');
