@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS events (
  capacity INTEGER,
  next_seq INTEGER NOT NULL DEFAULT 0,
  archived INTEGER NOT NULL DEFAULT 0,
+ is_demo INTEGER NOT NULL DEFAULT 0,
  created_at TEXT NOT NULL DEFAULT (datetime('now')),
  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -37,3 +38,4 @@ CREATE INDEX IF NOT EXISTS idx_attempts ON admin_attempts(ip_hash,at);
 -- Migration for databases created before comments were introduced:
 -- ALTER TABLE registrations ADD COLUMN guest_comment TEXT NOT NULL DEFAULT '';
 -- ALTER TABLE registrations ADD COLUMN admin_comment TEXT NOT NULL DEFAULT '';
+-- ALTER TABLE events ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0;
