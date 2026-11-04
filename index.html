@@ -149,7 +149,8 @@ main{padding-top:var(--header)}.hero{position:relative;height:clamp(354px,35.5vw
 .event-info .event-date{display:block!important;font-size:clamp(21px,2.25vw,36px);line-height:1.15!important;margin-top:2px!important;white-space:nowrap!important;max-width:100%}
 .event-info .event-place{display:block!important;line-height:1.35;margin-top:4px!important;font-size:clamp(12px,1.15vw,18px)}
 @media(max-width:760px){.event-info{left:14px!important;right:54px!important;bottom:13px!important;gap:3px!important}.event-info .event-title{font-size:clamp(24px,6vw,36px)!important}.event-info .event-date{font-size:clamp(21px,5.3vw,31px)!important}.event-info .event-place{font-size:clamp(12px,3.1vw,15px)!important}}
-.mf-events-loading{grid-column:1/-1;min-height:200px;display:grid;place-items:center;color:#9fffc8;font:600 22px Oswald,sans-serif;border:1px dashed #2a7555;border-radius:18px;background:#031810}\n</style>
+.mf-events-loading{grid-column:1/-1;min-height:200px;display:grid;place-items:center;color:#9fffc8;font:600 22px Oswald,sans-serif;border:1px dashed #2a7555;border-radius:18px;background:#031810}
+</style>
 </head>
 <body>
 <div class="backdrop" aria-hidden="true"></div>
@@ -249,7 +250,8 @@ function showModal(title,body){$('modalTitle').textContent=title;$('modalText').
 function closeModal(){$('modal').hidden=true}
 $('closeModal').addEventListener('click',closeModal);$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
 document.querySelectorAll('[data-step]').forEach(btn=>btn.addEventListener('click',()=>showModal(['Собираем команды','Делаем ставки','Выполняем фанты','Выигрываем призы'][+btn.dataset.step],steps[+btn.dataset.step])));
-// Мероприятия загружаются из единой базы D1, код регистрации подключается Worker.\nwindow.addEventListener('resize',()=>{if(!mobile())$('navigation').classList.remove('open')});
+// Мероприятия загружаются из единой базы D1, код регистрации подключается Worker.
+window.addEventListener('resize',()=>{if(!mobile())$('navigation').classList.remove('open')});
 })();
 </script>
 </body></html>
