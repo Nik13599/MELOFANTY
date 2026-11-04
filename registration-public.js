@@ -216,12 +216,12 @@ function drawEvents(){
   var box=el('div','mf-empty');var inside=el('div');inside.append(el('strong','','СКОРО НОВЫЕ ИГРЫ'));inside.append(el('p','','Следите за анонсами. Регистрация откроется после публикации нового мероприятия.'));box.append(inside);list.append(box);
   document.getElementById('eventsPrev').hidden=true;document.getElementById('eventsNext').hidden=true;return;
  }
- document.getElementById('eventsPrev').hidden=events.length<=5;document.getElementById('eventsNext').hidden=events.length<=5;
- var width=5;
+ document.getElementById('eventsPrev').hidden=events.length<=3;document.getElementById('eventsNext').hidden=events.length<=3;
+ var width=3;
  var start=events.length<=width?0:Math.min(index,events.length-width);
  var visible=events.slice(start,start+width);
  list.classList.toggle('mf-single-event',visible.length===1);
- list.style.gridTemplateColumns='repeat('+Math.min(visible.length,3)+',minmax(0,1fr))';
+ list.style.gridTemplateColumns='repeat('+visible.length+',minmax(0,1fr))';
  visible.forEach(function(e){list.append(buildCard(e));});
  for(var i=0;i<events.length;i++){
   var dot=el('button');dot.type='button';dot.className=i===Math.min(index,events.length-1)?'current':'';
@@ -235,7 +235,7 @@ function move(n){if(!events.length)return;index=(index+n+events.length)%events.l
 });
 function openFirst(){openDatePicker();}
 document.querySelectorAll('a.main-btn').forEach(function(a){
- if(/РЕГИСТРАЦИЯ|ЗАРЕГИСТРИРОВАТЬСЯ/i.test(a.textContent||'')){a.removeAttribute('target');a.setAttribute('href','#events');a.addEventListener('click',function(ev){ev.preventDefault();openFirst();},true);}
+ if(/РЕГИСТРАЦИЯ|ЗАРЕГИСТРИРОВАТЬСЯ/i.test(a.textContent||'')){a.removeAttribute('target');a.setAttribute('href','#events');a.addEventListener('click',function(ev){ev.preventDefault();ev.stopImmediatePropagation();openFirst();},true);}
 });
 var all=document.getElementById('allEvents');
 if(all)all.addEventListener('click',function(e){e.stopImmediatePropagation();if(events.length){index=0;drawEvents();document.getElementById('events').scrollIntoView({behavior:'smooth'});}},true);
