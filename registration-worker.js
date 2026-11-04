@@ -27,7 +27,7 @@ function regEventPublic(e){
  return {id:e.id,title:e.title,starts_at:e.starts_at,ends_at:e.ends_at,venue:e.venue,description:e.description,poster:e.poster||'',capacity:e.capacity,registered_guests:e.registered_guests||0};
 }
 async function regHmac(value,secret){
- const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),'HMAC',false,['sign']);
+ const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
  const sign=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(value));
  return Array.from(new Uint8Array(sign),x=>x.toString(16).padStart(2,'0')).join('');
 }
