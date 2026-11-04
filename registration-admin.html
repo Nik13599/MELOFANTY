@@ -720,6 +720,20 @@ function renderDetails(){
  bottomDock('details');
  viewport.scrollTop=oldScroll;
 }
+function hideRegistrationMenus(){
+ document.querySelectorAll('.menu-popup:not([hidden])').forEach(function(menu){menu.hidden=true;});
+}
+// Close context menus on any outside touch/click or page movement.
+document.addEventListener('pointerdown',function(event){
+ if(!event.target.closest('.menu-box'))hideRegistrationMenus();
+},true);
+document.addEventListener('click',function(event){
+ if(!event.target.closest('.menu-box'))hideRegistrationMenus();
+},true);
+document.addEventListener('wheel',hideRegistrationMenus,{capture:true,passive:true});
+document.addEventListener('scroll',hideRegistrationMenus,{capture:true,passive:true});
+document.addEventListener('touchmove',hideRegistrationMenus,{capture:true,passive:true});
+document.addEventListener('keydown',function(event){if(event.key==='Escape')hideRegistrationMenus();});
 function renderRegList(){
  var list=document.getElementById('regList');if(!list||!state.details)return;list.replaceChildren();
  var q=state.query.trim().toLowerCase(),arr=(state.details.registrations||[]).filter(function(r){
