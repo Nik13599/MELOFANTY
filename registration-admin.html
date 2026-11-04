@@ -524,17 +524,28 @@ function reportExcelXlsx(event,registrations){
  return new Blob(parts.concat(central,[endRecord]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
 
-async function saveEventReport(event){
+
+function chooseEventExport(event){
+ var wrap=el('div');
+ wrap.append(el('p','export-hint','Выгрузка содержит сводку и полный список действующих заявок: ID, имя, телефон, количество гостей, комментарии гостя и администратора. Отменённые заявки исключены.'));
+ var row=el('div','export-choice');
+ row.append(button('СОХРАНИТЬ PDF','primary',function(){saveEventReport(event,'pdf');}));
+ row.append(button('СОХРАНИТЬ EXCEL','primary',function(){saveEventReport(event,'xlsx');}));
+ wrap.append(row);showModal('ВЫГРУЗКА · '+day(event.starts_at),wrap);
+}
+async function saveEventReport(event,format){
  try{
-  var data=await api('/events/'+encodeURIComponent(event.id));
-  var blob=pdfReportCanvas(data.event,data.registrations||[]);
-  var date=day(event.starts_at).replace(/[^0-9]/g,'');
-  var filename='MELOFANTY_'+date+'_zayavki.pdf';
+  var data=await api('/events/'+encodeURIComponent(event.id)),blob;
+  if(format==='xlsx')blob=reportExcelXlsx(data.event,data.registrations||[]);
+  else blob=pdfReportCanvas(data.event,data.registrations||[]);
+  var suffix=day(event.starts_at).replace(/[^0-9]/g,'');
+  var ext=format==='xlsx'?'xlsx':'pdf';
+  var filename='MELOFANTY_'+suffix+'_registracii.'+ext;
   var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;a.download=filename;
-  document.body.append(a);a.click();a.remove();
-  setTimeout(function(){URL.revokeObjectURL(url);},45000);
-  toast('Отчёт PDF сформирован: '+filename);
+  var anchor=document.createElement('a');anchor.href=url;anchor.download=filename;
+  document.body.append(anchor);anchor.click();anchor.remove();
+  setTimeout(function(){URL.revokeObjectURL(url)},60000);
+  closeModal();toast('Отчёт '+(ext==='xlsx'?'Excel':'PDF')+' сформирован: '+filename);
  }catch(e){errMessage(e);}
 }
 
