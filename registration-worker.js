@@ -74,6 +74,7 @@ async function regLogin(req,env){
 }
 async function regInsert(env,event,person,manual){
  const name=regText(person.name,100),phone=regPhone(person.phone),party=regPeople(person.party_size);
+ const guestComment=regText(person.guest_comment,500),adminComment=manual?regText(person.admin_comment,1000):'';
  if(name.length<2||!phone||!party)return regError('Проверьте имя, телефон и количество человек',400);
  if(!regActive(event))return regError('Регистрация на это мероприятие закрыта',409);
  const now=new Date().toISOString();
@@ -83,8 +84,8 @@ async function regInsert(env,event,person,manual){
  ).bind(event.id,now,event.id,party).first();
  if(!next)return regError('Регистрация закрыта или свободных мест недостаточно',409);
  const seq=next.next_seq,code=regIdFor(next,seq);
- await env.DB.prepare('INSERT INTO registrations(event_id,seq,code,name,phone,party_size,status,source) VALUES(?,?,?,?,?,?,?,?)')
-  .bind(event.id,seq,code,name,phone,party,manual?'confirmed':'pending',manual?'admin':'site').run();
+ await env.DB.prepare('INSERT INTO registrations(event_id,seq,code,name,phone,party_size,status,source,guest_comment,admin_comment) VALUES(?,?,?,?,?,?,?,?,?,?)')
+  .bind(event.id,seq,code,name,phone,party,manual?'confirmed':'pending',manual?'admin':'site',guestComment,adminComment).run();
  return regJson({ok:true,id:code,code,event_id:event.id,title:event.title,starts_at:event.starts_at,venue:event.venue,party_size:party,status:manual?'confirmed':'pending'},201);
 }
 async function regEvents(env,admin,archive){
@@ -102,7 +103,7 @@ async function regEventDetails(env,id){
  const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
  if(!e)return regError('Мероприятие не найдено',404);
  const registrations=(await env.DB.prepare(
-   "SELECT seq,code,name,phone,party_size,status,source,created_at,updated_at FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'confirmed' THEN 1 ELSE 2 END,seq DESC"
+   "SELECT seq,code,name,phone,party_size,status,source,guest_comment,admin_comment,created_at,updated_at FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'confirmed' THEN 1 ELSE 2 END,seq DESC"
  ).bind(id).all()).results||[];
  const stats=(await env.DB.prepare(
    "SELECT COUNT(CASE WHEN status!='deleted' THEN 1 END) total_apps, COALESCE(SUM(CASE WHEN status IN ('pending','confirmed') THEN party_size ELSE 0 END),0) guests, COUNT(CASE WHEN status='cancelled' THEN 1 END) cancelled_apps, COALESCE(SUM(CASE WHEN status='cancelled' THEN party_size ELSE 0 END),0) cancelled_guests, COUNT(CASE WHEN status='pending' THEN 1 END) pending_apps, COUNT(CASE WHEN status='confirmed' THEN 1 END) confirmed_apps, COUNT(CASE WHEN source='demo' AND status!='deleted' THEN 1 END) demo_apps FROM registrations WHERE event_id=?"
@@ -140,14 +141,16 @@ async function regManageRegistration(env,b){
  const name=b.name===undefined?existing.name:regText(b.name,100);
  const phone=b.phone===undefined?existing.phone:regPhone(b.phone);
  const party=b.party_size===undefined?existing.party_size:regPeople(b.party_size);
+ const guestComment=b.guest_comment===undefined?existing.guest_comment:regText(b.guest_comment,500);
+ const adminComment=b.admin_comment===undefined?existing.admin_comment:regText(b.admin_comment,1000);
  if(name.length<2||!phone||!party)throw new Error('Проверьте имя, телефон и количество гостей');
  const event=await env.DB.prepare('SELECT capacity FROM events WHERE id=?').bind(eventId).first();
  if(event&&event.capacity!==null&&['pending','confirmed'].includes(nextStatus)){
   const booked=await env.DB.prepare("SELECT COALESCE(SUM(party_size),0) n FROM registrations WHERE event_id=? AND status IN ('pending','confirmed') AND seq!=?").bind(eventId,seq).first();
   if(booked.n+party>event.capacity)throw new Error('Превышена вместимость мероприятия');
  }
- await env.DB.prepare("UPDATE registrations SET name=?,phone=?,party_size=?,status=?,updated_at=datetime('now') WHERE event_id=? AND seq=?")
-  .bind(name,phone,party,nextStatus,eventId,seq).run();
+ await env.DB.prepare("UPDATE registrations SET name=?,phone=?,party_size=?,status=?,guest_comment=?,admin_comment=?,updated_at=datetime('now') WHERE event_id=? AND seq=?")
+  .bind(name,phone,party,nextStatus,guestComment,adminComment,eventId,seq).run();
  return regJson({ok:true});
 }
 async function registrationRouter(req,env){
