@@ -283,7 +283,9 @@ function fitEventGrid(){
   var width=Math.min(grid.clientWidth,900);
   var cardWidth=(width-gap)/2;
   var tall=matchMedia('(max-width:650px)').matches?1.32:0.77;
-  var height=Math.floor(Math.min((viewport.clientHeight-gap-4)/2,cardWidth*tall));
+  var page=grid.closest('.event-page');
+  var available=Math.min(viewport.clientHeight,page?page.clientHeight:viewport.clientHeight);
+  var height=Math.floor(Math.min((available-gap-14)/2,cardWidth*tall));
   grid.style.setProperty('--event-row-height',Math.max(90,height)+'px');
  });
 }
