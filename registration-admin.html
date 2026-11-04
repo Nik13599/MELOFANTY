@@ -230,10 +230,11 @@ body{display:flex;flex-direction:column;min-height:0}
 
 /* Compact, two-action overlay card */
 .events-scroll .event-page .event-grid{max-width:790px!important}
-.events-scroll .event-card .event-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important;flex:0 0 auto!important;margin:0 calc(-1 * clamp(9px,1.35vw,15px))!important;width:calc(100% + 2 * clamp(9px,1.35vw,15px))!important;height:35px!important;align-items:stretch!important;overflow:hidden!important;background:#02150eed!important;border-top:1px solid #e1fff38c!important}
+.events-scroll .event-card .event-actions{display:grid!important;grid-template-columns:minmax(0,1fr) 40px!important;gap:0!important;flex:0 0 auto!important;margin:0 calc(-1 * clamp(9px,1.35vw,15px))!important;width:calc(100% + 2 * clamp(9px,1.35vw,15px))!important;height:35px!important;align-items:stretch!important;overflow:hidden!important;background:#02150eed!important;border-top:1px solid #e1fff38c!important}
 .events-scroll .event-card .event-actions .btn{display:flex!important;justify-content:center!important;align-items:center!important;white-space:nowrap!important;border:0!important;border-radius:0!important;min-height:35px!important;height:35px!important;max-height:35px!important;min-width:0!important;padding:2px 5px!important;margin:0!important;width:100%!important;font:600 clamp(11px,1.05vw,15px) Oswald,sans-serif!important;letter-spacing:0!important;color:#fff!important;background:transparent!important}
 .events-scroll .event-card .event-actions .btn:first-child{border-right:1px solid #adf3d663!important}
 .events-scroll .event-card .event-actions .btn:last-child{background:#0d3b29c9!important}
+.events-scroll .event-card .event-actions .card-save svg{display:block;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .events-scroll .event-card .event-actions .btn:hover{background:#287552!important}
 .view-scroll.events-scroll .event-card .event-info{gap:2px!important}
 .details-top{padding-top:5px!important;padding-bottom:5px!important}
@@ -252,7 +253,7 @@ body{display:flex;flex-direction:column;min-height:0}
 .registrations-scroll .reg-actions .btn{min-height:30px!important;padding:4px 8px!important}
 .registrations-scroll .reg-actions .dots-btn{min-height:30px!important}
 @media(max-width:650px){
- .events-scroll .event-card .event-actions{margin:0 -7px!important;width:calc(100% + 14px)!important;height:32px!important}
+ .events-scroll .event-card .event-actions{grid-template-columns:minmax(0,1fr) 36px!important;margin:0 -7px!important;width:calc(100% + 14px)!important;height:32px!important}
  .events-scroll .event-card .event-actions .btn{min-height:32px!important;height:32px!important;font-size:clamp(9px,2.75vw,12px)!important}
  .details-top .stat{min-height:50px!important;padding:4px!important}
  .details-top .heading h1{font-size:20px!important}
@@ -624,7 +625,11 @@ function renderEvents(){
    body.append(guests);
    var actions=el('div','event-actions');
    actions.append(button('ПОДРОБНЕЕ','card-detail',function(){openDetails(e.id);}));
-   actions.append(button('СОХРАНИТЬ','card-save',function(){chooseEventExport(e);}));
+   var download=button('','card-save',function(){chooseEventExport(e);});
+    download.setAttribute('aria-label','Скачать отчёт о мероприятии '+e.title);
+    download.title='Скачать отчёт (PDF или Excel)';
+    download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>';
+    actions.append(download);
    body.append(actions);
    card.append(poster,body);
    var more=button('•••','card-more',function(){eventEditor(e);});
