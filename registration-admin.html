@@ -325,6 +325,13 @@ body{display:flex;flex-direction:column;min-height:0}
  .field textarea{min-height:65px!important}
 }
 
+
+/* Upcoming event cards: chronological order, uniform row and edge spacing. */
+.view-scroll.events-scroll{display:block!important;scroll-snap-type:none!important;padding:12px!important}
+.events-scroll .event-page{display:block!important;flex:none!important;width:100%!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;scroll-snap-align:none!important}
+.events-scroll .event-page .event-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:clamp(185px,21vw,255px)!important;gap:12px!important;max-width:900px!important;width:100%!important;margin:0 auto!important;align-content:start!important}
+.events-scroll .event-card{min-width:0!important;width:100%!important}
+@media(max-width:650px){.view-scroll.events-scroll{padding:9px!important}.events-scroll .event-page .event-grid{grid-auto-rows:clamp(170px,48vw,235px)!important;gap:9px!important;max-width:100%!important}}
 </style><style id="disable-double-tap-zoom">
 @media (pointer:coarse) {
   html, body, button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
@@ -619,12 +626,12 @@ function renderEvents(){
  viewport.classList.toggle('is-archive',state.archive);
  viewport.classList.toggle('has-many',state.events.length>4);
  var grid=null;app.append(viewport);
+ var page=el('section','event-page');grid=el('div','event-grid');page.append(grid);viewport.append(page);
  if(!state.events.length){
-  var emptyPage=el('div','event-page');grid=el('div','event-grid');emptyPage.append(grid);viewport.append(emptyPage);
   grid.append(el('div','empty',state.archive?'В архиве пока нет мероприятий.':'Мероприятий пока нет. Нажмите «Добавить», чтобы создать первую афишу.'));
  }else{
-  state.events.forEach(function(e,i){
-   if(i%4===0){var page=el('section','event-page');page.classList.toggle('has-single',state.events.length-i===1);page.setAttribute('aria-label','Мероприятия '+(i+1)+'–'+Math.min(i+4,state.events.length));grid=el('div','event-grid');page.append(grid);viewport.append(page);}
+  var ordered=state.events.slice().sort(function(a,b){return state.archive?new Date(b.starts_at)-new Date(a.starts_at):new Date(a.starts_at)-new Date(b.starts_at);});
+  ordered.forEach(function(e,i){
    var card=el('article','event-card'),poster=el('div','poster');
    if(e.poster){var img=el('img');img.src=e.poster;img.loading='lazy';img.alt='Афиша: '+e.title;poster.append(img);}
    else poster.append(el('div','','МЕЛОФАНТЫ'));
@@ -653,7 +660,6 @@ function renderEvents(){
   });
  }
  bottomDock('events');
- fitEventGrid();
  viewport.scrollTop=oldScroll;
 }
 function fitEventGrid(){
