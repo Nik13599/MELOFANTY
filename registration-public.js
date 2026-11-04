@@ -17,6 +17,8 @@ styles.textContent=[
 '.mf-download{display:flex;gap:8px}.mf-download button{flex:1}.mf-download .mf-secondary{background:transparent;color:#d8ffe5;border:1px solid #68d5aa;border-radius:30px;padding:10px}',
 '.mf-empty{min-height:240px;border:1px solid #185e49;border-radius:23px;padding:36px 22px;display:flex;align-items:center;justify-content:center;text-align:center;grid-column:1/-1;background:linear-gradient(145deg,#02130f,#0a2920)}',
 '.mf-empty strong{font:700 26px Oswald,sans-serif}.mf-empty p{color:#afcec4;margin-top:8px;font-size:17px}',
+'.mf-description{border:1px solid #286d52;border-radius:13px;background:#09271a;padding:12px;color:#cce9d7;line-height:1.4;white-space:pre-wrap;margin:3px 0 18px}',
+'.event-list.mf-single-event{grid-template-columns:minmax(0,min(410px,100%))!important;justify-content:center}',
 '.mf-event-hint{font:600 12px Oswald,sans-serif;color:#a9ff83;border:1px solid #7cffa060;border-radius:9px;padding:4px 7px;position:absolute;right:9px;top:9px;background:#012018cc}',
 '@media(max-width:760px){.mf-overlay{padding:8px}.mf-dialog{max-height:calc(100dvh - 16px)}.mf-title{font-size:29px}.mf-field input{min-height:45px}}'
 ].join('');
@@ -38,6 +40,7 @@ function eventForm(e){
  dialogBody.append(el('span','mf-tag','СВОБОДНАЯ РЕГИСТРАЦИЯ'));
  dialogBody.append(el('h2','mf-title',e.title));
  dialogBody.append(el('p','mf-meta',localDate(e.starts_at)+' · '+e.venue));
+ if(e.description)dialogBody.append(el('p','mf-description',e.description));
  var f=el('form','mf-form');
  f.innerHTML='<label class="mf-field">ВАШЕ ИМЯ<input name="name" autocomplete="name" maxlength="100" required minlength="2" placeholder="Как к вам обращаться?"></label><label class="mf-field">НОМЕР ТЕЛЕФОНА<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" required placeholder="+375 29 000 00 00"></label><label class="mf-field">КОЛИЧЕСТВО ЧЕЛОВЕК<input name="party_size" type="number" inputmode="numeric" min="1" max="50" step="1" value="1" required></label><input name="website" style="display:none" tabindex="-1" autocomplete="off"><p class="mf-note">Данные используются организаторами для обработки регистрации на выбранное мероприятие. Личный кабинет не требуется.</p><div class="mf-error" role="alert"></div><button type="submit" class="mf-submit">ЗАРЕГИСТРИРОВАТЬСЯ →</button>';
  dialogBody.append(f);open();
@@ -118,6 +121,7 @@ function drawEvents(){
  var width=window.matchMedia('(max-width:760px)').matches?3:3;
  var start=events.length<=width?0:Math.min(index,events.length-width);
  var visible=events.slice(start,start+width);
+ list.classList.toggle('mf-single-event',visible.length===1);
  list.style.gridTemplateColumns='repeat('+Math.min(visible.length,3)+',minmax(0,1fr))';
  visible.forEach(function(e){list.append(buildCard(e));});
  for(var i=0;i<events.length;i++){
@@ -136,7 +140,30 @@ document.querySelectorAll('a.main-btn').forEach(function(a){
 });
 var all=document.getElementById('allEvents');
 if(all)all.addEventListener('click',function(e){e.stopImmediatePropagation();if(events.length){index=0;drawEvents();document.getElementById('events').scrollIntoView({behavior:'smooth'});}},true);
-fetch('/api/registration/events',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('API');return r.json();}).then(function(d){events=Array.isArray(d.events)?d.events:[];drawEvents();}).catch(function(){
- var list=document.getElementById('eventList');if(list){list.replaceChildren();var box=el('div','mf-empty');box.append(el('p','','Не удалось получить актуальное расписание. Обновите страницу позже.'));list.append(box);}
-});
+var eventsFingerprint=null;
+async function refreshEvents(){
+ try{
+  var response=await fetch('/api/registration/events',{cache:'no-store'});
+  if(!response.ok)throw new Error('API');
+  var data=await response.json();
+  var next=Array.isArray(data.events)?data.events:[];
+  var fingerprint=JSON.stringify(next);
+  if(fingerprint!==eventsFingerprint){
+   var oldId=events[index]&&events[index].id;
+   events=next;
+   index=Math.max(0,oldId?events.findIndex(function(e){return e.id===oldId;}):0);
+   eventsFingerprint=fingerprint;
+   drawEvents();
+  }
+ }catch(error){
+  if(eventsFingerprint===null){
+   var list=document.getElementById('eventList');
+   if(list){list.replaceChildren();var box=el('div','mf-empty');box.append(el('p','','Не удалось получить актуальное расписание. Обновите страницу позже.'));list.append(box);}
+  }
+ }
+}
+refreshEvents();
+window.addEventListener('focus',refreshEvents);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshEvents();});
+setInterval(function(){if(!document.hidden)refreshEvents();},90000);
 })();
