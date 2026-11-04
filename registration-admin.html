@@ -355,13 +355,40 @@ function pdfReportCanvas(event,registrations){
   text(c,'ЧЕЛ.',W-M-115,y+32,100,'bold 23px Arial','#ffffff');
   return y+headH;
  }
- function row(c,r,y,i){
-  if(i%2===0){c.fillStyle='#edf4f0';c.fillRect(M,y,W-2*M,rowH);}
+ function wrapped(c,value,maxWidth){
+  var words=String(value||'').trim().replace(/\s+/g,' ').split(' '),lines=[],current='';
+  c.font='18px Arial,sans-serif';
+  for(var i=0;i<words.length;i++){
+   if(!words[i])continue;
+   var candidate=current?current+' '+words[i]:words[i];
+   if(c.measureText(candidate).width<=maxWidth){current=candidate;continue;}
+   if(current)lines.push(current);
+   current=words[i];
+   while(c.measureText(current).width>maxWidth&&current.length>1){
+    var size=1;while(size<current.length&&c.measureText(current.slice(0,size+1)).width<=maxWidth)size++;
+    lines.push(current.slice(0,size));current=current.slice(size);
+   }
+  }
+  if(current)lines.push(current);return lines;
+ }
+ function rowHeight(c,r){
+  var guest=wrapped(c,r.guest_comment||'',485),admin=wrapped(c,r.admin_comment||'',485);
+  return {height:52+(guest.length||admin.length?Math.max(guest.length,admin.length)*23+42:0),guest:guest,admin:admin};
+ }
+ function row(c,r,y,i,size){
+  if(i%2===0){c.fillStyle='#edf4f0';c.fillRect(M,y,W-2*M,size.height);}
   text(c,r.code,M+16,y+33,180,'23px Arial','#17362b');
   text(c,r.name,M+200,y+33,308,'23px Arial','#152c22');
   text(c,r.phone,M+530,y+33,384,'23px Arial','#17362b');
   text(c,r.party_size,W-M-115,y+33,95,'bold 24px Arial','#17362b');
-  c.strokeStyle='#d9e3dd';c.lineWidth=1;c.beginPath();c.moveTo(M,y+rowH);c.lineTo(W-M,y+rowH);c.stroke();
+  if(size.guest.length||size.admin.length){
+   c.fillStyle='#e2ece5';c.fillRect(M+10,y+46,W-2*M-20,1);
+   text(c,'КОММЕНТАРИЙ ГОСТЯ',M+15,y+72,460,'bold 16px Arial','#0c6c47');
+   text(c,'КОММЕНТАРИЙ АДМИНИСТРАТОРА',W/2+15,y+72,480,'bold 16px Arial','#0c6c47');
+   size.guest.forEach(function(t,j){text(c,t,M+15,y+97+j*23,485,'18px Arial','#263d32');});
+   size.admin.forEach(function(t,j){text(c,t,W/2+15,y+97+j*23,485,'18px Arial','#263d32');});
+  }
+  c.strokeStyle='#d9e3dd';c.lineWidth=1;c.beginPath();c.moveTo(M,y+size.height);c.lineTo(W-M,y+size.height);c.stroke();
  }
  function footer(c,n){
   c.strokeStyle='#cdded2';c.beginPath();c.moveTo(M,H-85);c.lineTo(W-M,H-85);c.stroke();
@@ -393,7 +420,7 @@ function pdfReportCanvas(event,registrations){
    y=193;
   }
   y=tableHead(c,y);
-  while(cursor<active.length&&y+rowH<H-120){row(c,active[cursor],y,cursor);y+=rowH;cursor++;}
+  while(cursor<active.length){var size=rowHeight(c,active[cursor]);if(y+size.height>H-130&&y>560)break;row(c,active[cursor],y,cursor,size);y+=size.height;cursor++;}
   if(active.length===0)text(c,'Заявок для выгрузки пока нет.',M+20,y+70,W-2*M-30,'27px Arial','#66796d');
   footer(c,++pageIndex);
   images.push(jpeg(p.canvas));
