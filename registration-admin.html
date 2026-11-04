@@ -227,6 +227,43 @@ body{display:flex;flex-direction:column;min-height:0}
 .demo-note{padding:5px 9px;color:#ffdda3;font:500 12px Oswald,sans-serif;letter-spacing:.03em;line-height:1.2}
 .mast .header-refresh{order:99;width:38px;height:38px;padding:0!important;border-radius:50%!important;font:700 25px Arial,sans-serif;line-height:1;display:grid;place-items:center;color:#e8ffe8;border-color:#5bbd8b}
 @media(max-width:650px){.mast .header-refresh{width:32px;height:32px;font-size:23px}}
+
+/* Compact, two-action overlay card */
+.events-scroll .event-page .event-grid{max-width:790px!important}
+.events-scroll .event-card .event-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important;flex:0 0 auto!important;margin:0 calc(-1 * clamp(9px,1.35vw,15px))!important;width:calc(100% + 2 * clamp(9px,1.35vw,15px))!important;height:35px!important;align-items:stretch!important;overflow:hidden!important;background:#02150eed!important;border-top:1px solid #e1fff38c!important}
+.events-scroll .event-card .event-actions .btn{display:flex!important;justify-content:center!important;align-items:center!important;white-space:nowrap!important;border:0!important;border-radius:0!important;min-height:35px!important;height:35px!important;max-height:35px!important;min-width:0!important;padding:2px 5px!important;margin:0!important;width:100%!important;font:600 clamp(11px,1.05vw,15px) Oswald,sans-serif!important;letter-spacing:0!important;color:#fff!important;background:transparent!important}
+.events-scroll .event-card .event-actions .btn:first-child{border-right:1px solid #adf3d663!important}
+.events-scroll .event-card .event-actions .btn:last-child{background:#0d3b29c9!important}
+.events-scroll .event-card .event-actions .btn:hover{background:#287552!important}
+.view-scroll.events-scroll .event-card .event-info{gap:2px!important}
+.details-top{padding-top:5px!important;padding-bottom:5px!important}
+.details-top .heading h1{font-size:clamp(20px,2.5vw,32px)!important}
+.details-top .heading .sub{font-size:12px!important}
+.details-top .stats{gap:6px!important;margin:5px 0!important}
+.details-top .stat{min-height:58px!important;padding:6px 8px!important}
+.details-top .stat strong{margin-top:0!important}
+.details-top .toolbar{margin-top:4px!important}
+.registrations-scroll .list{gap:6px!important}
+.registrations-scroll .registration{padding:8px 11px!important;gap:3px 8px!important;border-radius:10px!important}
+.registrations-scroll .reg-code{font-size:20px!important;line-height:1.1!important}
+.registrations-scroll .person{font-size:15px!important;line-height:1.2!important}
+.registrations-scroll .people{font-size:13px!important}
+.registrations-scroll .date-mini{font-size:11px!important}
+.registrations-scroll .reg-actions .btn{min-height:30px!important;padding:4px 8px!important}
+.registrations-scroll .reg-actions .dots-btn{min-height:30px!important}
+@media(max-width:650px){
+ .events-scroll .event-card .event-actions{margin:0 -7px!important;width:calc(100% + 14px)!important;height:32px!important}
+ .events-scroll .event-card .event-actions .btn{min-height:32px!important;height:32px!important;font-size:clamp(9px,2.75vw,12px)!important}
+ .details-top .stat{min-height:50px!important;padding:4px!important}
+ .details-top .heading h1{font-size:20px!important}
+ .details-top .toolbar .search{min-height:30px!important}
+ .registrations-scroll .registration{padding:8px 9px!important;gap:3px 7px!important}
+ .registrations-scroll .reg-code{font-size:18px!important}
+ .registrations-scroll .date-mini{display:none!important}
+ .registrations-scroll .reg-actions .btn{font-size:11px!important;min-height:29px!important}
+ .registrations-scroll .reg-actions .dots-btn{min-height:29px!important}
+ .registrations-scroll .demo-mark{font-size:9px!important;padding:1px 4px!important}
+}
 </style></head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
@@ -276,6 +313,120 @@ async function loadEvents(){
  try{var d=await api('/events?archive='+(state.archive?'1':'0'));state.events=d.events||[];if(!state.selected)renderEvents();}
  catch(e){if(e.message.indexOf('вход')>=0){loggedIn(false);showLogin();}else errMessage(e);}
 }
+
+/* Client-side, offline-safe PDF creation: data from one authenticated event only. */
+function pdfReportCanvas(event,registrations){
+ var active=(registrations||[]).filter(function(r){return r.status==='pending'||r.status==='confirmed';});
+ var guestCount=active.reduce(function(sum,r){return sum+(Number(r.party_size)||0);},0);
+ var hasDemo=active.some(function(r){return r.source==='demo';});
+ var W=1240,H=1754, M=65, images=[], cursor=0, pageIndex=0, headH=48, rowH=50;
+ var date=wrapDate(event.starts_at);
+ function pageCanvas(){
+  var canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+  var c=canvas.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,W,H);
+  c.fillStyle='#082d23';c.fillRect(0,0,W,16);
+  c.fillStyle='#082d23';c.font='bold 43px Arial, sans-serif';c.textAlign='left';c.fillText('MELOFANTY',M,85);
+  c.fillStyle='#4a6a60';c.textAlign='right';c.font='26px Arial, sans-serif';c.fillText('REGISTRATION / '+date,W-M,82);
+  c.textAlign='left';
+  return {canvas:canvas,c:c};
+ }
+ function text(c,value,x,y,width,font,color){
+  c.font=font;c.fillStyle=color;c.textAlign='left';
+  var v=String(value==null?'':value).replace(/\s+/g,' ').trim();
+  if(width<=5)return;
+  if(c.measureText(v).width>width){
+   while(v.length&&c.measureText(v+'…').width>width)v=v.slice(0,-1);
+   v+='…';
+  }
+  c.fillText(v,x,y);
+ }
+ function tableHead(c,y){
+  c.fillStyle='#0f4937';c.fillRect(M,y,W-2*M,headH);
+  text(c,'ID',M+16,y+32,170,'bold 23px Arial','#ffffff');
+  text(c,'ИМЯ',M+200,y+32,300,'bold 23px Arial','#ffffff');
+  text(c,'НОМЕР ТЕЛЕФОНА',M+530,y+32,380,'bold 23px Arial','#ffffff');
+  text(c,'ЧЕЛ.',W-M-115,y+32,100,'bold 23px Arial','#ffffff');
+  return y+headH;
+ }
+ function row(c,r,y,i){
+  if(i%2===0){c.fillStyle='#edf4f0';c.fillRect(M,y,W-2*M,rowH);}
+  text(c,r.code,M+16,y+33,180,'23px Arial','#17362b');
+  text(c,r.name,M+200,y+33,308,'23px Arial','#152c22');
+  text(c,r.phone,M+530,y+33,384,'23px Arial','#17362b');
+  text(c,r.party_size,W-M-115,y+33,95,'bold 24px Arial','#17362b');
+  c.strokeStyle='#d9e3dd';c.lineWidth=1;c.beginPath();c.moveTo(M,y+rowH);c.lineTo(W-M,y+rowH);c.stroke();
+ }
+ function footer(c,n){
+  c.strokeStyle='#cdded2';c.beginPath();c.moveTo(M,H-85);c.lineTo(W-M,H-85);c.stroke();
+  text(c,hasDemo?'ДЕМО. Тестовые сведения, не реальные гости.':'Список активных заявок на мероприятие',M,H-50,W-2*M-140,'21px Arial','#627b6e');
+  c.textAlign='right';c.font='21px Arial';c.fillStyle='#627b6e';c.fillText('Страница '+n,W-M,H-50);c.textAlign='left';
+ }
+ function jpeg(canvas){
+  var b64=canvas.toDataURL('image/jpeg',0.89).split(',')[1];
+  var binary=atob(b64),out=new Uint8Array(binary.length);
+  for(var i=0;i<binary.length;i++)out[i]=binary.charCodeAt(i);
+  return out;
+ }
+ do{
+  var p=pageCanvas(),c=p.c,y;
+  if(pageIndex===0){
+   text(c,'ОТЧЁТ ПО МЕРОПРИЯТИЮ',M,158,W-2*M,'bold 42px Arial','#0a3d2c');
+   text(c,event.title,M,210,W-2*M,'bold 38px Arial','#17382b');
+   text(c,event.venue,M,253,W-2*M,'26px Arial','#53675e');
+   c.fillStyle='#edf4ef';c.fillRect(M,289,W-2*M,150);
+   text(c,'ЗАЯВОК',M+28,340,420,'bold 26px Arial','#4b685c');
+   text(c,String(active.length),M+28,405,380,'bold 63px Arial','#0d5738');
+   text(c,'ЧЕЛОВЕК',M+550,340,440,'bold 26px Arial','#4b685c');
+   text(c,String(guestCount),M+550,405,330,'bold 63px Arial','#0d5738');
+   y=485;
+   text(c,'СПИСОК ЗАРЕГИСТРИРОВАННЫХ',M,y,W-2*M,'bold 30px Arial','#17382b');
+   y=515;
+  }else{
+   text(c,'СПИСОК ЗАЯВОК · ПРОДОЛЖЕНИЕ',M,155,W-2*M,'bold 32px Arial','#17382b');
+   y=193;
+  }
+  y=tableHead(c,y);
+  while(cursor<active.length&&y+rowH<H-120){row(c,active[cursor],y,cursor);y+=rowH;cursor++;}
+  if(active.length===0)text(c,'Заявок для выгрузки пока нет.',M+20,y+70,W-2*M-30,'27px Arial','#66796d');
+  footer(c,++pageIndex);
+  images.push(jpeg(p.canvas));
+ }while(cursor<active.length);
+ var encoder=new TextEncoder(),parts=[],offsets=[],length=0;
+ function put(x){var bytes=typeof x==='string'?encoder.encode(x):x;parts.push(bytes);length+=bytes.length;}
+ function obj(id,value){offsets[id]=length;put(id+' 0 obj\n'+value+'\nendobj\n');}
+ put('%PDF-1.4\n%MELOFANTY\n');
+ obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+ var kids=images.map(function(_,i){return (3+3*i)+' 0 R';}).join(' ');
+ obj(2,'<< /Type /Pages /Kids ['+kids+'] /Count '+images.length+' >>');
+ images.forEach(function(img,i){
+  var pg=3+3*i,contents=pg+1,im=pg+2;
+  obj(pg,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 '+im+' 0 R >> >> /Contents '+contents+' 0 R >>');
+  var instructions='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q\n';
+  obj(contents,'<< /Length '+encoder.encode(instructions).length+' >>\nstream\n'+instructions+'endstream');
+  offsets[im]=length;
+  put(im+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+W+' /Height '+H+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+img.length+' >>\nstream\n');
+  put(img);put('\nendstream\nendobj\n');
+ });
+ var xref=length,maxId=2+images.length*3;
+ put('xref\n0 '+(maxId+1)+'\n0000000000 65535 f \n');
+ for(var k=1;k<=maxId;k++)put(String(offsets[k]).padStart(10,'0')+' 00000 n \n');
+ put('trailer\n<< /Size '+(maxId+1)+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF');
+ return new Blob(parts,{type:'application/pdf'});
+}
+async function saveEventReport(event){
+ try{
+  var data=await api('/events/'+encodeURIComponent(event.id));
+  var blob=pdfReportCanvas(data.event,data.registrations||[]);
+  var date=day(event.starts_at).replace(/[^0-9]/g,'');
+  var filename='MELOFANTY_'+date+'_zayavki.pdf';
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.append(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},45000);
+  toast('Отчёт PDF сформирован: '+filename);
+ }catch(e){errMessage(e);}
+}
+
 function renderEvents(){
  var previous=document.querySelector('.events-scroll');
  var oldScroll=previous?previous.scrollTop:0;
@@ -305,7 +456,10 @@ function renderEvents(){
    guests.append(el('strong','',String(e.registered_guests||0)));
    guests.append(el('span','',persons(e.registered_guests||0).replace(/^\d+\s*/,'')));
    body.append(guests);
-   body.append(button('ПОДРОБНЕЕ','card-detail',function(){openDetails(e.id);}));
+   var actions=el('div','event-actions');
+   actions.append(button('ПОДРОБНЕЕ','card-detail',function(){openDetails(e.id);}));
+   actions.append(button('СОХРАНИТЬ','card-save',function(){saveEventReport(e);}));
+   body.append(actions);
    card.append(poster,body);
    var more=button('•••','card-more',function(){eventEditor(e);});
    more.setAttribute('aria-label','Изменить мероприятие '+e.title);
@@ -323,7 +477,7 @@ function fitEventGrid(){
   var gap=parseFloat(getComputedStyle(grid).rowGap)||10;
   var width=Math.min(grid.clientWidth,900);
   var cardWidth=(width-gap)/2;
-  var tall=matchMedia('(max-width:650px)').matches?1.32:0.77;
+  var tall=matchMedia('(max-width:650px)').matches?1.08:0.58;
   var page=grid.closest('.event-page');
   var available=Math.min(viewport.clientHeight,page?page.clientHeight:viewport.clientHeight);
   var height=Math.floor(Math.min((available-gap-14)/2,cardWidth*tall));
