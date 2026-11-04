@@ -189,6 +189,41 @@ body{display:flex;flex-direction:column;min-height:0}
  .details-top .stats{margin:4px 0}
 }
 
+
+/* v5: full-bleed event poster with overlaid sketch-aligned information */
+.events-scroll .event-card{display:block!important;position:relative!important;isolation:isolate;background:#06130e!important;border:1px solid #4c8871!important;overflow:hidden!important}
+.events-scroll .event-card .poster{position:absolute!important;inset:0!important;display:block!important;height:100%!important;width:100%!important;max-height:none!important;border:0!important;border-radius:0!important;z-index:-2!important;background:radial-gradient(circle at 15% 10%,#265b43,#06150f 72%)}
+.events-scroll .event-card .poster img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center center!important;display:block}
+.events-scroll .event-card .poster-badge{position:absolute!important;top:9px;left:9px!important;right:auto!important;border-radius:7px;padding:3px 6px;font:600 clamp(9px,1vw,12px) Oswald,sans-serif;background:#051b16da;color:#d9fbea;z-index:3}
+.events-scroll .event-card .event-info{position:absolute!important;inset:0!important;z-index:2!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important;align-items:stretch!important;gap:clamp(1px,.35vh,5px)!important;padding:clamp(8px,1.25vw,14px) clamp(9px,1.35vw,15px) 0!important;background:linear-gradient(180deg,transparent 0%,#01090726 30%,#000a07ba 53%,#000805ef 85%);height:100%!important;width:100%!important;max-height:none!important;min-height:0!important;overflow:hidden!important}
+.events-scroll .event-card .event-day{font-size:clamp(29px,3.2vw,47px)!important;line-height:1.05!important;font-weight:700!important;color:#fff!important;text-shadow:0 2px 8px #000,0 1px 16px #000}
+.events-scroll .event-card .event-title{font-size:clamp(12px,1.4vw,21px)!important;line-height:1.06!important;color:#f6fffc;text-shadow:0 1px 8px #000;max-height:2.2em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.events-scroll .event-card .event-venue{display:none!important}
+.events-scroll .event-card .guest-count{display:flex!important;align-items:baseline!important;gap:5px!important;margin-bottom:clamp(3px,.6vh,7px)!important;color:white!important;text-shadow:0 1px 9px black}
+.events-scroll .event-card .guest-count strong{font-size:clamp(25px,2.8vw,34px)!important;line-height:1.05!important;color:white!important}
+.events-scroll .event-card .guest-count span{font-size:clamp(13px,1.45vw,17px)!important;color:#f7fff8!important}
+.events-scroll .event-card .card-detail{margin:0 calc(-1 * clamp(9px,1.35vw,15px))!important;display:block!important;flex:none!important;width:calc(100% + 2 * clamp(9px,1.35vw,15px))!important;min-height:clamp(34px,5vh,45px)!important;max-height:45px;border:0!important;border-top:1px solid #f0fff57a!important;background:#02150edb!important;color:#f9fff8!important;border-radius:0!important;padding:6px 9px!important;text-align:center!important;font:600 clamp(13px,1.5vw,19px) Oswald,sans-serif!important;letter-spacing:.04em!important}
+.events-scroll .event-card .card-detail:hover{background:#205f43eb!important}
+.events-scroll .event-card .card-more{position:absolute!important;right:8px!important;top:8px!important;z-index:5!important;border:1px solid #e9fff68a!important;background:#03150bc8!important;box-shadow:0 3px 10px #0009!important;color:white!important;border-radius:10px!important;width:34px!important;height:33px!important;min-width:0!important;min-height:0!important;padding:0!important;font:700 18px Oswald,sans-serif!important}
+.events-scroll .event-card .card-more:hover{background:#25654b!important}
+.events-scroll.is-archive .event-card{filter:grayscale(1) brightness(.78) contrast(1.07)!important}
+.events-scroll.is-archive .event-card:hover{filter:grayscale(1) brightness(.9) contrast(1.05)!important}
+.events-scroll .event-card .poster-badge.demo{color:#fff3ac;border-color:#fff3ac80}
+.registrations-scroll .registration.demo-entry{border-color:#67825f66}
+.demo-mark{color:#ffd89d;background:#5c401d66;border:1px solid #e5bb6569;border-radius:7px;padding:2px 6px;font:500 11px Oswald,sans-serif;display:inline-block;vertical-align:middle;margin-left:7px}
+@media(max-width:650px){
+ .events-scroll .event-card .event-info{padding:6px 7px 0!important;gap:1px!important}
+ .events-scroll .event-card .poster-badge{font-size:8px;left:5px!important;top:5px;padding:2px 4px}
+ .events-scroll .event-card .event-day{font-size:clamp(24px,6.8vw,34px)!important}
+ .events-scroll .event-card .event-title{font-size:clamp(11px,3vw,15px)!important;-webkit-line-clamp:1}
+ .events-scroll .event-card .guest-count{margin-bottom:3px!important}
+ .events-scroll .event-card .guest-count strong{font-size:clamp(23px,6.1vw,31px)!important}
+ .events-scroll .event-card .guest-count span{font-size:clamp(11px,3.1vw,14px)!important}
+ .events-scroll .event-card .card-detail{min-height:35px!important;height:35px!important;max-height:35px;font-size:clamp(12px,3.4vw,16px)!important;margin:0 -7px!important;width:calc(100% + 14px)!important}
+ .events-scroll .event-card .card-more{width:29px!important;height:29px!important;right:5px!important;top:5px!important;font-size:15px!important}
+ .events-scroll .event-card .poster img{object-position:center 35%!important}
+}
+
 </style></head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
@@ -245,6 +280,7 @@ function renderEvents(){
  var top=el('div','view-top');top.append(head(state.archive?'АРХИВ МЕРОПРИЯТИЙ':'МЕРОПРИЯТИЯ',state.archive?'Завершённые игры и сохранённые заявки':'Актуальные игры и количество зарегистрированных гостей'));
  app.append(top);
  var viewport=el('div','view-scroll events-scroll');
+ viewport.classList.toggle('is-archive',state.archive);
  viewport.classList.toggle('has-many',state.events.length>4);
  var grid=null;app.append(viewport);
  if(!state.events.length){
@@ -255,20 +291,22 @@ function renderEvents(){
    if(i%4===0){var page=el('section','event-page');page.setAttribute('aria-label','Мероприятия '+(i+1)+'–'+Math.min(i+4,state.events.length));grid=el('div','event-grid');page.append(grid);viewport.append(page);}
    var card=el('article','event-card'),poster=el('div','poster');
    if(e.poster){var img=el('img');img.src=e.poster;img.loading='lazy';img.alt='Афиша: '+e.title;poster.append(img);}
-   else poster.textContent='МЕЛОФАНТЫ';
-   poster.append(el('span','poster-badge',state.archive?'АРХИВ':'РЕГИСТРАЦИЯ'));
-   var body=el('div','event-info'),date=el('div','event-topline');
-   date.append(el('div','event-day',day(e.starts_at)));
-   body.append(date,el('div','event-title',e.title));
-   body.append(el('div','event-venue',e.venue+' · '+wrapDate(e.starts_at)));
+   else poster.append(el('div','','МЕЛОФАНТЫ'));
+   var hasDemo=Number(e.demo_applications||0)>0;
+   var mark=el('span','poster-badge'+(hasDemo?' demo':''),hasDemo?'ДЕМО':state.archive?'АРХИВ':'МЕРОПРИЯТИЕ');
+   poster.append(mark);
+   var body=el('div','event-info');
+   body.append(el('div','event-day',day(e.starts_at)));
+   body.append(el('div','event-title',e.title));
    var guests=el('div','guest-count');
    guests.append(el('strong','',String(e.registered_guests||0)));
    guests.append(el('span','',persons(e.registered_guests||0).replace(/^\d+\s*/,'')));
    body.append(guests);
-   var actions=el('div','filters');
-   actions.append(button('ПОДРОБНЕЕ','primary',function(){openDetails(e.id);}));
-   actions.append(button('•••','ghost',function(){eventEditor(e);}));
-   body.append(actions);card.append(poster,body);grid.append(card);
+   body.append(button('ПОДРОБНЕЕ','card-detail',function(){openDetails(e.id);}));
+   card.append(poster,body);
+   var more=button('•••','card-more',function(){eventEditor(e);});
+   more.setAttribute('aria-label','Изменить мероприятие '+e.title);
+   card.append(more);grid.append(card);
   });
  }
  bottomDock('events');
@@ -353,6 +391,7 @@ function renderRegList(){
  arr.forEach(function(r){
   var card=el('article','registration'),info=el('div');
   info.append(el('div','reg-code','ID '+r.code));
+  if(r.source==='demo'){card.classList.add('demo-entry');info.append(el('span','demo-mark','ТЕСТОВАЯ ЗАЯВКА'));}
   var person=el('div','person');person.append(document.createTextNode(r.name+' · '));var phone=el('a','',r.phone);phone.href='tel:'+r.phone.replace(/[^\d+]/g,'');person.append(phone);info.append(person);
   info.append(el('div','people',persons(r.party_size)));
   info.append(el('div','date-mini',(r.source==='admin'?'Добавлено вручную · ':'')+r.created_at));
