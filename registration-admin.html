@@ -16,8 +16,55 @@ main{max-width:1400px;margin:auto;padding:clamp(16px,3.6vw,54px)}.heading{displa
 .shade{position:fixed;inset:0;z-index:99;background:#000c;backdrop-filter:blur(9px);display:flex;align-items:center;justify-content:center;padding:12px;overflow-y:auto}.sheet{background:linear-gradient(150deg,#0b3426,#06150f);border:1px solid #52c79c;border-radius:24px;padding:clamp(19px,4vw,30px);width:min(100%,580px);max-height:calc(100dvh - 24px);overflow:auto;box-shadow:0 16px 90px #000b}.sheet h2{font:700 32px Oswald,sans-serif;margin:0 0 20px}.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.close{height:38px;width:38px;border-radius:50%;border:1px solid #419975;background:#123a29;color:white;font-size:23px}.form{display:grid;gap:14px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.preview{width:120px;height:150px;object-fit:cover;border:1px solid #53ae83;border-radius:13px;background:#0b3427}.form-buttons{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;margin-top:9px}.login{max-width:420px}.login .eyebrow{font-size:12px}.toast{position:fixed;z-index:150;left:50%;bottom:20px;transform:translateX(-50%);padding:13px 18px;border:1px solid #7cffa5;border-radius:13px;background:#10422e;color:white;box-shadow:0 12px 40px #000a;max-width:90vw}.back{margin-bottom:13px}
 @media(max-width:850px){.event-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.mast{padding:10px 13px}.logo{font-size:20px}.logo-mark{width:32px;height:32px}.actions{gap:6px}.actions .btn{font-size:12px;padding:8px 10px;min-height:36px}.event-card{grid-template-columns:105px 1fr;gap:12px;padding:11px;border-radius:16px}.poster{min-height:157px}.event-info{gap:5px}.event-info .btn{min-height:35px;padding:7px 14px}.event-day{font-size:29px}.event-title{font-size:20px}.metric-value{font-size:21px}.stats{gap:8px;margin:13px 0 20px}.stat{padding:13px 10px;min-height:90px}.stat strong{font-size:26px}.stat span{font-size:11px}.registration{padding:13px;gap:7px}.reg-code{font-size:23px}.person{font-size:16px}.reg-actions{justify-content:space-between;gap:6px}.reg-actions .btn{flex:1;padding:8px;min-width:0;font-size:14px}.form-row{grid-template-columns:1fr}.search{width:100%}main{padding:18px 12px}}
+
+/* Event overview follows the original two-column registration sketch. */
+.admin-page-label{position:absolute;left:50%;transform:translateX(-50%);font:700 clamp(18px,2.3vw,29px) Oswald,sans-serif;letter-spacing:.12em;color:#e5fff2}
+.event-grid{width:100%;max-width:1050px;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,2.5vw,28px);margin-inline:auto}
+.event-card{display:flex;flex-direction:column;gap:0;padding:0;border-radius:22px;overflow:hidden;background:linear-gradient(150deg,#0b3023,#051611);transition:transform .2s,border-color .2s}
+.event-card:hover{transform:translateY(-2px);border-color:#76ecad}
+.poster{width:100%;min-height:0;aspect-ratio:1.18/1;border:0;border-bottom:1px solid #32664c;border-radius:0;position:relative;justify-content:center;align-items:center}
+.poster img{object-fit:cover;width:100%;height:100%}
+.poster-badge{position:absolute;top:12px;right:12px;padding:6px 10px;border:1px solid #9eff8d84;border-radius:30px;background:#021711e8;color:#baff86;font:600 12px Oswald,sans-serif;letter-spacing:.08em}
+.event-info{align-items:stretch;gap:8px;padding:clamp(13px,2vw,23px)}
+.event-topline{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.event-day{font-size:clamp(31px,4vw,54px)}
+.event-venue{font-size:clamp(13px,1.4vw,17px)}
+.event-title{font-size:clamp(20px,2.5vw,30px)}
+.guest-count{display:flex;align-items:baseline;gap:7px}
+.guest-count strong{font:700 clamp(26px,3.3vw,41px) Oswald,sans-serif}
+.guest-count span{font-size:clamp(12px,1.6vw,18px);color:#c7e9d8}
+.event-card .filters{display:grid;grid-template-columns:minmax(0,1fr) auto;margin-top:8px}
+.event-card .filters .btn{width:100%;min-height:43px}
+.mf-dock{display:none}
+.registration{border-color:#286f51}
+.status.pending{color:#ffc873}
+@media(max-width:790px){.admin-page-label{display:none}}
+@media(max-width:560px){
+ .event-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .event-card{border-radius:15px;gap:0}
+ .poster{aspect-ratio:3/3.3;min-height:0;border-radius:0}
+ .poster-badge{top:6px;right:6px;font-size:9px;padding:4px 6px}
+ .event-info{padding:10px 9px 12px;gap:4px}
+ .event-title{font-size:clamp(16px,4.3vw,22px)}
+ .event-day{font-size:clamp(25px,7vw,35px)}
+ .event-venue{font-size:clamp(11px,3.1vw,14px);line-height:1.25}
+ .guest-count strong{font-size:clamp(24px,6.4vw,34px)}
+ .guest-count span{font-size:11px}
+ .event-card .filters{display:flex;flex-direction:column;gap:6px}
+ .event-card .filters .btn{font-size:12px;min-height:36px;margin:0;padding:7px 5px}
+ .heading{margin-bottom:15px}
+ .mast .actions #archiveBtn,.mast .actions #addEventBtn{display:none}
+ .mf-dock{position:sticky;z-index:9;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;background:#031a12ef;border:1px solid #358d69;border-radius:17px;padding:9px;margin-top:20px;box-shadow:0 -8px 30px #0007;backdrop-filter:blur(15px)}
+ .mf-dock .btn{min-width:0;font-size:15px}
+ .bottom-add{display:none}
+ .registration{grid-template-columns:minmax(0,1fr) auto}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .reg-code{font-size:23px}
+ main{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+}
+
 </style></head><body>
-<header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button></div></header>
+<header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
 <div id="dialog" class="shade" hidden><div class="sheet"><div class="sheet-head"><h2 id="dialogTitle">Добавить</h2><button type="button" id="dialogClose" class="close" aria-label="Закрыть">×</button></div><div id="dialogBody"></div></div></div>
 <div id="toast" class="toast" hidden role="status"></div>
@@ -65,18 +112,42 @@ async function loadEvents(){
 }
 function renderEvents(){
  state.selected=null;state.details=null;app.replaceChildren();
- var h=head(state.archive?'АРХИВ МЕРОПРИЯТИЙ':'МЕРОПРИЯТИЯ',state.archive?'Завершённые игры и их регистрации':'Все мероприятия с открытой регистрацией, включая опубликованные афиши');
- app.append(h);var grid=el('div','event-grid');app.append(grid);
- if(!state.events.length){grid.append(el('div','empty',state.archive?'В архиве пока нет мероприятий.':'Мероприятий пока нет. Нажмите «Добавить», чтобы создать первую афишу.'));return;}
- state.events.forEach(function(e){
-  var card=el('article','event-card'),poster=el('div','poster');
-  if(e.poster){var img=el('img');img.src=e.poster;img.alt='Афиша '+e.title;poster.append(img);}else poster.textContent='МЕЛОФАНТЫ';
-  var body=el('div','event-info');body.append(el('div','event-day',day(e.starts_at)));body.append(el('div','event-title',e.title));body.append(el('div','event-venue',e.venue+' · '+wrapDate(e.starts_at)));
-  var metric=el('div');metric.append(el('strong','metric-value',persons(e.registered_guests||0)));metric.append(el('span','metric-caption',' · зарегистрировано'));body.append(metric);
-  var actions=el('div','filters');actions.append(button('ПОДРОБНЕЕ →','primary',function(){openDetails(e.id);}));
-  actions.append(button('ИЗМЕНИТЬ','ghost',function(){eventEditor(e);}));body.append(actions);
-  card.append(poster,body);grid.append(card);
- });
+ app.append(head(state.archive?'АРХИВ МЕРОПРИЯТИЙ':'МЕРОПРИЯТИЯ',state.archive?'Завершённые игры и сохранённые заявки':'Актуальные игры и количество зарегистрированных гостей'));
+ var grid=el('div','event-grid');app.append(grid);
+ if(!state.events.length){
+   grid.append(el('div','empty',state.archive?'В архиве пока нет мероприятий.':'Мероприятий пока нет. Нажмите «Добавить», чтобы создать первую афишу.'));
+ }else{
+   state.events.forEach(function(e){
+     var card=el('article','event-card'),poster=el('div','poster');
+     if(e.poster){var img=el('img');img.src=e.poster;img.loading='lazy';img.alt='Афиша: '+e.title;poster.append(img);}
+     else poster.textContent='МЕЛОФАНТЫ';
+     poster.append(el('span','poster-badge',state.archive?'АРХИВ':'РЕГИСТРАЦИЯ'));
+     var body=el('div','event-info'),row=el('div','event-topline');
+     row.append(el('div','event-day',day(e.starts_at)));
+     body.append(row,el('div','event-title',e.title));
+     body.append(el('div','event-venue',e.venue+' · '+wrapDate(e.starts_at)));
+     var guests=el('div','guest-count');
+     guests.append(el('strong','',String(e.registered_guests||0)));
+     guests.append(el('span','',persons(e.registered_guests||0).replace(/^\\d+\\s*/,'')));
+     body.append(guests);
+     var actions=el('div','filters');
+     actions.append(button('ПОДРОБНЕЕ','primary',function(){openDetails(e.id);}));
+     actions.append(button('•••','ghost',function(){eventEditor(e);}));
+     body.append(actions);card.append(poster,body);grid.append(card);
+   });
+ }
+ bottomDock('events');
+}
+function bottomDock(mode){
+ var dock=el('div','mf-dock');
+ if(mode==='details'){
+   dock.append(button('← НАЗАД','ghost',function(){state.selected=null;state.details=null;history.replaceState(null,'',location.pathname);loadEvents();}));
+   dock.append(button('+ ДОБАВИТЬ','primary',manualEditor));
+ }else{
+   dock.append(button(state.archive?'← К СОБЫТИЯМ':'АРХИВ','ghost',function(){document.getElementById('archiveBtn').click();}));
+   dock.append(button('+ ДОБАВИТЬ','primary',function(){eventEditor(null);}));
+ }
+ app.append(dock);
 }
 async function openDetails(id){
  state.selected=id;state.query='';state.status='all';
@@ -106,7 +177,7 @@ function renderDetails(){
  statuses.addEventListener('change',function(){state.status=this.value;renderRegList();});
  controls.append(search,statuses);toolbar.append(name,controls);app.append(toolbar);
  var list=el('div','list');list.id='regList';app.append(list);renderRegList();
- var bottom=el('div','bottom-add');bottom.append(button('+ ДОБАВИТЬ КОМПАНИЮ','primary',manualEditor));app.append(bottom);
+ var bottom=el('div','bottom-add');bottom.append(button('+ ДОБАВИТЬ КОМПАНИЮ','primary',manualEditor));app.append(bottom);bottomDock('details');
 }
 function renderRegList(){
  var list=document.getElementById('regList');if(!list||!state.details)return;list.replaceChildren();
