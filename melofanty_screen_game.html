@@ -159,6 +159,11 @@ body{display:flex;flex-direction:column;background:#061210;min-width:0}
 .game-stage .result-icon{display:grid;place-items:center;font:700 35px var(--bold);color:#7cf8a2;background:#154232;border:1px solid #64e2a0;border-radius:12px;width:58px;height:58px}
 
 </style>
+<style id="disable-double-tap-zoom">
+@media (pointer:coarse) {
+  html, body, button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
+}
+</style>
 </head>
 <body>
 <svg class="sprite" aria-hidden="true"><defs><linearGradient id="mgrad" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#63e035"/><stop offset=".6" stop-color="#16d7c8"/><stop offset="1" stop-color="#7af3ec"/></linearGradient></defs><symbol id="soundwave" viewBox="0 0 140 86"><rect x="4" y="32" width="12" height="22" rx="6"/><rect x="24" y="18" width="12" height="51" rx="6"/><rect x="44" y="3" width="12" height="81" rx="6"/><rect x="64" y="22" width="12" height="43" rx="6"/><rect x="84" y="11" width="12" height="65" rx="6"/><rect x="104" y="27" width="12" height="34" rx="6"/><rect x="124" y="34" width="12" height="19" rx="6"/></symbol></svg>
