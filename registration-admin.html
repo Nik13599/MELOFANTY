@@ -276,6 +276,13 @@ body{display:flex;flex-direction:column;min-height:0}
 .registrations-scroll .person a.phone-link{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:2px 5px;margin:-2px -5px;color:#a9ffd1;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;border-radius:7px;touch-action:manipulation}
 .registrations-scroll .person a.phone-link::before{content:'☎';font-size:14px;text-decoration:none;display:inline-block}
 .registrations-scroll .person a.phone-link:hover,.registrations-scroll .person a.phone-link:focus-visible{color:#e8ffed;background:#1f6044}
+/* Keep solitary event cards pinned to the upper left, including the final page of five. */
+.events-scroll .event-page.has-single{justify-content:flex-start!important;align-items:flex-start!important}
+.events-scroll .event-page.has-single .event-grid{margin:0!important}
+.confirm-question{font-size:18px;line-height:1.35;margin:10px 0;color:#f6fff9}
+.confirm-details{font-size:15px;color:#add5c4;margin:7px 0 20px}
+.demo-field{display:flex;align-items:center;gap:9px;font:500 14px Oswald,sans-serif;color:#f7d89f}
+.demo-field input{width:17px;height:17px;accent-color:#a5ff79;flex:none}
 /* v6: denser administration on every screen while keeping touch controls legible. */
 .mast{min-height:48px!important;padding-top:5px!important;padding-bottom:5px!important}
 .view-top{padding-top:5px!important;padding-bottom:5px!important}
@@ -612,12 +619,12 @@ function renderEvents(){
   grid.append(el('div','empty',state.archive?'В архиве пока нет мероприятий.':'Мероприятий пока нет. Нажмите «Добавить», чтобы создать первую афишу.'));
  }else{
   state.events.forEach(function(e,i){
-   if(i%4===0){var page=el('section','event-page');page.setAttribute('aria-label','Мероприятия '+(i+1)+'–'+Math.min(i+4,state.events.length));grid=el('div','event-grid');page.append(grid);viewport.append(page);}
+   if(i%4===0){var page=el('section','event-page');page.classList.toggle('has-single',state.events.length-i===1);page.setAttribute('aria-label','Мероприятия '+(i+1)+'–'+Math.min(i+4,state.events.length));grid=el('div','event-grid');page.append(grid);viewport.append(page);}
    var card=el('article','event-card'),poster=el('div','poster');
    if(e.poster){var img=el('img');img.src=e.poster;img.loading='lazy';img.alt='Афиша: '+e.title;poster.append(img);}
    else poster.append(el('div','','МЕЛОФАНТЫ'));
    var hasDemo=Number(e.demo_applications||0)>0;
-   var mark=el('span','poster-badge'+(hasDemo?' demo':''),hasDemo?'ДЕМО':state.archive?'АРХИВ':'МЕРОПРИЯТИЕ');
+   var mark=el('span','poster-badge'+((hasDemo||e.is_demo)?' demo':''),(hasDemo||e.is_demo)?'ДЕМО':state.archive?'АРХИВ':'МЕРОПРИЯТИЕ');
    poster.append(mark);
    var body=el('div','event-info');
    body.append(el('div','event-day',day(e.starts_at)));
@@ -738,16 +745,30 @@ function renderRegList(){
   var menu=el('div','menu-box'),dots=el('button','dots-btn','•••');dots.type='button';dots.title='Действия';
   var popup=el('div','menu-popup');popup.hidden=true;
   var edit=el('button','','Изменить');edit.addEventListener('click',function(){popup.hidden=true;editRegistration(r);});
-  var cancel=el('button','','Отменить');cancel.addEventListener('click',function(){popup.hidden=true;changeStatus(r,'cancelled');});
+  var cancel=el('button','','Отменить');cancel.addEventListener('click',function(){popup.hidden=true;confirmCancelRegistration(r);});
   var remove=el('button','red','Удалить');remove.addEventListener('click',function(){popup.hidden=true;if(confirm('Удалить заявку ID '+r.code+'? Восстановить удалённую заявку нельзя.'))changeStatus(r,'deleted');});
   popup.append(edit,cancel,remove);dots.addEventListener('click',function(){document.querySelectorAll('.menu-popup').forEach(function(p){if(p!==popup)p.hidden=true;});popup.hidden=!popup.hidden;});
   menu.append(dots,popup);card.append(info,side);
   var actions=el('div','reg-actions');
   if(r.status==='pending'||r.status==='cancelled')actions.append(button('ПОДТВЕРДИТЬ','primary',function(){changeStatus(r,'confirmed');}));
-  if(r.status!=='cancelled')actions.append(button('ОТМЕНИТЬ','danger',function(){changeStatus(r,'cancelled');}));
+  if(r.status!=='cancelled')actions.append(button('ОТМЕНИТЬ','danger',function(){confirmCancelRegistration(r);}));
   if(r.status==='confirmed')actions.append(el('span','people','✓ Подтверждено'));
   actions.append(menu);card.append(actions);list.append(card);
  });
+}
+function confirmCancelRegistration(r){
+ var wrap=el('div');
+ wrap.append(el('p','confirm-question','Вы уверены, что хотите отменить заявку ID '+r.code+'?'));
+ wrap.append(el('p','confirm-details',r.name+' · '+persons(r.party_size)));
+ var buttons=el('div','form-buttons');
+ buttons.append(button('НЕТ','ghost',closeModal));
+ var yes=button('ДА, ОТМЕНИТЬ','danger',async function(){
+  yes.disabled=true;
+  try{await api('/registration',mutation('PATCH',{event_id:state.selected,seq:r.seq,status:'cancelled'}));closeModal();await reloadDetails();toast('Заявка отменена');}
+  catch(e){errMessage(e);yes.disabled=false;}
+ });
+ buttons.append(yes);wrap.append(buttons);
+ showModal('ПОДТВЕРЖДЕНИЕ ОТМЕНЫ',wrap);
 }
 async function changeStatus(r,status){
  try{await api('/registration',mutation('PATCH',{event_id:state.selected,seq:r.seq,status:status}));await reloadDetails();toast(status==='confirmed'?'Заявка подтверждена':status==='deleted'?'Заявка удалена':'Заявка отменена');}
@@ -755,15 +776,16 @@ async function changeStatus(r,status){
 }
 function eventEditor(existing){
  var title=existing?'ИЗМЕНИТЬ МЕРОПРИЯТИЕ':'НОВОЕ МЕРОПРИЯТИЕ',f=el('form','form');
- f.innerHTML='<label class="field">НАЗВАНИЕ<input name="title" required maxlength="120" placeholder="МЕЛОФАНТЫ · Музыкальная игра"></label><div class="form-row"><label class="field">ДАТА И ВРЕМЯ НАЧАЛА<input name="starts_at" type="datetime-local" required></label><label class="field">ОКОНЧАНИЕ МЕРОПРИЯТИЯ<input name="ends_at" type="datetime-local" required></label></div><label class="field">МЕСТО ПРОВЕДЕНИЯ<input name="venue" maxlength="160" required placeholder="Минск, название площадки"></label><label class="field">ОПИСАНИЕ<textarea name="description" maxlength="1800" placeholder="Информация, которая будет показана гостям"></textarea></label><label class="field">ЛИМИТ ГОСТЕЙ (НЕОБЯЗАТЕЛЬНО)<input name="capacity" type="number" min="1" max="100000" placeholder="Без лимита"></label><label class="field">АФИША (JPG, PNG, WEBP)<input name="image" type="file" accept="image/png,image/jpeg,image/webp"></label><img class="preview" id="posterPreview" alt="Предпросмотр афиши" hidden><label class="field" id="archiveField" hidden><input name="archived" type="checkbox" style="width:auto;min-height:0"> В архиве</label><div class="form-buttons"><button type="button" class="btn ghost" id="cancelForm">ОТМЕНА</button><button type="submit" class="btn primary">СОХРАНИТЬ</button></div>';
- if(existing){f.elements.title.value=existing.title;f.elements.starts_at.value=localInput(existing.starts_at);f.elements.ends_at.value=localInput(existing.ends_at);f.elements.venue.value=existing.venue;f.elements.description.value=existing.description;f.elements.capacity.value=existing.capacity||'';f.elements.archived.checked=!!existing.archived;f.querySelector('#archiveField').hidden=false;if(existing.poster){f.querySelector('#posterPreview').src=existing.poster;f.querySelector('#posterPreview').hidden=false;}}
+ f.innerHTML='<label class="field">НАЗВАНИЕ<input name="title" required maxlength="120" placeholder="МЕЛОФАНТЫ · Музыкальная игра"></label><div class="form-row"><label class="field">ДАТА И ВРЕМЯ НАЧАЛА<input name="starts_at" type="datetime-local" required></label><label class="field">ОКОНЧАНИЕ МЕРОПРИЯТИЯ<input name="ends_at" type="datetime-local" required></label></div><label class="field">МЕСТО ПРОВЕДЕНИЯ<input name="venue" maxlength="160" required placeholder="Минск, название площадки"></label><label class="field">ОПИСАНИЕ<textarea name="description" maxlength="1800" placeholder="Информация, которая будет показана гостям"></textarea></label><label class="field">ЛИМИТ ГОСТЕЙ (НЕОБЯЗАТЕЛЬНО)<input name="capacity" type="number" min="1" max="100000" placeholder="Без лимита"></label><label class="demo-field"><input name="is_demo" type="checkbox"> ТЕСТОВОЕ МЕРОПРИЯТИЕ · ЗАЯВКИ ДЕМО</label><label class="field">АФИША (JPG, PNG, WEBP)<input name="image" type="file" accept="image/png,image/jpeg,image/webp"></label><img class="preview" id="posterPreview" alt="Предпросмотр афиши" hidden><label class="field" id="archiveField" hidden><input name="archived" type="checkbox" style="width:auto;min-height:0"> В архиве</label><div class="form-buttons"><button type="button" class="btn ghost" id="cancelForm">ОТМЕНА</button><button type="submit" class="btn primary">СОХРАНИТЬ</button></div>';
+ f.elements.is_demo.checked=existing?!!existing.is_demo:false;
+  if(existing){f.elements.title.value=existing.title;f.elements.starts_at.value=localInput(existing.starts_at);f.elements.ends_at.value=localInput(existing.ends_at);f.elements.venue.value=existing.venue;f.elements.description.value=existing.description;f.elements.capacity.value=existing.capacity||'';f.elements.archived.checked=!!existing.archived;f.querySelector('#archiveField').hidden=false;if(existing.poster){f.querySelector('#posterPreview').src=existing.poster;f.querySelector('#posterPreview').hidden=false;}}
  else{var start=new Date(Date.now()+86400000),end=new Date(start.getTime()+14400000);start.setMinutes(0,0,0);end.setMinutes(0,0,0);f.elements.starts_at.value=localInput(start.toISOString());f.elements.ends_at.value=localInput(end.toISOString());}
  f.querySelector('#cancelForm').addEventListener('click',closeModal);
  f.elements.image.addEventListener('change',async function(){try{var photo=await compressImage(this.files[0]);f.dataset.poster=photo||'';if(photo){f.querySelector('#posterPreview').src=photo;f.querySelector('#posterPreview').hidden=false;}}catch(e){errMessage(e);}});
  f.addEventListener('submit',async function(e){
   e.preventDefault();var submit=f.querySelector('[type=submit]');submit.disabled=true;
   try{
-   var data={title:f.elements.title.value,starts_at:fromInput(f.elements.starts_at.value),ends_at:fromInput(f.elements.ends_at.value),venue:f.elements.venue.value,description:f.elements.description.value,capacity:f.elements.capacity.value,poster:f.dataset.poster||existing&&existing.poster||'',archived:!!f.elements.archived.checked};
+   var data={title:f.elements.title.value,starts_at:fromInput(f.elements.starts_at.value),ends_at:fromInput(f.elements.ends_at.value),venue:f.elements.venue.value,description:f.elements.description.value,capacity:f.elements.capacity.value,poster:f.dataset.poster||existing&&existing.poster||'',is_demo:!!f.elements.is_demo.checked,archived:!!f.elements.archived.checked};
    await api(existing?'/events/'+existing.id:'/events',mutation(existing?'PATCH':'POST',data));closeModal();toast(existing?'Мероприятие обновлено':'Мероприятие создано');if(state.selected)await reloadDetails();else await loadEvents();
   }catch(e){errMessage(e);}finally{submit.disabled=false;}
  });
