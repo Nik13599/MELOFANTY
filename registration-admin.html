@@ -355,6 +355,9 @@ body{display:flex;flex-direction:column;min-height:0}
 .event-upload .preview[hidden]{display:none!important}
 .event-upload .upload-caption{display:block;color:#c2decf;font-size:11px;line-height:1.3}
 @media(max-width:500px){.event-image-pair{gap:7px}.event-upload{padding:7px}.event-upload .field{font-size:11px}.event-upload .field input{font-size:11px;padding:5px}}
+.event-upload .mobile-image-status{color:#a9eac5;font:500 12px/1.35 Oswald,sans-serif;min-height:17px;margin-top:5px}
+.event-upload .mobile-image-status.error{color:#ffaaa3}
+@media(max-width:650px){.event-image-pair{grid-template-columns:1fr;gap:10px}.event-upload{padding:12px}.event-upload .field{font-size:14px}.event-upload .field input{width:100%;font-size:14px;min-height:44px}.event-upload .preview{aspect-ratio:1/1;max-height:42vh}.event-upload .upload-caption{font-size:12px}}
 
 </style><style id="disable-double-tap-zoom">
 @media (pointer:coarse) {
@@ -867,15 +870,20 @@ async function changeStatus(r,status){
 }
 function eventEditor(existing){
  var title=existing?'ИЗМЕНИТЬ МЕРОПРИЯТИЕ':'НОВОЕ МЕРОПРИЯТИЕ',f=el('form','form');
- f.innerHTML='<label class="field">НАЗВАНИЕ<input name="title" required maxlength="120" placeholder="МЕЛОФАНТЫ · Музыкальная игра"></label><div class="form-row"><label class="field">ДАТА И ВРЕМЯ НАЧАЛА<input name="starts_at" type="datetime-local" required></label><label class="field">ОКОНЧАНИЕ МЕРОПРИЯТИЯ<input name="ends_at" type="datetime-local" required></label></div><label class="field">МЕСТО ПРОВЕДЕНИЯ<input name="venue" maxlength="160" required placeholder="Минск, название площадки"></label><label class="field">ОПИСАНИЕ<textarea name="description" maxlength="1800" placeholder="Информация, которая будет показана гостям"></textarea></label><label class="field">ЛИМИТ ГОСТЕЙ (НЕОБЯЗАТЕЛЬНО)<input name="capacity" type="number" min="1" max="100000" placeholder="Без лимита"></label><label class="demo-field"><input name="is_demo" type="checkbox"> ТЕСТОВОЕ МЕРОПРИЯТИЕ · ЗАЯВКИ ДЕМО</label><div class="event-image-pair"><div class="event-upload"><label class="field">1. АФИША ДЛЯ САЙТА<input name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/heic,image/heif"></label><img class="preview" id="posterPreview" alt="Изображение на сайте" hidden><span class="upload-caption">JPG / PNG / WebP / GIF → WebP 1:1 при сохранении</span></div><div class="event-upload"><label class="field">2. ИЗОБРАЖЕНИЕ ДЛЯ АДМИНКИ<input name="admin_image" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/heic,image/heif"></label><img class="preview" id="adminPosterPreview" alt="Изображение только в админке" hidden><button type="button" class="btn ghost clear-admin-image" id="clearAdminImage" hidden>УБРАТЬ ИЗОБРАЖЕНИЕ</button><span class="upload-caption">Конвертируется в WebP при сохранении. Без загрузки карточка останется без фотографии</span></div></div><label class="field" id="archiveField" hidden><input name="archived" type="checkbox" style="width:auto;min-height:0"> В архиве</label><div class="form-buttons"><button type="button" class="btn ghost" id="cancelForm">ОТМЕНА</button><button type="submit" class="btn primary">СОХРАНИТЬ</button></div>';
+ f.innerHTML='<label class="field">НАЗВАНИЕ<input name="title" required maxlength="120" placeholder="МЕЛОФАНТЫ · Музыкальная игра"></label><div class="form-row"><label class="field">ДАТА И ВРЕМЯ НАЧАЛА<input name="starts_at" type="datetime-local" required></label><label class="field">ОКОНЧАНИЕ МЕРОПРИЯТИЯ<input name="ends_at" type="datetime-local" required></label></div><label class="field">МЕСТО ПРОВЕДЕНИЯ<input name="venue" maxlength="160" required placeholder="Минск, название площадки"></label><label class="field">ОПИСАНИЕ<textarea name="description" maxlength="1800" placeholder="Информация, которая будет показана гостям"></textarea></label><label class="field">ЛИМИТ ГОСТЕЙ (НЕОБЯЗАТЕЛЬНО)<input name="capacity" type="number" min="1" max="100000" placeholder="Без лимита"></label><label class="demo-field"><input name="is_demo" type="checkbox"> ТЕСТОВОЕ МЕРОПРИЯТИЕ · ЗАЯВКИ ДЕМО</label><div class="event-image-pair"><div class="event-upload"><label class="field">1. АФИША ДЛЯ САЙТА<input name="image" type="file" accept="image/*,.heic,.heif"></label><img class="preview" id="posterPreview" alt="Изображение на сайте" hidden><span id="siteImageStatus" class="mobile-image-status" role="status" aria-live="polite"></span><span class="upload-caption">JPG / PNG / WebP / GIF → WebP 1:1 при сохранении</span></div><div class="event-upload"><label class="field">2. ИЗОБРАЖЕНИЕ ДЛЯ АДМИНКИ<input name="admin_image" type="file" accept="image/*,.heic,.heif"></label><img class="preview" id="adminPosterPreview" alt="Изображение только в админке" hidden><span id="adminImageStatus" class="mobile-image-status" role="status" aria-live="polite"></span><button type="button" class="btn ghost clear-admin-image" id="clearAdminImage" hidden>УБРАТЬ ИЗОБРАЖЕНИЕ</button><span class="upload-caption">Конвертируется в WebP при сохранении. Без загрузки карточка останется без фотографии</span></div></div><label class="field" id="archiveField" hidden><input name="archived" type="checkbox" style="width:auto;min-height:0"> В архиве</label><div class="form-buttons"><button type="button" class="btn ghost" id="cancelForm">ОТМЕНА</button><button type="submit" class="btn primary">СОХРАНИТЬ</button></div>';
  f.elements.is_demo.checked=existing?!!existing.is_demo:false;
   if(existing){f.elements.title.value=existing.title;f.elements.starts_at.value=localInput(existing.starts_at);f.elements.ends_at.value=localInput(existing.ends_at);f.elements.venue.value=existing.venue;f.elements.description.value=existing.description;f.elements.capacity.value=existing.capacity||'';f.elements.archived.checked=!!existing.archived;f.querySelector('#archiveField').hidden=false;if(existing.poster){f.querySelector('#posterPreview').src=existing.poster;f.querySelector('#posterPreview').hidden=false;}if(existing.admin_poster){f.querySelector('#adminPosterPreview').src=existing.admin_poster;f.querySelector('#adminPosterPreview').hidden=false;f.querySelector('#clearAdminImage').hidden=false;}}
  else{var start=new Date(Date.now()+86400000),end=new Date(start.getTime()+14400000);start.setMinutes(0,0,0);end.setMinutes(0,0,0);f.elements.starts_at.value=localInput(start.toISOString());f.elements.ends_at.value=localInput(end.toISOString());}
  f.querySelector('#cancelForm').addEventListener('click',closeModal);
- f.elements.image.addEventListener('change',function(){showUploadPreview(this.files[0],f.querySelector('#posterPreview'));});
+ f.elements.image.addEventListener('change',function(){
+  var file=this.files[0];
+  showUploadPreview(file,f.querySelector('#posterPreview'));
+  imageStatus(f.querySelector('#siteImageStatus'),file?'Выбрано: '+file.name+' · конвертация при сохранении':'');
+ });
  f.elements.admin_image.addEventListener('change',function(){
   if(!this.files[0])return;
   showUploadPreview(this.files[0],f.querySelector('#adminPosterPreview'));
+  imageStatus(f.querySelector('#adminImageStatus'),'Выбрано: '+this.files[0].name+' · конвертация при сохранении');
   delete f.dataset.clearAdminPoster;
   f.querySelector('#clearAdminImage').hidden=false;
  });
@@ -883,10 +891,15 @@ function eventEditor(existing){
   f.dataset.clearAdminPoster='1';f.elements.admin_image.value='';
   var preview=f.querySelector('#adminPosterPreview');clearUploadPreview(preview);
   preview.hidden=true;preview.removeAttribute('src');this.hidden=true;
+  imageStatus(f.querySelector('#adminImageStatus'),'Изображение для админки удалено');
  });
  f.addEventListener('submit',async function(e){
   e.preventDefault();var submit=f.querySelector('[type=submit]');if(submit.disabled)return;
   submit.disabled=true;var originalLabel=submit.textContent;submit.textContent='КОНВЕРТАЦИЯ WEBP…';
+  imageStatus(f.querySelector('#siteImageStatus'),f.elements.image.files[0]?'Конвертация афиши в WebP…':'');
+  imageStatus(f.querySelector('#adminImageStatus'),f.elements.admin_image.files[0]?'Конвертация изображения в WebP…':'');
+  // Paint progress before running the encoder on a mobile device.
+  await new Promise(function(resolve){requestAnimationFrame(function(){resolve();});});
   try{
    var siteOld=existing&&existing.poster||'';
    var adminOld=existing&&existing.admin_poster||'';
@@ -895,13 +908,19 @@ function eventEditor(existing){
     f.dataset.clearAdminPoster==='1'?Promise.resolve(''):imageForSave(f.elements.admin_image.files[0],adminOld,false)
    ]);
    var data={title:f.elements.title.value,starts_at:fromInput(f.elements.starts_at.value),ends_at:fromInput(f.elements.ends_at.value),venue:f.elements.venue.value,description:f.elements.description.value,capacity:f.elements.capacity.value,poster:images[0],admin_poster:images[1],is_demo:!!f.elements.is_demo.checked,archived:!!f.elements.archived.checked};
+   if(f.elements.image.files[0])imageStatus(f.querySelector('#siteImageStatus'),'Готово · WebP 1:1');
+   if(f.elements.admin_image.files[0])imageStatus(f.querySelector('#adminImageStatus'),'Готово · WebP');
    submit.textContent='СОХРАНЯЕМ…';
    await api(existing?'/events/'+existing.id:'/events',mutation(existing?'PATCH':'POST',data));
    // Notify other tabs on this origin immediately; other devices use API polling.
    try{localStorage.setItem('melofanty-events-updated',String(Date.now()));}catch(syncError){}
    closeModal();toast(existing?'Мероприятие обновлено':'Мероприятие создано');
    if(state.selected)await reloadDetails();else await loadEvents();
-  }catch(e){errMessage(e);}finally{submit.disabled=false;submit.textContent=originalLabel;}
+  }catch(e){
+   errMessage(e);
+   if(f.elements.image.files[0])imageStatus(f.querySelector('#siteImageStatus'),e.message,true);
+   if(f.elements.admin_image.files[0])imageStatus(f.querySelector('#adminImageStatus'),e.message,true);
+  }finally{submit.disabled=false;submit.textContent=originalLabel;}
  });
  showModal(title,f);
 }
