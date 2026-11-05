@@ -707,6 +707,9 @@ html{scroll-behavior:smooth}
 @keyframes mf-ripple{to{opacity:0;transform:translate(-50%,-50%) scale(2.7)}}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}.mf-reveal{opacity:1!important;transform:none!important;filter:none!important}.mf-motion-card,.mf-motion-button{transition:none!important}}
+
+/* Never obscure content while waiting for a scroll observer. */
+.mf-reveal,.mf-reveal.mf-visible{opacity:1!important;filter:none!important;transform:none!important;transition:none!important}
 </style>
 </head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
