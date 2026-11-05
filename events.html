@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#031510"><title>Все мероприятия · МЕЛОФАНТЫ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;500;600&display=swap');
+:root{color-scheme:dark;font-family:'Roboto Condensed',Arial,sans-serif;color:#f2fff5;background:#06130f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 4%,#12523d66,transparent 42%),#06130f;min-height:100dvh}button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #bfff86;outline-offset:3px}
+header{min-height:67px;position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:#05190feb;border-bottom:1px solid #30684e;display:flex;align-items:center;justify-content:space-between;padding:10px clamp(16px,4vw,54px);gap:15px}
+.brand{font:700 clamp(20px,2.5vw,32px)/1 'Oswald',sans-serif;letter-spacing:.04em;white-space:nowrap}.brand span{color:#a5ff91}.back{border:1px solid #5bbd8a;border-radius:12px;background:#0a3626;padding:9px 15px;font:600 15px Oswald,sans-serif;white-space:nowrap}.back:hover{background:#1d6746}
+main{max-width:1230px;margin:0 auto;padding:clamp(23px,4vw,52px) clamp(13px,3vw,26px) 65px}
+.overline{font:600 13px Oswald,sans-serif;letter-spacing:.15em;color:#90e5b1}h1{font:700 clamp(37px,6vw,72px)/1.05 Oswald,sans-serif;margin:7px 0 12px;text-transform:uppercase}h1 em{font-style:normal;color:#a4fa83}
+.subtitle{color:#c2dbc9;font-size:clamp(14px,1.45vw,19px);line-height:1.4;max-width:810px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:28px 0 17px}
+.filters{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.filters button{min-height:39px;padding:7px 15px;background:#0d2a21;border:1px solid #377359;border-radius:12px;color:#dbfbe7;font:600 15px Oswald,sans-serif}
+.filters button[aria-pressed="true"]{background:#8efa8c;color:#082218;border-color:#8efa8c}
+.search{max-width:100%;width:clamp(185px,25vw,280px);background:#0b261c;color:#e6ffee;border:1px solid #387157;outline:0;border-radius:12px;min-height:39px;padding:8px 13px;font-size:15px}
+.count{color:#b6d4c0;font:600 15px Oswald,sans-serif;min-height:21px;margin-bottom:15px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(13px,2vw,24px)}
+.card{border:1px solid #3a8f68;border-radius:20px;overflow:hidden;background:linear-gradient(145deg,#103628,#081c15);box-shadow:0 13px 35px #0006;min-width:0;display:flex;flex-direction:column}
+.card:hover{border-color:#91fba6}
+.poster{position:relative;aspect-ratio:1.18;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at top,#2b6150,#092017 70%)}
+.poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.poster:after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,#02120a9f 100%);pointer-events:none}
+.pill{position:absolute;top:10px;left:10px;z-index:1;border-radius:7px;border:1px solid #a4ffc6aa;background:#051d16d9;color:#c2ffe2;padding:5px 8px;font:600 12px Oswald,sans-serif;letter-spacing:.055em}
+.card.past .poster{filter:grayscale(1) brightness(.78)}.card.past .pill{color:#fff;background:#121b17b8}
+.info{padding:16px;display:flex;flex-direction:column;gap:7px;flex:1}
+.date{font:700 27px Oswald,sans-serif;color:#a6ff98}
+.card.past .date{color:#c9d5cc}
+.name{font:600 clamp(22px,2.1vw,27px)/1.12 Oswald,sans-serif;margin:0;overflow-wrap:anywhere}
+.venue{font-size:15px;color:#bbd2c4;line-height:1.3}
+.actions{margin-top:auto;padding-top:13px;display:grid;gap:7px}
+.action{display:flex;align-items:center;justify-content:center;min-height:41px;padding:7px 11px;text-align:center;border:0;border-radius:10px;background:#a0ff91;color:#092c1b;font:700 16px Oswald,sans-serif}
+.action:hover{background:#c8ffbb}
+.card.past .action{background:#233c30;border:1px solid #456c56;color:#deebdf}
+.empty{grid-column:1/-1;text-align:center;border:1px dashed #438569;border-radius:17px;padding:55px 18px;color:#d7f5e4;line-height:1.5}
+.empty strong{font:700 25px Oswald,sans-serif;display:block;margin-bottom:8px}
+footer{padding:20px;text-align:center;border-top:1px solid #1d4335;color:#91b1a2;font-size:13px}
+.mask{position:fixed;inset:0;background:#000b;backdrop-filter:blur(7px);display:grid;place-items:center;padding:15px;z-index:50}
+.mask[hidden]{display:none}
+.dialog{width:min(100%,480px);max-height:calc(100dvh - 30px);overflow-y:auto;border:1px solid #6be6a4;border-radius:18px;background:#08271c;padding:22px}
+.dialog-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dialog h2{font:700 31px Oswald,sans-serif;margin:0 0 8px}.dialog p{white-space:pre-wrap;line-height:1.5;color:#cfe9d8}
+.close{width:37px;height:37px;flex:none;border:1px solid #79a98f;border-radius:10px;background:#154531;color:white;font-size:24px}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){header{min-height:55px;padding:9px 12px}.brand{font-size:20px}.back{font-size:12px;padding:8px 10px}main{padding:21px 12px 50px}h1{font-size:38px}.toolbar{margin:17px 0 12px;gap:11px}.filters{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.filters button{font-size:12px;padding:7px 4px}.search{width:100%;max-width:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.card{border-radius:13px}.poster{aspect-ratio:1}.pill{font-size:9px;padding:3px 5px;left:6px;top:6px}.info{padding:10px 9px;gap:5px}.date{font-size:20px}.name{font-size:17px}.venue{font-size:12px}.actions{padding-top:7px}.action{min-height:35px;font-size:12px;padding:6px}.count{margin-bottom:10px;font-size:13px}}
+@media(max-width:345px){.grid{grid-template-columns:1fr}.poster{aspect-ratio:1.3}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+</style></head><body>
+<header><a class="brand" href="/" aria-label="Мелофанты, главная">МЕЛО<span>ФАНТЫ</span></a><a class="back" href="/">← НА ГЛАВНУЮ</a></header>
+<main><div class="overline">АФИШИ · ИГРЫ · РЕГИСТРАЦИЯ</div><h1>ВСЕ <em>МЕРОПРИЯТИЯ</em></h1>
+<p class="subtitle">Полное расписание MELOFANTY. Выбирайте мероприятие и переходите к регистрации. Прошедшие игры тоже сохраняются в списке.</p>
+<div class="toolbar"><div class="filters" role="group" aria-label="Фильтр мероприятий">
+<button type="button" data-filter="all" aria-pressed="true">ВСЕ</button><button type="button" data-filter="upcoming" aria-pressed="false">БУДУЩИЕ</button><button type="button" data-filter="past" aria-pressed="false">ПРОШЕДШИЕ</button>
+</div><input id="search" class="search" type="search" placeholder="Поиск по названию и месту" aria-label="Поиск мероприятий"></div>
+<div id="count" class="count" aria-live="polite">ЗАГРУЖАЕМ МЕРОПРИЯТИЯ…</div>
+<section class="grid" id="grid" aria-label="Список мероприятий" aria-live="polite"></section>
+</main><footer>МЕЛОФАНТЫ · МЕРОПРИЯТИЯ ОБНОВЛЯЮТСЯ АВТОМАТИЧЕСКИ</footer>
+<div class="mask" id="mask" hidden><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog-header"><h2 id="dialogTitle">МЕРОПРИЯТИЕ</h2><button class="close" id="close" type="button" aria-label="Закрыть">×</button></div><div id="details"></div></div></div>
+<script>
+(function(){
+'use strict';
+var events=[],filter='all',fingerprint='',ui={grid:document.getElementById('grid'),count:document.getElementById('count'),search:document.getElementById('search'),mask:document.getElementById('mask')};
+function mk(tag,cls,value){var x=document.createElement(tag);if(cls)x.className=cls;if(value!==undefined)x.textContent=value;return x;}
+function date(value){return new Date(value).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function description(e){
+ document.getElementById('dialogTitle').textContent=e.title;
+ var body=document.getElementById('details');body.replaceChildren();
+ body.append(mk('p','',date(e.starts_at)+' · '+e.venue));
+ if(e.description)body.append(mk('p','',e.description));
+ body.append(mk('p','','Мероприятие завершено. Регистрация закрыта.'));
+ ui.mask.hidden=false;document.getElementById('close').focus();
+}
+function draw(){
+ ui.grid.replaceChildren();
+ var q=ui.search.value.trim().toLocaleLowerCase('ru-RU');
+ var visible=events.filter(function(e){
+  return (filter==='all'||filter==='past'&&e.past||filter==='upcoming'&&!e.past)&&(!q||(e.title+' '+e.venue+' '+date(e.starts_at)).toLocaleLowerCase('ru-RU').includes(q));
+ });
+ ui.count.textContent='Найдено мероприятий: '+visible.length;
+ if(!visible.length){var n=mk('div','empty');n.append(mk('strong','','МЕРОПРИЯТИЯ НЕ НАЙДЕНЫ'),mk('p','','Измените фильтр или поисковый запрос.'));ui.grid.append(n);return;}
+ visible.forEach(function(e){
+  var card=mk('article','card'+(e.past?' past':'')),poster=mk('div','poster');
+  if(e.poster){var img=mk('img');img.src=e.poster;img.alt='Афиша: '+e.title;img.loading='lazy';poster.append(img);}
+  else poster.append(mk('strong','','МЕЛОФАНТЫ'));
+  poster.append(mk('span','pill',e.past?'АРХИВ':e.is_demo?'ДЕМО · РЕГИСТРАЦИЯ':'РЕГИСТРАЦИЯ'));
+  var copy=mk('div','info'),title=mk('h2','name',e.title),actionBox=mk('div','actions');
+  copy.append(mk('div','date',date(e.starts_at)),title,mk('div','venue',e.venue));
+  if(e.past){var view=mk('button','action','ПОДРОБНЕЕ');view.type='button';view.addEventListener('click',function(){description(e);});actionBox.append(view);}
+  else{var link=mk('a','action','ЗАРЕГИСТРИРОВАТЬСЯ');link.href='/?event='+encodeURIComponent(e.id);actionBox.append(link);}
+  copy.append(actionBox);card.append(poster,copy);ui.grid.append(card);
+ });
+}
+async function refresh(){
+ try{
+  var r=await fetch('/api/registration/events/all',{cache:'no-store'});if(!r.ok)throw Error('status '+r.status);
+  var d=await r.json(),items=Array.isArray(d.events)?d.events:[];
+  var next=JSON.stringify(items);
+  if(next!==fingerprint){events=items;fingerprint=next;draw();}
+ }catch(e){if(!fingerprint){ui.count.textContent='Не удалось загрузить расписание';ui.grid.replaceChildren(mk('div','empty','Не удалось получить мероприятия. Обновите страницу.'));}}
+}
+document.querySelectorAll('[data-filter]').forEach(function(button){button.addEventListener('click',function(){filter=button.dataset.filter;document.querySelectorAll('[data-filter]').forEach(function(b){b.setAttribute('aria-pressed',String(b===button));});draw();});});
+ui.search.addEventListener('input',draw);
+document.getElementById('close').addEventListener('click',function(){ui.mask.hidden=true;});
+ui.mask.addEventListener('click',function(e){if(e.target===ui.mask)ui.mask.hidden=true;});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')ui.mask.hidden=true;});
+refresh();window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
+setInterval(function(){if(!document.hidden)refresh();},90000);
+})();
+</script>
+</body></html>
