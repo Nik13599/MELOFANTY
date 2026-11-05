@@ -141,16 +141,30 @@ function draw(){
  }
  visible.forEach(function(e){grid.append(build(e))});
 }
+var pollVersion=null,pollRequest=0;
 async function refresh(){
+ var current=++pollRequest;
  try{
+  if(pollVersion!==null){
+   var v=await fetch('/api/registration/events/version',{cache:'no-store'});
+   if(!v.ok)throw Error('Ошибка проверки расписания');
+   var version=await v.json();
+   if(current!==pollRequest)return;
+   if(version.version===pollVersion)return;
+  }
   var response=await fetch('/api/registration/events/all',{cache:'no-store'});
   if(!response.ok)throw Error('Ошибка загрузки расписания');
-  var data=await response.json(),items=Array.isArray(data.events)?data.events:[];
-  // Even if a cached API ever returned old entries, hide expired / archived cards.
+  var data=await response.json();
+  if(current!==pollRequest)return;
+  var items=Array.isArray(data.events)?data.events:[];
+  // Hide archived and expired entries even if a cached API returned older data.
   items=items.filter(function(e){return !e.past&&!e.archived&&Date.parse(e.ends_at)>Date.now()});
-  var next=JSON.stringify(items);
+  pollVersion=typeof data.version==='string'?data.version:null;
+  var next=JSON.stringify(items.map(function(e){return [e.id,e.title,e.starts_at,e.ends_at,e.venue,e.description,e.poster];}));
   if(next!==fingerprint){events=items;fingerprint=next;draw();}
+  else events=items;
  }catch(err){
+  if(current!==pollRequest)return;
   if(fingerprint===null){counter.textContent='Ошибка загрузки';grid.replaceChildren(el('div','empty','Не удалось загрузить мероприятия. Попробуйте обновить страницу.'));}
  }
 }
