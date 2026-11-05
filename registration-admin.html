@@ -924,19 +924,38 @@ function eventEditor(existing){
  });
  showModal(title,f);
 }
+
+function imageStatus(node,message,isError){
+ if(!node)return;
+ node.textContent=message||'';
+ node.classList.toggle('error',!!isError);
+}
+function imageMime(file){
+ if(typeof file==='string')return ((file.match(/^data:(image\/[a-z0-9+.-]+);base64,/i)||[])[1]||'').toLowerCase();
+ var kind=String(file&&file.type||'').toLowerCase();
+ if(kind==='image/jpg')return 'image/jpeg';
+ if(!kind||kind==='application/octet-stream'){
+  var extension=String(file&&file.name||'').toLowerCase().split('.').pop();
+  kind=({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',avif:'image/avif',heic:'image/heic',heif:'image/heif'})[extension]||kind;
+ }
+ return kind;
+}
 function clearUploadPreview(preview){
  if(preview.dataset.blobUrl){URL.revokeObjectURL(preview.dataset.blobUrl);delete preview.dataset.blobUrl;}
  preview.onload=null;preview.onerror=null;
 }
 function showUploadPreview(file,preview){
  if(!file)return;
- if(!/^image\/(png|jpeg|webp|gif|avif|heic|heif)$/i.test(file.type)){
+ if(!/^image\/(png|jpeg|webp|gif|avif|heic|heif)$/i.test(imageMime(file))){
   errMessage(new Error('Выберите изображение JPG, PNG, WebP, GIF, AVIF или HEIC'));return;
  }
  clearUploadPreview(preview);
  var url=URL.createObjectURL(file);preview.dataset.blobUrl=url;
  preview.onload=function(){clearUploadPreview(preview);};
- preview.onerror=function(){clearUploadPreview(preview);preview.hidden=true;errMessage(new Error('Браузер не может открыть это изображение'));};
+ preview.onerror=function(){
+  clearUploadPreview(preview);preview.hidden=true;
+  errMessage(new Error('Предпросмотр недоступен для этого формата. При сохранении будет сделана ещё одна попытка обработки.'));
+ };
  preview.src=url;preview.hidden=false;
 }
 async function imageForSave(upload,previous,square){
@@ -944,36 +963,93 @@ async function imageForSave(upload,previous,square){
  if(previous&&!/^data:image\/webp;base64,/i.test(previous))return compressImage(previous,square);
  return previous||'';
 }
+function nativeWebpAvailable(){
+ if(nativeWebpAvailable.cached!==undefined)return nativeWebpAvailable.cached;
+ try{
+  var probe=document.createElement('canvas');probe.width=probe.height=2;
+  nativeWebpAvailable.cached=probe.toDataURL('image/webp').startsWith('data:image/webp;base64,');
+ }catch(error){nativeWebpAvailable.cached=false;}
+ return nativeWebpAvailable.cached;
+}
+function imageBlobDataUrl(blob){
+ return new Promise(function(resolve,reject){
+  var reader=new FileReader();
+  reader.onerror=function(){reject(new Error('Не удалось прочитать готовое изображение WebP'));};
+  reader.onload=function(){resolve(String(reader.result||''));};
+  reader.readAsDataURL(blob);
+ });
+}
+var wasmWebpEncoder=null;
+async function getWasmWebpEncoder(){
+ // iPhone Chrome runs WebKit, which does not implement Canvas WebP encoding.
+ // Apache-2.0 codec from jSquash/Squoosh, loaded only on browsers needing it.
+ if(!wasmWebpEncoder){
+  wasmWebpEncoder=import('https://esm.sh/@jsquash/webp@1.5.0').then(function(codec){
+   if(!codec||typeof codec.encode!=='function')throw new Error('Кодек WebP не загрузился');
+   return codec;
+  }).catch(function(error){
+   wasmWebpEncoder=null;
+   throw new Error('Не удалось загрузить WebP-конвертер для iPhone. Проверьте интернет и повторите. '+(error&&error.message||''));
+  });
+ }
+ return wasmWebpEncoder;
+}
+async function encodeCanvasWebp(canvas,quality){
+ if(nativeWebpAvailable()){
+  // toBlob is asynchronous and uses less peak memory on mobile Chrome.
+  if(typeof canvas.toBlob==='function'){
+   var blob=await new Promise(function(resolve){
+    try{canvas.toBlob(resolve,'image/webp',quality);}catch(e){resolve(null);}
+   });
+   if(blob&&blob.type==='image/webp')return imageBlobDataUrl(blob);
+  }
+  var data=canvas.toDataURL('image/webp',quality);
+  if(data.startsWith('data:image/webp;base64,'))return data;
+ }
+ // Safari / iOS Chrome / older WebKit: encode WebP with WebAssembly.
+ var codec=await getWasmWebpEncoder();
+ var ctx=canvas.getContext('2d',{willReadFrequently:true});
+ if(!ctx)throw new Error('Не удалось получить данные изображения');
+ var rgba=ctx.getImageData(0,0,canvas.width,canvas.height);
+ var binary=await codec.encode(rgba,{quality:Math.round(quality*100)});
+ return imageBlobDataUrl(new Blob([binary],{type:'image/webp'}));
+}
 async function compressImage(file,square){
  if(!file)return '';
- var isDataUrl=typeof file==='string';
- var mime=isDataUrl?(file.match(/^data:(image\/[a-z0-9+.-]+);base64,/i)||[])[1]:file.type;
- if(!/^image\/(png|jpeg|webp|gif|avif|heic|heif)$/i.test(mime||''))throw new Error('Неподдерживаемый формат. Выберите JPG, PNG, WebP, GIF, AVIF или HEIC');
+ var isDataUrl=typeof file==='string',mime=imageMime(file);
+ if(!/^image\/(png|jpeg|webp|gif|avif|heic|heif)$/i.test(mime||'')){
+  throw new Error('Неподдерживаемый формат. Выберите JPG, PNG, WebP, GIF, AVIF или HEIC');
+ }
  var url=isDataUrl?file:URL.createObjectURL(file),image=new Image();
  try{
   await new Promise(function(resolve,reject){
    image.onload=resolve;
-   image.onerror=function(){reject(new Error('Браузер не поддерживает этот формат изображения. Сохраните его как JPG или PNG.'));};
+   image.onerror=function(){
+    reject(new Error('Не удалось открыть изображение на этом телефоне. Для HEIC попробуйте выбрать фото из галереи, а не из приложения «Файлы», либо используйте JPG.'));
+   };
    image.src=url;
   });
   var longest=Math.max(image.naturalWidth,image.naturalHeight);
   if(!longest)throw new Error('Не удалось прочитать изображение');
+  // Small canvases protect iPhone and Android from large memory spikes.
   for(var maxSide of [900,740,600,480,360]){
-   var scale=Math.min(1,maxSide/longest),canvas=document.createElement('canvas');
+   var scale=Math.min(1,maxSide/longest);
    var width=Math.max(1,Math.round(image.naturalWidth*scale));
    var height=Math.max(1,Math.round(image.naturalHeight*scale));
-   var edge=Math.max(width,height);
+   var edge=Math.max(width,height),canvas=document.createElement('canvas');
    canvas.width=square?edge:width;canvas.height=square?edge:height;
    var ctx=canvas.getContext('2d');
+   if(!ctx)throw new Error('Не удалось обработать фото. Закройте лишние вкладки и повторите.');
    if(square){ctx.fillStyle='#061911';ctx.fillRect(0,0,canvas.width,canvas.height);}
    ctx.drawImage(image,square?Math.floor((canvas.width-width)/2):0,square?Math.floor((canvas.height-height)/2):0,width,height);
-   for(var quality of [.82,.70,.56,.42,.30]){
-    var data=canvas.toDataURL('image/webp',quality);
-    if(!data.startsWith('data:image/webp;base64,'))throw new Error('Этот браузер не поддерживает конвертацию в WebP');
-    if(data.length<175000)return data;
+   for(var quality of [.82,.66,.48,.32]){
+    var result=await encodeCanvasWebp(canvas,quality);
+    if(!result.startsWith('data:image/webp;base64,'))throw new Error('Конвертер не смог создать WebP');
+    if(result.length<175000)return result;
    }
+   canvas.width=canvas.height=0;
   }
-  throw new Error('Не удалось уменьшить изображение для WebP. Выберите файл меньшего размера.');
+  throw new Error('Изображение не удалось сжать до допустимого размера. Попробуйте другую фотографию.');
  }finally{if(!isDataUrl)URL.revokeObjectURL(url);}
 }
 function personEditor(existing){
