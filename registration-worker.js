@@ -101,10 +101,10 @@ async function regEvents(env,admin,archive){
  return regJson({events:archive?ordered.reverse():ordered,archive:!!archive});
 }
 async function regPublicDirectory(env){
- const sql="SELECT e.*, (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests FROM events e ORDER BY e.starts_at ASC";
- const rows=(await env.DB.prepare(sql).all()).results||[];
- const now=Date.now();
- return regJson({events:rows.map(e=>Object.assign(regEventPublic(e),{past:!!e.archived||new Date(e.ends_at).getTime()<=now}))});
+ // Never expose archived or already finished events on the public events directory.
+ const sql="SELECT e.*, (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests FROM events e WHERE e.archived=0 AND e.ends_at>? ORDER BY e.starts_at ASC";
+ const rows=(await env.DB.prepare(sql).bind(new Date().toISOString()).all()).results||[];
+ return regJson({events:rows.map(regEventPublic)});
 }
 async function regEventDetails(env,id){
  const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
