@@ -18,7 +18,7 @@ async function regBody(req){
 function regText(v,max){return String(v===undefined?'':v).trim().slice(0,max);}
 function regPeople(v){const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=50?n:0;}
 function regPhone(v){const s=regText(v,40);return /^[+0-9 ()-]{8,40}$/.test(s)&&s.replace(/\D/g,'').length>=8?s:null;}
-function regPoster(v){const s=regText(v,300010);if(!s)return '';if(s.length>300000||!/^data:image\/(png|jpeg|webp);base64,[a-zA-Z0-9+/=]+$/.test(s))throw new Error('Афиша должна быть изображением JPG, PNG или WebP до 220 КБ');return s;}
+function regPoster(v){const s=regText(v,300010);if(!s)return '';if(s.length>300000||!/^data:image\/webp;base64,[a-zA-Z0-9+/=]+$/.test(s))throw new Error('Сохранить можно только WebP до 220 КБ. Обновите админку: встроенный конвертер подготовит изображение автоматически.');return s;}
 function regDate(v){const s=String(v||'');const d=new Date(s);if(!Number.isFinite(d.getTime()))throw new Error('Укажите корректную дату и время');return d.toISOString();}
 function regDayMonth(iso){
  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit'}).formatToParts(new Date(iso));
