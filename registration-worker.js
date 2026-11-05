@@ -110,7 +110,7 @@ async function regEventDetails(env,id){
  const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
  if(!e)return regError('Мероприятие не найдено',404);
  const registrations=(await env.DB.prepare(
-   "SELECT seq,code,name,phone,party_size,status,source,guest_comment,admin_comment,created_at,updated_at FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'confirmed' THEN 1 ELSE 2 END,seq DESC"
+   "SELECT seq,code,name,phone,party_size,status,source,guest_comment,admin_comment,created_at,updated_at FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY seq DESC"
  ).bind(id).all()).results||[];
  const stats=(await env.DB.prepare(
    "SELECT COUNT(CASE WHEN status!='deleted' THEN 1 END) total_apps, COALESCE(SUM(CASE WHEN status IN ('pending','confirmed') THEN party_size ELSE 0 END),0) guests, COUNT(CASE WHEN status='cancelled' THEN 1 END) cancelled_apps, COALESCE(SUM(CASE WHEN status='cancelled' THEN party_size ELSE 0 END),0) cancelled_guests, COUNT(CASE WHEN status='pending' THEN 1 END) pending_apps, COUNT(CASE WHEN status='confirmed' THEN 1 END) confirmed_apps, COUNT(CASE WHEN source='demo' AND status!='deleted' THEN 1 END) demo_apps FROM registrations WHERE event_id=?"
