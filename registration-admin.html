@@ -418,6 +418,99 @@ body{display:flex;flex-direction:column;min-height:0}
   justify-self:stretch!important;
  }
 }
+
+/* Desktop event registration details: remove duplicated title, show venue and both event times, compact 3-column application cards. */
+@media(min-width:761px){
+ .view-top.details-top{padding:clamp(6px,.7vw,10px) 0 6px!important}
+ .view-top.details-top>.heading{display:none!important}
+ .details-top .stats{
+  display:grid!important;
+  grid-template-columns:minmax(250px,1.45fr) repeat(3,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  gap:clamp(6px,.7vw,10px)!important;
+  margin:0 0 5px!important
+ }
+ .details-top .stat{min-height:0!important;padding:8px 11px!important;overflow-wrap:anywhere}
+ .details-top .stat span{font-size:11px!important;line-height:1.15!important}
+ .details-top .stat strong{font-size:clamp(20px,1.8vw,28px)!important;line-height:1.05!important;margin:1px 0!important}
+ .details-top .stat small{font-size:10px!important;line-height:1.15!important}
+ .details-top .event-date-summary>small{display:none!important}
+ .details-top .event-summary-venue{
+  display:block;color:#eaffee;
+  font:600 clamp(12px,1.05vw,15px)/1.2 Oswald,Arial,sans-serif;
+  margin:3px 0 1px;overflow-wrap:anywhere
+ }
+ .details-top .event-summary-hours{
+  display:block;color:#a9e9cc;
+  font:500 clamp(11px,.95vw,13px)/1.25 'Roboto Condensed',Arial,sans-serif
+ }
+ .details-top .demo-note{padding:3px 0!important;font-size:11px!important}
+ .details-top .toolbar{margin:3px 0 0!important;gap:9px!important}
+ .details-top .toolbar h2{font-size:18px!important}
+ .details-top .toolbar .search{min-height:32px!important;height:32px!important;padding:4px 9px!important;font-size:12px!important}
+ .registrations-scroll{padding:8px 0 12px!important}
+ .registrations-scroll .list{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:start!important;
+  gap:9px!important;
+  width:100%!important;
+  max-width:1380px!important;
+  margin:0 auto!important
+ }
+ .registrations-scroll .registration{
+  box-sizing:border-box!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-content:start!important;
+  min-width:0!important;
+  padding:8px 9px!important;
+  gap:3px 6px!important;
+  border-radius:11px!important
+ }
+ .registrations-scroll .registration>div:first-child{min-width:0!important}
+ .registrations-scroll .reg-code{font-size:19px!important;line-height:1.08!important}
+ .registrations-scroll .person{font-size:14px!important;line-height:1.15!important;margin:2px 0!important}
+ .registrations-scroll .people{font-size:12px!important;line-height:1.2!important}
+ .registrations-scroll .date-mini{font-size:10px!important;line-height:1.1!important;margin-top:2px!important}
+ .registrations-scroll .reg-side{gap:3px!important}
+ .registrations-scroll .reg-side .status{font-size:10px!important;padding:2px 5px!important;gap:4px!important;white-space:nowrap!important}
+ .registrations-scroll .reg-side .status:before{width:5px!important;height:5px!important}
+ .registrations-scroll .reg-actions{
+  gap:5px!important;
+  padding-top:5px!important;
+  margin-top:2px!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  min-width:0!important
+ }
+ .registrations-scroll .reg-actions>.btn{
+  flex:1 1 0!important;
+  min-width:0!important;
+  min-height:29px!important;
+  height:29px!important;
+  padding:3px 4px!important;
+  border-radius:8px!important;
+  font-size:clamp(10px,.82vw,12px)!important;
+  line-height:1!important;
+  white-space:nowrap!important
+ }
+ .registrations-scroll .reg-actions>.people{flex:1 1 auto!important;font-size:11px!important}
+ .registrations-scroll .reg-actions .menu-box{flex:0 0 30px!important;margin-left:auto!important}
+ .registrations-scroll .reg-actions .dots-btn{
+  width:30px!important;
+  min-height:29px!important;
+  height:29px!important;
+  padding:0!important;
+  font-size:18px!important;
+  border-radius:8px!important
+ }
+ .registrations-scroll .reg-actions .menu-popup{bottom:34px!important}
+ .registrations-scroll .reg-comment{font-size:12px!important;line-height:1.2!important;padding:3px 5px!important;margin:2px 0!important}
+}
+@media(min-width:761px) and (max-width:979px){
+ .details-top .stats{grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr))!important}
+ .registrations-scroll .list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
 </style><style id="disable-double-tap-zoom">
 @media (pointer:coarse) {
   html, body, button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
@@ -795,7 +888,13 @@ function renderDetails(){
  top.append(head(d.event.title,d.event.venue+' · '+wrapDate(d.event.starts_at)));
  if(Number(d.stats.demo_apps||0)>0)top.append(el('div','demo-note','ДЕМОВЕРСИЯ · '+d.stats.demo_apps+' тестовых заявок. Эти записи не принадлежат реальным гостям.'));
  var stats=el('div','stats');
- stats.append(summary('ДАТА',day(d.event.starts_at),wrapDate(d.event.starts_at).slice(12)));
+ var dateCard=summary('ДАТА',day(d.event.starts_at),wrapDate(d.event.starts_at).slice(12));
+ dateCard.classList.add('event-date-summary');
+ dateCard.append(el('div','event-summary-venue',d.event.venue||'Место не указано'));
+ var eventStart=new Date(d.event.starts_at).toLocaleTimeString('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'});
+ var eventEnd=d.event.ends_at?new Date(d.event.ends_at).toLocaleTimeString('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'}):'не указано';
+ dateCard.append(el('div','event-summary-hours','Начало: '+eventStart+' · Конец: '+eventEnd));
+ stats.append(dateCard);
  stats.append(summary('ВСЕГО ЗАЯВОК',d.stats.total_apps||0,'Включая отменённые'));
  stats.append(summary('КОЛ-ВО ЧЕЛОВЕК',d.stats.guests||0,'Новые и подтверждённые'));
  stats.append(summary('ОТМЕНЫ',d.stats.cancelled_apps||0,(d.stats.cancelled_guests||0)+' человек'));
