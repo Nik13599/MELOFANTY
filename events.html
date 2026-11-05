@@ -228,7 +228,7 @@ function build(e){
 function draw(){
  grid.replaceChildren();
  counter.textContent='Мероприятий: '+events.length;
- if(!visible.length){
+ if(!events.length){
   var empty=el('div','empty');
   empty.append(el('strong','','СКОРО НОВЫЕ ИГРЫ'));
   empty.append(el('p','','Сейчас нет мероприятий с открытой регистрацией.'));
