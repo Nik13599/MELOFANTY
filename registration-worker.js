@@ -30,6 +30,14 @@ function regActive(e){return !!e&&!e.archived&&new Date(e.ends_at).getTime()>Dat
 function regEventPublic(e){
  return {id:e.id,title:e.title,starts_at:e.starts_at,ends_at:e.ends_at,venue:e.venue,description:e.description,poster:e.poster||'',capacity:e.capacity,is_demo:!!e.is_demo,registered_guests:e.registered_guests||0};
 }
+// A small fingerprint prevents downloading every embedded poster on each polling tick.
+function regPublicVersion(items){
+ return JSON.stringify(items.map(e=>[e.id,e.updated_at||'',e.starts_at,e.ends_at,Number(e.next_seq)||0]));
+}
+async function regPublicVersionEndpoint(env){
+ const rows=(await env.DB.prepare("SELECT id,updated_at,starts_at,ends_at,next_seq FROM events WHERE archived=0 AND ends_at>? ORDER BY starts_at ASC").bind(new Date().toISOString()).all()).results||[];
+ return regJson({version:regPublicVersion(rows)});
+}
 async function regHmac(value,secret){
  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
  const sign=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(value));
@@ -97,14 +105,14 @@ async function regEvents(env,admin,archive){
    return admin ? (archive?passed:!passed) : !passed;
  });
  const ordered=filtered.slice().sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime());
- if(!admin)return regJson({events:ordered.map(regEventPublic)});
+ if(!admin)return regJson({events:ordered.map(regEventPublic),version:regPublicVersion(ordered)});
  return regJson({events:archive?ordered.reverse():ordered,archive:!!archive});
 }
 async function regPublicDirectory(env){
  // Never expose archived or already finished events on the public events directory.
  const sql="SELECT e.*, (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests FROM events e WHERE e.archived=0 AND e.ends_at>? ORDER BY e.starts_at ASC";
  const rows=(await env.DB.prepare(sql).bind(new Date().toISOString()).all()).results||[];
- return regJson({events:rows.map(regEventPublic)});
+ return regJson({events:rows.map(regEventPublic),version:regPublicVersion(rows)});
 }
 async function regEventDetails(env,id){
  const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
@@ -132,8 +140,8 @@ async function regSaveEvent(env,b,id){
   if(!old)return regError('Мероприятие не найдено',404);
   if(old.next_seq>0&&!regSameDay(old.starts_at,starts))throw new Error('После появления заявок нельзя изменять день и месяц мероприятия: изменятся ID');
    if(old.next_seq>0&&Number(old.is_demo||0)!==isDemo)throw new Error('Нельзя менять тестовый статус мероприятия после появления заявок');
-  await env.DB.prepare("UPDATE events SET title=?,starts_at=?,ends_at=?,venue=?,description=?,poster=?,admin_poster=?,capacity=?,is_demo=?,archived=?,updated_at=datetime('now') WHERE id=?")
-   .bind(title,starts,ends,venue,description,poster,adminPoster,capacity,isDemo,b.archived?1:0,id).run();
+  await env.DB.prepare("UPDATE events SET title=?,starts_at=?,ends_at=?,venue=?,description=?,poster=?,admin_poster=?,capacity=?,is_demo=?,archived=?,updated_at=? WHERE id=?")
+   .bind(title,starts,ends,venue,description,poster,adminPoster,capacity,isDemo,b.archived?1:0,new Date().toISOString(),id).run();
   return regJson({ok:true,id});
  }
  const newId=crypto.randomUUID();
@@ -175,6 +183,7 @@ async function registrationRouter(req,env){
    return new Response(game,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'public, max-age=60'}});
   if(method==='GET'&&(path==='/registration-admin'||path==='/registration-admin/'))
    return new Response(registrationAdminPage,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-frame-options':'DENY'}});
+  if(path==='/api/registration/events/version'&&method==='GET')return regPublicVersionEndpoint(env);
   if(path==='/api/registration/events'&&method==='GET')return regEvents(env,false,false);
   if(path==='/api/registration/events/all'&&method==='GET')return regPublicDirectory(env);
   if(path==='/api/registration/register'&&method==='POST'){
