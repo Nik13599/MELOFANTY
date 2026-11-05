@@ -193,6 +193,10 @@ body>.mf-smoke{display:block;pointer-events:none!important;opacity:.52}
  .grid .card .action{overflow-wrap:anywhere;font-size:clamp(10px,3vw,13px)}
 }
 
+
+/* Reveal motion must not shift nested titles into neighbouring blocks. */
+html.mf-motion-ready .mf-reveal .mf-reveal{translate:0 0!important}
+html.mf-motion-ready :is(h1,h2,h3,h4,.section-bar,.heading,.toolbar).mf-reveal{translate:0 0!important}
 </style>
 </head><body>
 <header><a class="brand" href="/" aria-label="Мелофанты, главная">МЕЛО<span>ФАНТЫ</span></a><a class="back" href="/">← НА ГЛАВНУЮ</a></header>
