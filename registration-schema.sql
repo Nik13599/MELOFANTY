@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS events (
  description TEXT NOT NULL DEFAULT '',
  poster TEXT NOT NULL DEFAULT '',
  admin_poster TEXT NOT NULL DEFAULT '',
- admin_poster TEXT NOT NULL DEFAULT '',
  capacity INTEGER,
  next_seq INTEGER NOT NULL DEFAULT 0,
  archived INTEGER NOT NULL DEFAULT 0,
@@ -42,8 +41,6 @@ CREATE INDEX IF NOT EXISTS idx_attempts ON admin_attempts(ip_hash,at);
 -- ALTER TABLE registrations ADD COLUMN admin_comment TEXT NOT NULL DEFAULT '';
 -- ALTER TABLE events ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0;
 
--- For existing databases apply once (completed in production):
--- ALTER TABLE events ADD COLUMN admin_poster TEXT NOT NULL DEFAULT '';
-
 -- Existing D1 instances: run only if the column is absent.
 -- ALTER TABLE events ADD COLUMN admin_poster TEXT NOT NULL DEFAULT '';
+-- This migration has already been applied to the existing MELOFANTY D1 database.
