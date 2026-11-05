@@ -1604,6 +1604,8 @@ document.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||reduce.m
   const onTouch=e=>{const t=finger(e);if(t)addPoint(t.clientX,t.clientY)};
   document.addEventListener('touchstart',onTouch,{passive:true});
   document.addEventListener('touchmove',onTouch,{passive:true});
+  document.addEventListener('touchend',()=>{last=null},{passive:true});
+  document.addEventListener('touchcancel',()=>{last=null},{passive:true});
   window.addEventListener('resize',resize,{passive:true});
   window.addEventListener('orientationchange',resize,{passive:true});
   document.addEventListener('visibilitychange',()=>{
