@@ -20,19 +20,23 @@ styles.textContent=[
 '.mf-empty strong{font:700 26px Oswald,sans-serif}.mf-empty p{color:#afcec4;margin-top:8px;font-size:17px}',
 '.mf-description{border:1px solid #286d52;border-radius:13px;background:#09271a;padding:12px;color:#cce9d7;line-height:1.4;white-space:pre-wrap;margin:3px 0 18px}',
 '.event-list.mf-single-event{grid-template-columns:minmax(0,min(410px,100%))!important;justify-content:start}',
-'/* The homepage showcases only square artwork. Event details open on tap. */',
-'.event-list>.event-card{position:relative!important;display:block!important;width:100%!important;height:auto!important;aspect-ratio:1/1!important;overflow:hidden!important;border:1px solid #6bae91!important;border-radius:clamp(13px,1.25vw,20px)!important;padding:0!important;background:#071b14!important;box-shadow:0 10px 25px #0009!important;isolation:isolate!important;touch-action:manipulation!important}',
+'/* Full square poster, with event title/date/time in a separate caption below it. */',
+'.event-list>.event-card{position:relative!important;display:flex!important;flex-direction:column!important;gap:10px!important;align-items:stretch!important;justify-content:flex-start!important;min-width:0!important;width:100%!important;height:auto!important;max-height:none!important;aspect-ratio:auto!important;overflow:visible!important;border:0!important;border-radius:0!important;padding:0!important;background:transparent!important;box-shadow:none!important;text-align:center!important;transform:none!important;touch-action:manipulation!important}',
 '.event-list>.event-card:after{content:none!important;display:none!important}',
-'.event-list>.event-card>img{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;z-index:1!important;transform:none!important;transition:none!important}',
-'.event-list>.event-card:hover,.event-list>.event-card:focus-visible{border-color:#a5ff79!important;box-shadow:0 0 0 2px #88ffa677,0 13px 26px #0009!important}',
-'.event-list>.event-card:hover>img{transform:none!important}',
-'.event-list>.event-card>.event-info,.event-list>.event-card>.mf-event-hint{display:none!important}',
-'.event-list>.event-card.mf-no-poster{background:radial-gradient(ellipse at 60% 15%,#275a44 0%,#09251b 48%,#03120e 100%)!important}',
+'.event-list>.event-card .mf-poster-frame{position:relative;display:block;width:100%;height:auto;aspect-ratio:1/1;overflow:hidden;border:1px solid #6bae91;border-radius:clamp(14px,1.5vw,21px);background:#071b14;box-shadow:0 10px 25px #0009;transition:border-color .18s,box-shadow .18s}',
+'.event-list>.event-card .mf-poster-frame>img{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;z-index:1!important;transform:none!important;transition:none!important}',
+'.event-list>.event-card:hover,.event-list>.event-card.active,.event-list>.event-card:focus-visible{transform:none!important;box-shadow:none!important;outline:none}',
+'.event-list>.event-card:hover .mf-poster-frame,.event-list>.event-card:focus-visible .mf-poster-frame{border-color:#b1ff8c;box-shadow:0 0 0 2px #8cffa677,0 14px 27px #000a}',
+'.event-list>.event-card .mf-event-caption{display:grid;align-content:start;justify-items:center;gap:3px;width:100%;min-height:53px;padding:0 4px 4px;overflow-wrap:anywhere;pointer-events:none}',
+'.event-list>.event-card .mf-event-caption-title{display:block;font:700 clamp(19px,1.9vw,28px)/1.13 Oswald,Arial,sans-serif;color:#f5fff8;letter-spacing:.005em;text-wrap:balance}',
+'.event-list>.event-card .mf-event-caption-date{display:block;font:600 clamp(15px,1.25vw,19px)/1.25 Oswald,Arial,sans-serif;color:#a5ff79;letter-spacing:.025em}',
+'.event-list>.event-card .mf-event-hint,.event-list>.event-card .event-info{display:none!important}',
+'.event-list>.event-card .mf-no-poster-frame{background:radial-gradient(ellipse at 60% 15%,#275a44 0%,#09251b 48%,#03120e 100%)}',
 '.mf-cover-placeholder{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}',
 '.mf-cover-placeholder:before{content:"";width:69%;aspect-ratio:1/1;border-radius:50%;background:repeating-radial-gradient(circle,#132f29 0 4px,#244d3e 5px 6px,#081f19 7px 12px);border:2px solid #8fdfb055;box-shadow:0 18px 40px #000b,0 0 35px #7cff9d18}',
 '.mf-cover-placeholder:after{content:"";position:absolute;width:15%;aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle,#071c14 0 15%,#9fe5ad 17% 75%,#327d57 77%);box-shadow:0 0 18px #7fffb466}',
 '.mf-date-description{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;line-height:1.3}',
-'@media(max-width:760px){.event-wrap{height:auto!important}.event-list{height:auto!important;min-height:0!important}.event-list>.event-card{height:auto!important;aspect-ratio:1/1!important;max-width:100%!important;width:100%!important;border-radius:16px!important}}',
+'@media(max-width:760px){.event-wrap{height:auto!important}.event-list{height:auto!important;min-height:0!important}.event-list>.event-card{width:100%!important;max-width:100%!important;height:auto!important;aspect-ratio:auto!important;gap:9px!important}.event-list>.event-card .mf-poster-frame{aspect-ratio:1/1;border-radius:16px}.event-list>.event-card .mf-event-caption{min-height:57px}.event-list>.event-card .mf-event-caption-title{font-size:clamp(20px,5.4vw,27px)}.event-list>.event-card .mf-event-caption-date{font-size:clamp(14px,4vw,18px)}.event-wrap .nav-arrow{top:42%!important}}',
 '.mf-calendar-caption{font:500 14px Oswald,sans-serif;color:#aad8c3;margin:-5px 0 14px;line-height:1.35}',
 '.mf-calendar-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 12px}.mf-calendar-month{font:600 22px Oswald,sans-serif;text-transform:capitalize;text-align:center}.mf-calendar-arrow{width:39px;height:39px;border-radius:11px;background:#113e2d;color:#e8ffe4;border:1px solid #3f9b73;font-size:23px}.mf-calendar-arrow:disabled{opacity:.25;cursor:default}',
 '.mf-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.mf-weekday{display:grid;place-items:center;color:#9fbaa9;font:500 12px Oswald,sans-serif;min-height:24px}.mf-calendar-empty{min-height:41px}.mf-calendar-day{height:42px;min-width:0;border:1px solid #1a4736;background:#071f16;border-radius:10px;color:#819b8c;font:600 16px Oswald,sans-serif;touch-action:manipulation}.mf-calendar-day:disabled{opacity:.42;cursor:default}.mf-calendar-day.available{color:#e7ffeb;border-color:#69ca8c;background:#14412c}.mf-calendar-day.available:after{content:"";display:block;width:4px;height:4px;border-radius:50%;background:#a5ff79;margin:-1px auto 0}.mf-calendar-day.available:hover{background:#236244}.mf-calendar-day.selected{color:#081c11;border-color:#b9ff7a;background:#b4fc7c;box-shadow:0 0 0 2px #b4fc7c33}.mf-calendar-day.selected:after{background:#185032}',
@@ -212,18 +216,24 @@ async function saveTicket(d){
  var msg=el('p','mf-note','Если изображение открылось отдельно, удерживайте его и выберите «Сохранить в Фото».');dialogBody.append(msg);
 }
 function buildCard(e){
- // Only artwork appears in the homepage carousel. All details remain in eventForm().
+ // Square poster above; title, date and time below. Clicking the entire card opens details.
  var button=el('button','event-card');button.type='button';
  button.setAttribute('aria-label','Открыть описание и регистрацию: '+e.title+' · '+localDate(e.starts_at));
  button.title='Открыть мероприятие: '+e.title;
+ var frame=el('span','mf-poster-frame');
  if(e.poster){
-  var img=el('img');img.src=e.poster;img.alt='';img.loading='lazy';img.decoding='async';
-  button.append(img);
+  var img=el('img');img.src=e.poster;img.alt='';img.loading='lazy';img.decoding='async';frame.append(img);
  }else{
-  button.classList.add('mf-no-poster');
-  var cover=el('span','mf-cover-placeholder');
-  cover.setAttribute('aria-hidden','true');button.append(cover);
+  frame.classList.add('mf-no-poster-frame');
+  var cover=el('span','mf-cover-placeholder');cover.setAttribute('aria-hidden','true');frame.append(cover);
  }
+ var caption=el('span','mf-event-caption');
+ caption.append(el('span','mf-event-caption-title',e.title));
+ var date=new Date(e.starts_at);
+ var day=date.toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk',day:'numeric',month:'long',year:'numeric'});
+ var time=date.toLocaleTimeString('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'});
+ caption.append(el('span','mf-event-caption-date',day+' · '+time));
+ button.append(frame,caption);
  button.addEventListener('click',function(){eventForm(e);});return button;
 }
 function drawEvents(){
