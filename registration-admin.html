@@ -905,28 +905,57 @@ function eventEditor(existing){
  });
  showModal(title,f);
 }
+function clearUploadPreview(preview){
+ if(preview.dataset.blobUrl){URL.revokeObjectURL(preview.dataset.blobUrl);delete preview.dataset.blobUrl;}
+ preview.onload=null;preview.onerror=null;
+}
+function showUploadPreview(file,preview){
+ if(!file)return;
+ if(!/^image\/(png|jpeg|webp|gif|avif|heic|heif)$/i.test(file.type)){
+  errMessage(new Error('Выберите изображение JPG, PNG, WebP, GIF, AVIF или HEIC'));return;
+ }
+ clearUploadPreview(preview);
+ var url=URL.createObjectURL(file);preview.dataset.blobUrl=url;
+ preview.onload=function(){clearUploadPreview(preview);};
+ preview.onerror=function(){clearUploadPreview(preview);preview.hidden=true;errMessage(new Error('Браузер не может открыть это изображение'));};
+ preview.src=url;preview.hidden=false;
+}
+async function imageForSave(upload,previous,square){
+ if(upload)return compressImage(upload,square);
+ if(previous&&!/^data:image\/webp;base64,/i.test(previous))return compressImage(previous,square);
+ return previous||'';
+}
 async function compressImage(file,square){
  if(!file)return '';
- if(!/^image\/(png|jpeg|webp)$/.test(file.type))throw new Error('Выберите изображение JPG, PNG или WebP');
- var url=URL.createObjectURL(file),image=new Image();
+ var isDataUrl=typeof file==='string';
+ var mime=isDataUrl?(file.match(/^data:(image\/[a-z0-9+.-]+);base64,/i)||[])[1]:file.type;
+ if(!/^image\/(png|jpeg|webp|gif|avif|heic|heif)$/i.test(mime||''))throw new Error('Неподдерживаемый формат. Выберите JPG, PNG, WebP, GIF, AVIF или HEIC');
+ var url=isDataUrl?file:URL.createObjectURL(file),image=new Image();
  try{
-  await new Promise(function(resolve,reject){image.onload=resolve;image.onerror=reject;image.src=url;});
+  await new Promise(function(resolve,reject){
+   image.onload=resolve;
+   image.onerror=function(){reject(new Error('Браузер не поддерживает этот формат изображения. Сохраните его как JPG или PNG.'));};
+   image.src=url;
+  });
   var longest=Math.max(image.naturalWidth,image.naturalHeight);
-  for(var maxSide of [900,740,600,480]){
+  if(!longest)throw new Error('Не удалось прочитать изображение');
+  for(var maxSide of [900,740,600,480,360]){
    var scale=Math.min(1,maxSide/longest),canvas=document.createElement('canvas');
    var width=Math.max(1,Math.round(image.naturalWidth*scale));
    var height=Math.max(1,Math.round(image.naturalHeight*scale));
-   canvas.width=square?maxSide:width;canvas.height=square?maxSide:height;
+   var edge=Math.max(width,height);
+   canvas.width=square?edge:width;canvas.height=square?edge:height;
    var ctx=canvas.getContext('2d');
    if(square){ctx.fillStyle='#061911';ctx.fillRect(0,0,canvas.width,canvas.height);}
    ctx.drawImage(image,square?Math.floor((canvas.width-width)/2):0,square?Math.floor((canvas.height-height)/2):0,width,height);
-   for(var quality of [.80,.66,.52,.4]){
+   for(var quality of [.82,.70,.56,.42,.30]){
     var data=canvas.toDataURL('image/webp',quality);
-    if(data.startsWith('data:image/webp')&&data.length<175000)return data;
+    if(!data.startsWith('data:image/webp;base64,'))throw new Error('Этот браузер не поддерживает конвертацию в WebP');
+    if(data.length<175000)return data;
    }
   }
-  throw new Error('Изображение слишком большое. Выберите фото с меньшим разрешением.');
- }finally{URL.revokeObjectURL(url);}
+  throw new Error('Не удалось уменьшить изображение для WebP. Выберите файл меньшего размера.');
+ }finally{if(!isDataUrl)URL.revokeObjectURL(url);}
 }
 function personEditor(existing){
  var f=el('form','form');
