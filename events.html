@@ -46,66 +46,111 @@ footer{padding:20px;text-align:center;border-top:1px solid #1d4335;color:#91b1a2
 @media(max-width:520px){header{min-height:55px;padding:9px 12px}.brand{font-size:20px}.back{font-size:12px;padding:8px 10px}main{padding:21px 12px 50px}h1{font-size:38px}.toolbar{margin:17px 0 12px;gap:11px}.filters{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.filters button{font-size:12px;padding:7px 4px}.search{width:100%;max-width:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.card{border-radius:13px}.poster{aspect-ratio:1}.pill{font-size:9px;padding:3px 5px;left:6px;top:6px}.info{padding:10px 9px;gap:5px}.date{font-size:20px}.name{font-size:17px}.venue{font-size:12px}.actions{padding-top:7px}.action{min-height:35px;font-size:12px;padding:6px}.count{margin-bottom:10px;font-size:13px}}
 @media(max-width:345px){.grid{grid-template-columns:1fr}.poster{aspect-ratio:1.3}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+/* Compact upcoming-only public event grid */
+header{min-height:54px;padding:7px clamp(10px,3vw,30px)}
+.brand{font-size:clamp(18px,2vw,26px)}
+.back{padding:7px 12px;font-size:13px}
+main{max-width:1120px;padding:18px clamp(11px,2.5vw,24px) 28px}
+.overline{font-size:11px;letter-spacing:.1em}
+h1{font-size:clamp(30px,4.4vw,49px);margin:4px 0 6px}
+.subtitle{font-size:clamp(13px,1.2vw,16px);line-height:1.3}
+.toolbar{margin:12px 0 8px}
+.search{min-height:35px;width:min(100%,310px);padding:7px 10px;font-size:14px}
+.count{font-size:13px;margin-bottom:10px}
+.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.card{border-radius:13px;box-shadow:0 7px 20px #0005}
+.poster{aspect-ratio:1.25;display:grid;place-items:center}
+.poster img{object-fit:contain;object-position:center}
+.pill{top:6px;left:6px;padding:3px 6px;font-size:10px;border-radius:6px}
+.info{padding:9px 10px;gap:4px}
+.date{font-size:18px;line-height:1.15}
+.name{font-size:clamp(17px,1.75vw,22px);line-height:1.13}
+.venue{font-size:12px;line-height:1.2}
+.actions{padding-top:6px}
+.action{min-height:34px;padding:5px 7px;border-radius:8px;font-size:13px;line-height:1.13}
+.poster:hover+.info .name{color:#a6ff98}
+.empty{padding:38px 15px}
+footer{padding:12px;font-size:11px}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){
+ header{min-height:50px;padding:6px 10px}
+ .brand{font-size:18px}
+ .back{font-size:11px;padding:6px 8px}
+ main{padding:13px 9px 18px}
+ h1{font-size:clamp(27px,8vw,35px)}
+ .subtitle{font-size:13px}
+ .toolbar{margin:9px 0 7px}
+ .search{width:100%;min-height:33px}
+ .count{margin-bottom:8px;font-size:12px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .card{border-radius:10px}
+ .poster{aspect-ratio:1.17}
+ .pill{font-size:8px;padding:2px 4px;top:4px;left:4px}
+ .info{padding:7px 7px 8px;gap:3px}
+ .date{font-size:15px}
+ .name{font-size:clamp(14px,4vw,18px)}
+ .venue{font-size:11px}
+ .actions{padding-top:5px}
+ .action{min-height:32px;font-size:11px;padding:6px 3px}
+}
+@media(max-width:345px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.name{font-size:14px}.action{font-size:10px}}
 </style></head><body>
 <header><a class="brand" href="/" aria-label="Мелофанты, главная">МЕЛО<span>ФАНТЫ</span></a><a class="back" href="/">← НА ГЛАВНУЮ</a></header>
 <main><div class="overline">АФИШИ · ИГРЫ · РЕГИСТРАЦИЯ</div><h1>ВСЕ <em>МЕРОПРИЯТИЯ</em></h1>
-<p class="subtitle">Полное расписание MELOFANTY. Выбирайте мероприятие и переходите к регистрации. Прошедшие игры тоже сохраняются в списке.</p>
-<div class="toolbar"><div class="filters" role="group" aria-label="Фильтр мероприятий">
-<button type="button" data-filter="all" aria-pressed="true">ВСЕ</button><button type="button" data-filter="upcoming" aria-pressed="false">БУДУЩИЕ</button><button type="button" data-filter="past" aria-pressed="false">ПРОШЕДШИЕ</button>
-</div><input id="search" class="search" type="search" placeholder="Поиск по названию и месту" aria-label="Поиск мероприятий"></div>
+<p class="subtitle">Актуальные и предстоящие игры. Выберите афишу и зарегистрируйтесь на мероприятие.</p>
+<div class="toolbar"><input id="search" class="search" type="search" placeholder="Поиск мероприятия" aria-label="Поиск мероприятия"></div>
 <div id="count" class="count" aria-live="polite">ЗАГРУЖАЕМ МЕРОПРИЯТИЯ…</div>
 <section class="grid" id="grid" aria-label="Список мероприятий" aria-live="polite"></section>
 </main><footer>МЕЛОФАНТЫ · МЕРОПРИЯТИЯ ОБНОВЛЯЮТСЯ АВТОМАТИЧЕСКИ</footer>
-<div class="mask" id="mask" hidden><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog-header"><h2 id="dialogTitle">МЕРОПРИЯТИЕ</h2><button class="close" id="close" type="button" aria-label="Закрыть">×</button></div><div id="details"></div></div></div>
 <script>
 (function(){
 'use strict';
-var events=[],filter='all',fingerprint='',ui={grid:document.getElementById('grid'),count:document.getElementById('count'),search:document.getElementById('search'),mask:document.getElementById('mask')};
-function mk(tag,cls,value){var x=document.createElement(tag);if(cls)x.className=cls;if(value!==undefined)x.textContent=value;return x;}
-function date(value){return new Date(value).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}
-function description(e){
- document.getElementById('dialogTitle').textContent=e.title;
- var body=document.getElementById('details');body.replaceChildren();
- body.append(mk('p','',date(e.starts_at)+' · '+e.venue));
- if(e.description)body.append(mk('p','',e.description));
- body.append(mk('p','','Мероприятие завершено. Регистрация закрыта.'));
- ui.mask.hidden=false;document.getElementById('close').focus();
+var events=[],fingerprint=null;
+var grid=document.getElementById('grid'),counter=document.getElementById('count'),search=document.getElementById('search');
+function el(tag,cls,value){var n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n;}
+function when(value){return new Date(value).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function build(e){
+ var card=el('article','card'),url='/?event='+encodeURIComponent(e.id);
+ var poster=el('a','poster');poster.href=url;poster.setAttribute('aria-label','Открыть регистрацию: '+e.title);
+ if(e.poster){var img=el('img');img.src=e.poster;img.alt='Афиша: '+e.title;img.loading='lazy';poster.append(img);}
+ else poster.append(el('strong','','МЕЛОФАНТЫ'));
+ poster.append(el('span','pill',e.is_demo?'ДЕМО · РЕГИСТРАЦИЯ':'РЕГИСТРАЦИЯ'));
+ var info=el('div','info');
+ info.append(el('div','date',when(e.starts_at)),el('h2','name',e.title),el('div','venue',e.venue));
+ var actions=el('div','actions'),link=el('a','action','ЗАРЕГИСТРИРОВАТЬСЯ');
+ link.href=url;actions.append(link);info.append(actions);card.append(poster,info);
+ return card;
 }
 function draw(){
- ui.grid.replaceChildren();
- var q=ui.search.value.trim().toLocaleLowerCase('ru-RU');
- var visible=events.filter(function(e){
-  return (filter==='all'||filter==='past'&&e.past||filter==='upcoming'&&!e.past)&&(!q||(e.title+' '+e.venue+' '+date(e.starts_at)).toLocaleLowerCase('ru-RU').includes(q));
- });
- ui.count.textContent='Найдено мероприятий: '+visible.length;
- if(!visible.length){var n=mk('div','empty');n.append(mk('strong','','МЕРОПРИЯТИЯ НЕ НАЙДЕНЫ'),mk('p','','Измените фильтр или поисковый запрос.'));ui.grid.append(n);return;}
- visible.forEach(function(e){
-  var card=mk('article','card'+(e.past?' past':'')),poster=mk('div','poster');
-  if(e.poster){var img=mk('img');img.src=e.poster;img.alt='Афиша: '+e.title;img.loading='lazy';poster.append(img);}
-  else poster.append(mk('strong','','МЕЛОФАНТЫ'));
-  poster.append(mk('span','pill',e.past?'АРХИВ':e.is_demo?'ДЕМО · РЕГИСТРАЦИЯ':'РЕГИСТРАЦИЯ'));
-  var copy=mk('div','info'),title=mk('h2','name',e.title),actionBox=mk('div','actions');
-  copy.append(mk('div','date',date(e.starts_at)),title,mk('div','venue',e.venue));
-  if(e.past){var view=mk('button','action','ПОДРОБНЕЕ');view.type='button';view.addEventListener('click',function(){description(e);});actionBox.append(view);}
-  else{var link=mk('a','action','ЗАРЕГИСТРИРОВАТЬСЯ');link.href='/?event='+encodeURIComponent(e.id);actionBox.append(link);}
-  copy.append(actionBox);card.append(poster,copy);ui.grid.append(card);
- });
+ grid.replaceChildren();
+ var q=search.value.trim().toLocaleLowerCase('ru-RU');
+ var visible=events.filter(function(e){return !q||(e.title+' '+e.venue+' '+when(e.starts_at)).toLocaleLowerCase('ru-RU').includes(q)});
+ counter.textContent='Мероприятий: '+visible.length;
+ if(!visible.length){
+  var empty=el('div','empty');
+  empty.append(el('strong','',events.length?'НИЧЕГО НЕ НАЙДЕНО':'СКОРО НОВЫЕ ИГРЫ'));
+  empty.append(el('p','',events.length?'Измените поисковый запрос.':'Сейчас нет мероприятий с открытой регистрацией.'));
+  grid.append(empty);return;
+ }
+ visible.forEach(function(e){grid.append(build(e))});
 }
 async function refresh(){
  try{
-  var r=await fetch('/api/registration/events/all',{cache:'no-store'});if(!r.ok)throw Error('status '+r.status);
-  var d=await r.json(),items=Array.isArray(d.events)?d.events:[];
+  var response=await fetch('/api/registration/events/all',{cache:'no-store'});
+  if(!response.ok)throw Error('Ошибка загрузки расписания');
+  var data=await response.json(),items=Array.isArray(data.events)?data.events:[];
+  // Even if a cached API ever returned old entries, hide expired / archived cards.
+  items=items.filter(function(e){return !e.past&&!e.archived&&Date.parse(e.ends_at)>Date.now()});
   var next=JSON.stringify(items);
   if(next!==fingerprint){events=items;fingerprint=next;draw();}
- }catch(e){if(!fingerprint){ui.count.textContent='Не удалось загрузить расписание';ui.grid.replaceChildren(mk('div','empty','Не удалось получить мероприятия. Обновите страницу.'));}}
+ }catch(err){
+  if(fingerprint===null){counter.textContent='Ошибка загрузки';grid.replaceChildren(el('div','empty','Не удалось загрузить мероприятия. Попробуйте обновить страницу.'));}
+ }
 }
-document.querySelectorAll('[data-filter]').forEach(function(button){button.addEventListener('click',function(){filter=button.dataset.filter;document.querySelectorAll('[data-filter]').forEach(function(b){b.setAttribute('aria-pressed',String(b===button));});draw();});});
-ui.search.addEventListener('input',draw);
-document.getElementById('close').addEventListener('click',function(){ui.mask.hidden=true;});
-ui.mask.addEventListener('click',function(e){if(e.target===ui.mask)ui.mask.hidden=true;});
-document.addEventListener('keydown',function(e){if(e.key==='Escape')ui.mask.hidden=true;});
-refresh();window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
-setInterval(function(){if(!document.hidden)refresh();},90000);
+search.addEventListener('input',draw);
+refresh();window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh()});
+setInterval(function(){if(!document.hidden)refresh()},90000);
 })();
 </script>
 </body></html>
