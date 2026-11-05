@@ -506,14 +506,25 @@ document.querySelectorAll('a.main-btn').forEach(function(a){
 });
 var all=document.getElementById('allEvents');
 if(all&&all.tagName==='BUTTON')all.addEventListener('click',function(){location.href='/events';});
-var eventsFingerprint=null;
+var eventsFingerprint=null,eventsVersion=null,eventsRefreshCounter=0;
 async function refreshEvents(){
+ var requestId=++eventsRefreshCounter;
  try{
+  if(eventsVersion!==null){
+   var versionResponse=await fetch('/api/registration/events/version',{cache:'no-store'});
+   if(!versionResponse.ok)throw new Error('Не удалось проверить обновления');
+   var currentVersion=await versionResponse.json();
+   if(requestId!==eventsRefreshCounter)return;
+   if(currentVersion.version===eventsVersion)return;
+  }
   var response=await fetch('/api/registration/events',{cache:'no-store'});
-  if(!response.ok)throw new Error('API');
+  if(!response.ok)throw new Error('Не удалось загрузить расписание');
   var data=await response.json();
+  if(requestId!==eventsRefreshCounter)return;
   var next=Array.isArray(data.events)?data.events:[];
-  var fingerprint=JSON.stringify(next);
+  eventsVersion=typeof data.version==='string'?data.version:null;
+  // Guest counts are intentionally omitted: they do not change the visible carousel.
+  var fingerprint=JSON.stringify(next.map(function(e){return [e.id,e.title,e.starts_at,e.ends_at,e.venue,e.description,e.poster,e.is_demo];}));
   if(fingerprint!==eventsFingerprint){
    var oldId=events[index]&&events[index].id;
    events=next;
@@ -522,8 +533,9 @@ async function refreshEvents(){
    index=Math.max(0,oldId?events.findIndex(function(e){return e.id===oldId;}):0);
    eventsFingerprint=fingerprint;
    drawEvents();
-  }
+  }else events=next;
  }catch(error){
+  if(requestId!==eventsRefreshCounter)return;
   if(eventsFingerprint===null){
    var list=document.getElementById('eventList');
    if(list){list.replaceChildren();var box=el('div','mf-empty');box.append(el('p','','Не удалось получить актуальное расписание. Обновите страницу позже.'));list.append(box);}
