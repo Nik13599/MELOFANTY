@@ -1152,5 +1152,52 @@ try{initCursor()}catch(error){
   // Graceful fallback: the normal interface remains functional if WebGL is unsupported.
   document.getElementById('mf-fluid-canvas')?.remove();
   window.__mfFluidSmokeInitialized=false;
-  console.warn('MELOFANTY smoke disabled:',error.message);
+  console.warn('MELOFANTY GPU smoke unavailable; using soft 2D smoke:',error.message);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const canvas=document.createElement('canvas');
+  canvas.id='mf-smoke-fallback';canvas.setAttribute('aria-hidden','true');
+  canvas.style.cssText='position:fixed;inset:0;width:100vw;height:100dvh;z-index:8;opacity:.64;pointer-events:none!important;mix-blend-mode:screen';
+  document.body.append(canvas);
+  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
+  if(!ctx)return;
+  let smoke=[],last=null,raf=0,scale=1;
+  const mobile=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0;
+  const resize=()=>{scale=Math.min(devicePixelRatio||1,1.4);canvas.width=Math.round(innerWidth*scale);canvas.height=Math.round(innerHeight*scale);ctx.setTransform(scale,0,0,scale,0,0)};
+  resize();window.addEventListener('resize',resize,{passive:true});
+  const puff=(x,y)=>{
+    if(!last){last={x,y};return}
+    const d=Math.hypot(x-last.x,y-last.y);
+    if(d<3)return;
+    if(d>170){last={x,y};return}
+    const count=Math.min(11,Math.ceil(d/8));
+    for(let i=0;i<count;i++){
+      const t=i/count;
+      smoke.push({x:last.x+(x-last.x)*t,y:last.y+(y-last.y)*t,r:14+Math.random()*17,vx:(Math.random()-.5)*.65,vy:-.2-Math.random()*.5,start:performance.now(),life:850+Math.random()*650,c:Math.random()>.5?0:1});
+    }
+    if(smoke.length>140)smoke.splice(0,smoke.length-140);
+    last={x,y};if(!raf)raf=requestAnimationFrame(draw);
+  };
+  function draw(now){
+    raf=0;ctx.clearRect(0,0,innerWidth,innerHeight);
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    smoke=smoke.filter(s=>now-s.start<s.life);
+    for(const s of smoke){
+      const t=(now-s.start)/s.life,fade=Math.pow(1-t,1.8);
+      s.x+=s.vx;s.y+=s.vy;
+      const r=s.r*(1+t*.8);
+      const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,r);
+      const color=s.c?'22,230,208':'165,253,98';
+      g.addColorStop(0,'rgba('+color+','+(fade*.19)+')');
+      g.addColorStop(.45,'rgba('+color+','+(fade*.09)+')');
+      g.addColorStop(1,'rgba('+color+',0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+    if(smoke.length)raf=requestAnimationFrame(draw);
+  }
+  document.addEventListener('touchstart',e=>{if(e.touches[0])last={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
+  document.addEventListener('touchmove',e=>{if(e.touches[0])puff(e.touches[0].clientX,e.touches[0].clientY)},{passive:true});
+  document.addEventListener('touchend',()=>last=null,{passive:true});
+  if(!mobile)window.addEventListener('mousemove',e=>puff(e.clientX,e.clientY),{passive:true});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){smoke=[];last=null;if(raf)cancelAnimationFrame(raf);raf=0}},{passive:true});
 }
