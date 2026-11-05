@@ -96,8 +96,9 @@ async function regEvents(env,admin,archive){
    const passed=e.archived||new Date(e.ends_at).getTime()<=now;
    return admin ? (archive?passed:!passed) : !passed;
  });
- if(!admin)return regJson({events:filtered.map(regEventPublic).reverse()});
- return regJson({events:filtered,archive:!!archive});
+ const ordered=filtered.slice().sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime());
+ if(!admin)return regJson({events:ordered.map(regEventPublic)});
+ return regJson({events:archive?ordered.reverse():ordered,archive:!!archive});
 }
 async function regEventDetails(env,id){
  const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
