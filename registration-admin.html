@@ -696,8 +696,8 @@ body{display:flex;flex-direction:column;min-height:0}
 :root{--mf-motion-accent:var(--lime,#a5fd62);--mf-motion-cyan:var(--cyan,#16e6d0)}
 @media(prefers-reduced-motion:no-preference){
 html{scroll-behavior:smooth}
-.mf-reveal{opacity:0;transform:translate3d(0,18px,0);filter:blur(5px);transition:opacity .65s cubic-bezier(.2,.8,.2,1),transform .65s cubic-bezier(.2,.8,.2,1),filter .65s ease;transition-delay:var(--mf-delay,0ms)}
-.mf-reveal.mf-visible{opacity:1;transform:translate3d(0,0,0);filter:blur(0)}
+.mf-reveal{opacity:1;transform:none;filter:none;transition:none}
+.mf-reveal.mf-visible{opacity:1;transform:none;filter:none}
 .mf-motion-card{transition:transform .32s cubic-bezier(.2,.8,.2,1),box-shadow .32s ease,filter .32s ease!important;will-change:auto}
 @media(hover:hover) and (pointer:fine){.mf-motion-card:hover{transform:translate3d(0,-4px,0) scale(1.012);filter:brightness(1.07);box-shadow:0 14px 38px #16e6d019,0 0 22px #a5fd6218}}
 .mf-motion-button{transition:transform .2s ease,box-shadow .25s ease,filter .2s ease!important}
