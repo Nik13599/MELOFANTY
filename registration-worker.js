@@ -10,9 +10,9 @@ function regError(message,status){return regJson({error:message},status||400);}
 async function regBody(req){
   if((req.headers.get('content-type')||'').split(';')[0].trim()!=='application/json') throw new Error('Требуется JSON');
   const len=Number(req.headers.get('content-length')||0);
-  if(len>400000)throw new Error('Слишком большой запрос');
+  if(len>800000)throw new Error('Слишком большой запрос');
   const text=await req.text();
-  if(text.length>400000)throw new Error('Слишком большой запрос');
+  if(text.length>800000)throw new Error('Слишком большой запрос');
   const obj=JSON.parse(text);if(!obj||typeof obj!=='object'||Array.isArray(obj))throw new Error('Некорректные данные');return obj;
 }
 function regText(v,max){return String(v===undefined?'':v).trim().slice(0,max);}
@@ -125,19 +125,20 @@ async function regSaveEvent(env,b,id){
  const capacity=b.capacity===''||b.capacity==null?null:Number(b.capacity);
  if(capacity!==null&&(!Number.isInteger(capacity)||capacity<1||capacity>100000))throw new Error('Некорректная вместимость');
  const poster=regPoster(b.poster||'');
+ const adminPoster=regPoster(b.admin_poster||'');
   const isDemo=b.is_demo?1:0;
  if(id){
   const old=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
   if(!old)return regError('Мероприятие не найдено',404);
   if(old.next_seq>0&&!regSameDay(old.starts_at,starts))throw new Error('После появления заявок нельзя изменять день и месяц мероприятия: изменятся ID');
    if(old.next_seq>0&&Number(old.is_demo||0)!==isDemo)throw new Error('Нельзя менять тестовый статус мероприятия после появления заявок');
-  await env.DB.prepare("UPDATE events SET title=?,starts_at=?,ends_at=?,venue=?,description=?,poster=?,capacity=?,is_demo=?,archived=?,updated_at=datetime('now') WHERE id=?")
-   .bind(title,starts,ends,venue,description,poster,capacity,isDemo,b.archived?1:0,id).run();
+  await env.DB.prepare("UPDATE events SET title=?,starts_at=?,ends_at=?,venue=?,description=?,poster=?,admin_poster=?,capacity=?,is_demo=?,archived=?,updated_at=datetime('now') WHERE id=?")
+   .bind(title,starts,ends,venue,description,poster,adminPoster,capacity,isDemo,b.archived?1:0,id).run();
   return regJson({ok:true,id});
  }
  const newId=crypto.randomUUID();
- await env.DB.prepare('INSERT INTO events(id,title,starts_at,ends_at,venue,description,poster,capacity,is_demo) VALUES(?,?,?,?,?,?,?,?,?)')
-  .bind(newId,title,starts,ends,venue,description,poster,capacity,isDemo).run();
+ await env.DB.prepare('INSERT INTO events(id,title,starts_at,ends_at,venue,description,poster,admin_poster,capacity,is_demo) VALUES(?,?,?,?,?,?,?,?,?,?)')
+  .bind(newId,title,starts,ends,venue,description,poster,adminPoster,capacity,isDemo).run();
  return regJson({ok:true,id:newId},201);
 }
 async function regManageRegistration(env,b){
