@@ -359,6 +359,65 @@ body{display:flex;flex-direction:column;min-height:0}
 .event-upload .mobile-image-status.error{color:#ffaaa3}
 @media(max-width:650px){.event-image-pair{grid-template-columns:1fr;gap:10px}.event-upload{padding:12px}.event-upload .field{font-size:14px}.event-upload .field input{width:100%;font-size:14px;min-height:44px}.event-upload .preview{aspect-ratio:1/1;max-height:42vh}.event-upload .upload-caption{font-size:12px}}
 
+
+/* Desktop registration overview: compact square three-column event cards. */
+@media(min-width:761px){
+ .view-top.event-overview-heading{display:none!important}
+ .view-scroll.events-scroll{padding:clamp(10px,1.3vw,18px)!important}
+ .view-scroll.events-scroll .event-page .event-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:auto!important;
+  column-gap:clamp(9px,1vw,14px)!important;
+  row-gap:clamp(9px,1vw,14px)!important;
+  width:100%!important;
+  max-width:930px!important;
+  margin:0 auto!important;
+  align-content:start!important;
+ }
+ .view-scroll.events-scroll .event-page .event-grid>.event-card{
+  box-sizing:border-box!important;
+  aspect-ratio:1/1!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  width:100%!important;
+  border-radius:clamp(12px,1.2vw,17px)!important;
+ }
+ .view-scroll.events-scroll .event-card .event-info{
+  padding:clamp(8px,.95vw,12px) clamp(8px,1vw,13px) 0!important;
+  gap:2px!important;
+ }
+ .view-scroll.events-scroll .event-card .event-day{
+  font-size:clamp(25px,2.2vw,36px)!important;
+  line-height:1.05!important;
+ }
+ .view-scroll.events-scroll .event-card .event-title{
+  font-size:clamp(13px,1.2vw,18px)!important;
+  line-height:1.08!important;
+ }
+ .view-scroll.events-scroll .event-card .guest-count strong{
+  font-size:clamp(22px,2.15vw,29px)!important;
+ }
+ .view-scroll.events-scroll .event-card .event-actions,
+ .view-scroll.events-scroll .event-card .event-actions .btn{
+  min-height:32px!important;
+  height:32px!important;
+  max-height:32px!important;
+ }
+ .bottom-bar[data-mode="events"]{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+ }
+ .bottom-bar[data-mode="events"] .dock-add{
+  grid-column:1!important;
+  grid-row:1!important;
+  justify-self:stretch!important;
+ }
+ .bottom-bar[data-mode="events"] .dock-archive{
+  grid-column:2!important;
+  grid-row:1!important;
+  justify-self:stretch!important;
+ }
+}
 </style><style id="disable-double-tap-zoom">
 @media (pointer:coarse) {
   html, body, button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
@@ -647,7 +706,7 @@ function renderEvents(){
  var previous=document.querySelector('.events-scroll');
  var oldScroll=previous?previous.scrollTop:0;
  state.selected=null;state.details=null;app.replaceChildren();
- var top=el('div','view-top');top.append(head(state.archive?'АРХИВ МЕРОПРИЯТИЙ':'МЕРОПРИЯТИЯ',state.archive?'Завершённые игры и сохранённые заявки':'Актуальные игры и количество зарегистрированных гостей'));
+ var top=el('div','view-top event-overview-heading');top.append(head(state.archive?'АРХИВ МЕРОПРИЯТИЙ':'МЕРОПРИЯТИЯ',state.archive?'Завершённые игры и сохранённые заявки':'Актуальные игры и количество зарегистрированных гостей'));
  app.append(top);
  var viewport=el('div','view-scroll events-scroll');
  viewport.classList.toggle('is-archive',state.archive);
