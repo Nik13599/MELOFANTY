@@ -95,6 +95,11 @@ async function regPublicRateLimit(req,env){
   return response;
  }
  await env.DB.prepare('INSERT INTO admin_attempts(ip_hash,at) VALUES(?,?)').bind(hashed,now).run();
+ // Expire old hashed IP attempts so this shared table cannot grow forever.
+ if(Math.random()<.025){
+  try{await env.DB.prepare('DELETE FROM admin_attempts WHERE at<?').bind(now-86400).run();}
+  catch(e){console.warn('MELOFANTY: attempt cleanup skipped');}
+ }
  return null;
 }
 async function regInsert(env,event,person,manual){
@@ -208,8 +213,15 @@ async function regManageRegistration(env,b){
   const booked=await env.DB.prepare("SELECT COALESCE(SUM(party_size),0) n FROM registrations WHERE event_id=? AND status IN ('pending','confirmed') AND seq!=?").bind(eventId,seq).first();
   if(booked.n+party>event.capacity)throw new Error('Превышена вместимость мероприятия');
  }
- await env.DB.prepare("UPDATE registrations SET name=?,phone=?,party_size=?,status=?,guest_comment=?,admin_comment=?,updated_at=? WHERE event_id=? AND seq=?")
-  .bind(name,phone,party,nextStatus,guestComment,adminComment,new Date().toISOString(),eventId,seq).run();
+ // Capacity is checked again INSIDE the write statement, so two concurrent
+ // admin confirmations cannot both overbook the last available place.
+ const activeUpdate=nextStatus==='pending'||nextStatus==='confirmed';
+ const sql="UPDATE registrations SET name=?,phone=?,party_size=?,status=?,guest_comment=?,admin_comment=?,updated_at=? WHERE event_id=? AND seq=?"+
+  (activeUpdate?" AND EXISTS(SELECT 1 FROM events e WHERE e.id=? AND (e.capacity IS NULL OR (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed') AND r.seq!=?)+?<=e.capacity))":"");
+ const bind=[name,phone,party,nextStatus,guestComment,adminComment,new Date().toISOString(),eventId,seq];
+ if(activeUpdate)bind.push(eventId,seq,party);
+ const changed=await env.DB.prepare(sql).bind(...bind).run();
+ if(changed.meta&&changed.meta.changes===0)return regError('Мест недостаточно или заявка была изменена другим администратором. Обновите список.',409);
  return regJson({ok:true});
 }
 async function registrationRouter(req,env){
