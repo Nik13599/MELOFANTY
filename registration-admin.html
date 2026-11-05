@@ -351,7 +351,7 @@ body{display:flex;flex-direction:column;min-height:0}
 .event-upload{min-width:0;border:1px solid #36785c;border-radius:12px;padding:10px;background:#082419}
 .event-upload .field{font-size:13px;line-height:1.25}
 .event-upload .field input{font-size:12px;max-width:100%;min-width:0;padding:7px;min-height:40px}
-.event-upload .preview{display:block;width:100%;height:auto;aspect-ratio:1.4;object-fit:contain;margin:8px 0 6px;background:#04150f;border:1px solid #2f694f;border-radius:8px}
+.event-upload .preview{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;margin:8px 0 6px;background:#04150f;border:1px solid #2f694f;border-radius:8px}
 .event-upload .preview[hidden]{display:none!important}
 .event-upload .upload-caption{display:block;color:#c2decf;font-size:11px;line-height:1.3}
 @media(max-width:500px){.event-image-pair{gap:7px}.event-upload{padding:7px}.event-upload .field{font-size:11px}.event-upload .field input{font-size:11px;padding:5px}}
@@ -872,19 +872,23 @@ function eventEditor(existing){
   if(existing){f.elements.title.value=existing.title;f.elements.starts_at.value=localInput(existing.starts_at);f.elements.ends_at.value=localInput(existing.ends_at);f.elements.venue.value=existing.venue;f.elements.description.value=existing.description;f.elements.capacity.value=existing.capacity||'';f.elements.archived.checked=!!existing.archived;f.querySelector('#archiveField').hidden=false;if(existing.poster){f.querySelector('#posterPreview').src=existing.poster;f.querySelector('#posterPreview').hidden=false;}if(existing.admin_poster){f.querySelector('#adminPosterPreview').src=existing.admin_poster;f.querySelector('#adminPosterPreview').hidden=false;f.querySelector('#clearAdminImage').hidden=false;}}
  else{var start=new Date(Date.now()+86400000),end=new Date(start.getTime()+14400000);start.setMinutes(0,0,0);end.setMinutes(0,0,0);f.elements.starts_at.value=localInput(start.toISOString());f.elements.ends_at.value=localInput(end.toISOString());}
  f.querySelector('#cancelForm').addEventListener('click',closeModal);
- f.elements.image.addEventListener('change',async function(){try{var photo=await compressImage(this.files[0]);f.dataset.poster=photo||'';if(photo){f.querySelector('#posterPreview').src=photo;f.querySelector('#posterPreview').hidden=false;}}catch(e){errMessage(e);}});
+ f.elements.image.addEventListener('change',async function(){try{var photo=await compressImage(this.files[0],true);f.dataset.poster=photo||'';if(photo){f.querySelector('#posterPreview').src=photo;f.querySelector('#posterPreview').hidden=false;}}catch(e){errMessage(e);}});
  f.elements.admin_image.addEventListener('change',async function(){try{var photo=await compressImage(this.files[0]);if(photo){f.dataset.adminPoster=photo;delete f.dataset.clearAdminPoster;f.querySelector('#adminPosterPreview').src=photo;f.querySelector('#adminPosterPreview').hidden=false;f.querySelector('#clearAdminImage').hidden=false;}}catch(e){errMessage(e);}});
  f.querySelector('#clearAdminImage').addEventListener('click',function(){f.dataset.adminPoster='';f.dataset.clearAdminPoster='1';f.elements.admin_image.value='';var preview=f.querySelector('#adminPosterPreview');preview.hidden=true;preview.removeAttribute('src');this.hidden=true;});
  f.addEventListener('submit',async function(e){
   e.preventDefault();var submit=f.querySelector('[type=submit]');submit.disabled=true;
   try{
    var data={title:f.elements.title.value,starts_at:fromInput(f.elements.starts_at.value),ends_at:fromInput(f.elements.ends_at.value),venue:f.elements.venue.value,description:f.elements.description.value,capacity:f.elements.capacity.value,poster:f.dataset.poster||existing&&existing.poster||'',admin_poster:f.dataset.clearAdminPoster==='1'?'':(f.dataset.adminPoster||existing&&existing.admin_poster||''),is_demo:!!f.elements.is_demo.checked,archived:!!f.elements.archived.checked};
-   await api(existing?'/events/'+existing.id:'/events',mutation(existing?'PATCH':'POST',data));closeModal();toast(existing?'Мероприятие обновлено':'Мероприятие создано');if(state.selected)await reloadDetails();else await loadEvents();
+   await api(existing?'/events/'+existing.id:'/events',mutation(existing?'PATCH':'POST',data));
+   // Notify other tabs on this origin immediately; other devices use API polling.
+   try{localStorage.setItem('melofanty-events-updated',String(Date.now()));}catch(syncError){}
+   closeModal();toast(existing?'Мероприятие обновлено':'Мероприятие создано');
+   if(state.selected)await reloadDetails();else await loadEvents();
   }catch(e){errMessage(e);}finally{submit.disabled=false;}
  });
  showModal(title,f);
 }
-async function compressImage(file){
+async function compressImage(file,square){
  if(!file)return '';
  if(!/^image\/(png|jpeg|webp)$/.test(file.type))throw new Error('Выберите изображение JPG, PNG или WebP');
  var url=URL.createObjectURL(file),image=new Image();
@@ -893,9 +897,12 @@ async function compressImage(file){
   var longest=Math.max(image.naturalWidth,image.naturalHeight);
   for(var maxSide of [900,740,600,480]){
    var scale=Math.min(1,maxSide/longest),canvas=document.createElement('canvas');
-   canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
-   canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
-   canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+   var width=Math.max(1,Math.round(image.naturalWidth*scale));
+   var height=Math.max(1,Math.round(image.naturalHeight*scale));
+   canvas.width=square?maxSide:width;canvas.height=square?maxSide:height;
+   var ctx=canvas.getContext('2d');
+   if(square){ctx.fillStyle='#061911';ctx.fillRect(0,0,canvas.width,canvas.height);}
+   ctx.drawImage(image,square?Math.floor((canvas.width-width)/2):0,square?Math.floor((canvas.height-height)/2):0,width,height);
    for(var quality of [.80,.66,.52,.4]){
     var data=canvas.toDataURL('image/webp',quality);
     if(data.startsWith('data:image/webp')&&data.length<175000)return data;
