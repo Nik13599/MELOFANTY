@@ -311,7 +311,9 @@ function startClock(){
  if(s.phase!=='challenge')return;
  const button=$('#timerStart');
  if(clockRunning){
-  syncClock();stopClock();
+  syncClock();
+  if(!clockRunning)return; // The deadline may have expired while this button was pressed.
+  stopClock();
   if(button)button.textContent='▶ ПРОДОЛЖИТЬ ТАЙМЕР';
   return;
  }
