@@ -23,6 +23,14 @@ styles.textContent=[
 '.mf-event-hint{font:600 12px Oswald,sans-serif;color:#a9ff83;border:1px solid #7cffa060;border-radius:9px;padding:4px 7px;position:absolute;right:9px;top:9px;background:#012018cc}',
 '.mf-demo-event{background:radial-gradient(ellipse at 20% 25%,#195d4e 0%,#03271c 40%,#010907 100%)!important}',
 '.mf-demo-event .mf-event-hint{color:#ffe3a6;border-color:#fcd095aa;background:#3e2b13e9}',
+'/* Public event artwork is always displayed in a full square without cropping. */',
+'.event-list>.event-card{aspect-ratio:1/1!important}',
+'.event-list>.event-card img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important}',
+'.event-list>.event-card .event-info{padding:12px 0 2px;background:linear-gradient(0deg,#02110fe8 0%,#031a11b5 76%,transparent 100%)}',
+'.event-list>.event-card .event-info .event-title{white-space:normal!important;overflow-wrap:anywhere!important}',
+'.mf-card-description{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:2.6em;color:#e2ffef;font:400 clamp(11px,1.1vw,14px)/1.25 Roboto Condensed,Arial,sans-serif;text-shadow:0 1px 4px #000}',
+'.mf-date-description{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;line-height:1.3}',
+'@media(max-width:760px){.event-wrap{height:auto!important}.event-list{height:auto!important;min-height:0!important}.event-list>.event-card{height:auto!important;aspect-ratio:1/1!important;max-width:100%!important;width:100%!important}.event-list>.event-card .event-info{padding-top:8px!important}.mf-card-description{font-size:clamp(10px,3vw,13px);-webkit-line-clamp:2}}',
 '.mf-calendar-caption{font:500 14px Oswald,sans-serif;color:#aad8c3;margin:-5px 0 14px;line-height:1.35}',
 '.mf-calendar-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 12px}.mf-calendar-month{font:600 22px Oswald,sans-serif;text-transform:capitalize;text-align:center}.mf-calendar-arrow{width:39px;height:39px;border-radius:11px;background:#113e2d;color:#e8ffe4;border:1px solid #3f9b73;font-size:23px}.mf-calendar-arrow:disabled{opacity:.25;cursor:default}',
 '.mf-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.mf-weekday{display:grid;place-items:center;color:#9fbaa9;font:500 12px Oswald,sans-serif;min-height:24px}.mf-calendar-empty{min-height:41px}.mf-calendar-day{height:42px;min-width:0;border:1px solid #1a4736;background:#071f16;border-radius:10px;color:#819b8c;font:600 16px Oswald,sans-serif;touch-action:manipulation}.mf-calendar-day:disabled{opacity:.42;cursor:default}.mf-calendar-day.available{color:#e7ffeb;border-color:#69ca8c;background:#14412c}.mf-calendar-day.available:after{content:"";display:block;width:4px;height:4px;border-radius:50%;background:#a5ff79;margin:-1px auto 0}.mf-calendar-day.available:hover{background:#236244}.mf-calendar-day.selected{color:#081c11;border-color:#b9ff7a;background:#b4fc7c;box-shadow:0 0 0 2px #b4fc7c33}.mf-calendar-day.selected:after{background:#185032}',
@@ -117,6 +125,7 @@ async function openDatePicker(preferredDate){
    else card.append(el('div','mf-date-poster mf-date-placeholder','МЕЛОФАНТЫ'));
    var copy=el('div','mf-date-copy');copy.append(el('span','mf-date-title',e.title));
    copy.append(el('span','mf-date-details',localDate(e.starts_at)+' · '+e.venue));
+   if(e.description)copy.append(el('span','mf-date-details mf-date-description',e.description));
    if(e.is_demo)copy.append(el('span','mf-date-details mf-date-demo','ДЕМО · Тестовая регистрация'));
    card.append(copy,el('span','mf-date-chevron','›'));
    card.setAttribute('aria-label','Перейти к регистрации: '+e.title+', '+shortDate(selected));
@@ -206,7 +215,9 @@ function buildCard(e){
  button.append(el('span','mf-event-hint',e.is_demo?'ДЕМО · РЕГИСТРАЦИЯ':'РЕГИСТРАЦИЯ'));
  var info=el('span','event-info');info.append(el('span','event-title',e.title));
  info.append(el('span','event-date',new Date(e.starts_at).toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit'})+' / '+new Date(e.starts_at).toLocaleTimeString('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'})));
- info.append(el('span','event-place','♧ '+e.venue));button.append(info);
+ info.append(el('span','event-place','♧ '+e.venue));
+ if(e.description){var desc=el('span','mf-card-description',e.description);desc.title=e.description;info.append(desc);}
+ button.append(info);
  button.addEventListener('click',function(){eventForm(e);});return button;
 }
 function drawEvents(){
@@ -297,5 +308,6 @@ async function refreshEvents(){
 refreshEvents();
 window.addEventListener('focus',refreshEvents);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshEvents();});
-setInterval(function(){if(!document.hidden)refreshEvents();},90000);
+window.addEventListener('storage',function(e){if(e.key==='melofanty-events-updated')refreshEvents();});
+setInterval(function(){if(!document.hidden)refreshEvents();},15000);
 })();
