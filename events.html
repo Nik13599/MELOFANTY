@@ -202,7 +202,6 @@ html.mf-motion-ready :is(h1,h2,h3,h4,.section-bar,.heading,.toolbar).mf-reveal{t
 <header><a class="brand" href="/" aria-label="Мелофанты, главная">МЕЛО<span>ФАНТЫ</span></a><a class="back" href="/">← НА ГЛАВНУЮ</a></header>
 <main><div class="overline">АФИШИ · ИГРЫ · РЕГИСТРАЦИЯ</div><h1>ВСЕ <em>МЕРОПРИЯТИЯ</em></h1>
 <p class="subtitle">Актуальные и предстоящие игры. Выберите афишу и зарегистрируйтесь на мероприятие.</p>
-<div class="toolbar"><input id="search" class="search" type="search" placeholder="Поиск мероприятия" aria-label="Поиск мероприятия"></div>
 <div id="count" class="count" aria-live="polite">ЗАГРУЖАЕМ МЕРОПРИЯТИЯ…</div>
 <section class="grid" id="grid" aria-label="Список мероприятий" aria-live="polite"></section>
 </main><footer>МЕЛОФАНТЫ · МЕРОПРИЯТИЯ ОБНОВЛЯЮТСЯ АВТОМАТИЧЕСКИ</footer>
@@ -210,7 +209,7 @@ html.mf-motion-ready :is(h1,h2,h3,h4,.section-bar,.heading,.toolbar).mf-reveal{t
 (function(){
 'use strict';
 var events=[],fingerprint=null;
-var grid=document.getElementById('grid'),counter=document.getElementById('count'),search=document.getElementById('search');
+var grid=document.getElementById('grid'),counter=document.getElementById('count');
 function el(tag,cls,value){var n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n;}
 function when(value){return new Date(value).toLocaleString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 function build(e){
@@ -228,16 +227,14 @@ function build(e){
 }
 function draw(){
  grid.replaceChildren();
- var q=search.value.trim().toLocaleLowerCase('ru-RU');
- var visible=events.filter(function(e){return !q||(e.title+' '+e.venue+' '+e.description+' '+when(e.starts_at)).toLocaleLowerCase('ru-RU').includes(q)});
- counter.textContent='Мероприятий: '+visible.length;
+ counter.textContent='Мероприятий: '+events.length;
  if(!visible.length){
   var empty=el('div','empty');
-  empty.append(el('strong','',events.length?'НИЧЕГО НЕ НАЙДЕНО':'СКОРО НОВЫЕ ИГРЫ'));
-  empty.append(el('p','',events.length?'Измените поисковый запрос.':'Сейчас нет мероприятий с открытой регистрацией.'));
+  empty.append(el('strong','','СКОРО НОВЫЕ ИГРЫ'));
+  empty.append(el('p','','Сейчас нет мероприятий с открытой регистрацией.'));
   grid.append(empty);return;
  }
- visible.forEach(function(e){grid.append(build(e))});
+ events.forEach(function(e){grid.append(build(e))});
 }
 var pollVersion=null,pollRequest=0;
 async function refresh(){
@@ -266,7 +263,6 @@ async function refresh(){
   if(fingerprint===null){counter.textContent='Ошибка загрузки';grid.replaceChildren(el('div','empty','Не удалось загрузить мероприятия. Попробуйте обновить страницу.'));}
  }
 }
-search.addEventListener('input',draw);
 refresh();window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh()});
 window.addEventListener('storage',function(e){if(e.key==='melofanty-events-updated')refresh();});
 setInterval(function(){if(!document.hidden)refresh()},15000);
@@ -284,7 +280,7 @@ setInterval(function(){if(!document.hidden)refresh()},15000);
  var fine=window.matchMedia&&window.matchMedia('(hover: hover) and (pointer: fine)').matches;
  var isHome=!!doc.getElementById('hero');
  var isAdmin=!!doc.getElementById('app')&&!!doc.querySelector('.mast');
- var isEvents=!!doc.getElementById('grid')&&!!doc.querySelector('main .toolbar');
+ var isEvents=!!doc.getElementById('grid')&&!!doc.querySelector('main>.overline');
  var isGame=!!doc.getElementById('gameStage');
  function each(selector,fn,root){(root||doc).querySelectorAll(selector).forEach(fn);}
  function aurora(){
