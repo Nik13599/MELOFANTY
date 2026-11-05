@@ -332,6 +332,16 @@ body{display:flex;flex-direction:column;min-height:0}
 .events-scroll .event-page .event-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:clamp(185px,21vw,255px)!important;gap:12px!important;max-width:900px!important;width:100%!important;margin:0 auto!important;align-content:start!important}
 .events-scroll .event-card{min-width:0!important;width:100%!important}
 @media(max-width:650px){.view-scroll.events-scroll{padding:9px!important}.events-scroll .event-page .event-grid{grid-auto-rows:clamp(170px,48vw,235px)!important;gap:9px!important;max-width:100%!important}}
+
+/* Two-step approval: dismissing the dialog keeps the application pending. */
+.registrations-scroll .confirm-pending{box-shadow:0 0 0 1px #bbff9e99,0 0 16px #71fc8570;animation:mf-confirm-glow 2.5s ease-in-out infinite}
+@keyframes mf-confirm-glow{0%,100%{box-shadow:0 0 0 1px #bfff9b9a,0 0 9px #72ff8260}50%{box-shadow:0 0 0 1px #e6ffa8,0 0 18px #83ff99a3}}
+.confirm-approve-form .field{font-size:13px}
+.confirm-approve-form textarea{min-height:86px;max-height:210px;resize:vertical;white-space:pre-wrap}
+.confirm-approve-form .form-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.confirm-approve-form .form-buttons .btn{min-width:0;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.registrations-scroll .confirm-pending{animation:none}}
+
 </style><style id="disable-double-tap-zoom">
 @media (pointer:coarse) {
   html, body, button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
@@ -775,11 +785,42 @@ function renderRegList(){
   popup.append(edit,cancel,remove);dots.addEventListener('click',function(){document.querySelectorAll('.menu-popup').forEach(function(p){if(p!==popup)p.hidden=true;});popup.hidden=!popup.hidden;});
   menu.append(dots,popup);card.append(info,side);
   var actions=el('div','reg-actions');
-  if(r.status==='pending'||r.status==='cancelled')actions.append(button('ПОДТВЕРДИТЬ','primary',function(){changeStatus(r,'confirmed');}));
+  if(r.status==='pending'||r.status==='cancelled')actions.append(button('ПОДТВЕРДИТЬ',r.status==='pending'?'primary confirm-pending':'primary',function(){confirmRegistration(r);}));
   if(r.status!=='cancelled')actions.append(button('ОТМЕНИТЬ','danger',function(){confirmCancelRegistration(r);}));
   if(r.status==='confirmed')actions.append(el('span','people','✓ Подтверждено'));
   actions.append(menu);card.append(actions);list.append(card);
  });
+}
+function confirmRegistration(r){
+ var wrap=el('div');
+ wrap.append(el('p','confirm-question','Подтвердить заявку ID '+r.code+'?'));
+ wrap.append(el('p','confirm-details',r.name+' · '+persons(r.party_size)));
+ var form=el('form','form confirm-approve-form');
+ var field=el('label','field');
+ field.append(document.createTextNode('КОММЕНТАРИЙ АДМИНИСТРАТОРА (НЕОБЯЗАТЕЛЬНО)'));
+ var comment=el('textarea');comment.name='admin_comment';comment.maxLength=1000;comment.rows=3;
+ comment.placeholder='Например: согласовать рассадку или время приезда';
+ comment.value=r.admin_comment||'';
+ field.append(comment);form.append(field);
+ var controls=el('div','form-buttons');
+ var cancel=button('ОТМЕНА','ghost',closeModal);
+ cancel.setAttribute('aria-label','Не подтверждать заявку, оставить новой');
+ controls.append(cancel);
+ var approve=el('button','btn primary confirm-submit','ПОДТВЕРДИТЬ');
+ approve.type='submit';controls.append(approve);form.append(controls);wrap.append(form);
+ form.addEventListener('submit',async function(e){
+  e.preventDefault();
+  if(approve.disabled)return;
+  approve.disabled=true;
+  try{
+   await api('/registration',mutation('PATCH',{event_id:state.selected,seq:r.seq,status:'confirmed',admin_comment:comment.value.trim()}));
+   closeModal();
+   await reloadDetails();
+   toast('Заявка ID '+r.code+' подтверждена');
+  }catch(err){errMessage(err);approve.disabled=false;}
+ });
+ showModal('ПОДТВЕРЖДЕНИЕ ЗАЯВКИ',wrap);
+ comment.focus({preventScroll:true});
 }
 function confirmCancelRegistration(r){
  var wrap=el('div');
