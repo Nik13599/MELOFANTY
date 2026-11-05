@@ -704,6 +704,7 @@ body{display:flex;flex-direction:column;min-height:0}
 var base='/api/registration/admin',state={archive:false,events:[],selected:null,details:null,query:'',status:'all'},modal=document.getElementById('dialog'),app=document.getElementById('app'),toastTimer;
 // Tokens prevent outdated network responses from repainting another page or undoing edits.
 var listLoadToken=0,detailsLoadToken=0,mutationRevision=0,backgroundRefreshing=false;
+state.eventsVersion=null;state.detailsVersion=null;
 function el(tag,className,text){var e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;}
 function button(text,cls,action){var b=el('button','btn '+(cls||''),text);b.type='button';if(action)b.addEventListener('click',action);return b;}
 function wrapDate(s){return new Date(s).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Minsk'});}
@@ -728,8 +729,19 @@ function closeModal(){modal.hidden=true;document.getElementById('dialogBody').re
 document.getElementById('dialogClose').addEventListener('click',closeModal);
 modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!modal.hidden)closeModal();});
+async function restoreAdminView(){
+ var deep=location.hash.match(/^#event=([a-z0-9-]+)$/i);
+ if(deep){
+  state.selected=deep[1];
+  await reloadDetails();
+  if(state.details)return;
+  state.selected=null;
+  history.replaceState(null,'',location.pathname);
+ }
+ await loadEvents();
+}
 async function init(){
- try{await api('/session');loggedIn(true);await loadEvents();}
+ try{await api('/session');loggedIn(true);await restoreAdminView();}
  catch(e){loggedIn(false);showLogin();}
 }
 function loggedIn(yes){['archiveBtn','addEventBtn','logoutBtn','refreshBtn'].forEach(function(id){document.getElementById(id).hidden=!yes;});if(!yes)document.getElementById('bottomBar').hidden=true;}
@@ -738,7 +750,7 @@ function showLogin(){
  app.replaceChildren();var c=el('div','sheet login');c.append(el('div','eyebrow','ЗАКРЫТАЯ ПАНЕЛЬ'));c.append(el('h2','','ВХОД АДМИНИСТРАТОРА'));
  var f=el('form','form');f.innerHTML='<label class="field">ПАРОЛЬ<input type="password" name="password" required autocomplete="current-password" placeholder="Пароль администратора"></label><button class="btn primary" type="submit">ВОЙТИ →</button><p class="sub">Доступ только для организаторов. Гостям авторизация не нужна.</p>';
  c.append(f);app.append(c);
- f.addEventListener('submit',async function(e){e.preventDefault();var btn=f.querySelector('button');btn.disabled=true;try{await api('/login',mutation('POST',{password:f.elements.password.value}));loggedIn(true);await loadEvents();}catch(x){errMessage(x);}finally{btn.disabled=false;}});
+ f.addEventListener('submit',async function(e){e.preventDefault();var btn=f.querySelector('button');btn.disabled=true;try{await api('/login',mutation('POST',{password:f.elements.password.value}));loggedIn(true);await restoreAdminView();}catch(x){errMessage(x);}finally{btn.disabled=false;}});
 }
 async function loadEvents(){
  var id=++listLoadToken,archive=state.archive,revision=mutationRevision;
@@ -746,6 +758,7 @@ async function loadEvents(){
   var d=await api('/events?archive='+(archive?'1':'0'));
   if(id!==listLoadToken||archive!==state.archive||state.selected||revision!==mutationRevision)return;
   state.events=d.events||[];
+  state.eventsVersion=typeof d.version==='string'?d.version:null;
   renderEvents();
  }catch(e){
   if(id!==listLoadToken||archive!==state.archive)return;
@@ -1064,7 +1077,7 @@ async function reloadDetails(){
  try{
   var details=await api('/events/'+encodeURIComponent(eventId));
   if(id!==detailsLoadToken||eventId!==state.selected||revision!==mutationRevision)return;
-  state.details=details;renderDetails();
+  state.details=details;state.detailsVersion=typeof details.version==='string'?details.version:null;renderDetails();
  }catch(e){if(id===detailsLoadToken&&eventId===state.selected)errMessage(e);}
 }
 function summary(label,value,small){
@@ -1427,12 +1440,20 @@ async function liveRefresh(){
  var detailsToken=detailsLoadToken,listToken=listLoadToken;
  try{
   if(selected){
+   var version=await api('/events/'+encodeURIComponent(selected)+'/version');
+   if(document.hidden||!modal.hidden||state.selected!==selected||revision!==mutationRevision||detailsToken!==detailsLoadToken)return;
+   if(version.version===state.detailsVersion)return;
    var details=await api('/events/'+encodeURIComponent(selected));
    if(document.hidden||!modal.hidden||state.selected!==selected||revision!==mutationRevision||detailsToken!==detailsLoadToken)return;
+   state.detailsVersion=typeof details.version==='string'?details.version:null;
    if(JSON.stringify(details)!==JSON.stringify(state.details)){state.details=details;renderDetails();}
   }else if(!document.querySelector('.login')){
+   var version=await api('/events/version?archive='+(archive?'1':'0'));
+   if(document.hidden||!modal.hidden||state.selected||state.archive!==archive||revision!==mutationRevision||listToken!==listLoadToken)return;
+   if(version.version===state.eventsVersion)return;
    var data=await api('/events?archive='+(archive?'1':'0'));
    if(document.hidden||!modal.hidden||state.selected||state.archive!==archive||revision!==mutationRevision||listToken!==listLoadToken)return;
+   state.eventsVersion=typeof data.version==='string'?data.version:null;
    if(JSON.stringify(data.events||[])!==JSON.stringify(state.events)){state.events=data.events||[];renderEvents();}
   }
  }catch(e){/* Keep the existing screen if a background refresh fails. */}
