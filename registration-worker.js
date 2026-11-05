@@ -100,6 +100,12 @@ async function regEvents(env,admin,archive){
  if(!admin)return regJson({events:ordered.map(regEventPublic)});
  return regJson({events:archive?ordered.reverse():ordered,archive:!!archive});
 }
+async function regPublicDirectory(env){
+ const sql="SELECT e.*, (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests FROM events e ORDER BY e.starts_at ASC";
+ const rows=(await env.DB.prepare(sql).all()).results||[];
+ const now=Date.now();
+ return regJson({events:rows.map(e=>Object.assign(regEventPublic(e),{past:!!e.archived||new Date(e.ends_at).getTime()<=now}))});
+}
 async function regEventDetails(env,id){
  const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
  if(!e)return regError('Мероприятие не найдено',404);
@@ -163,11 +169,13 @@ async function registrationRouter(req,env){
     return new Response(home.replace('</body>','<script>'+registrationGuestJs+'</script></body>'),
       {headers:{'content-type':'text/html; charset=utf-8','cache-control':'public, max-age=60','x-content-type-options':'nosniff'}});
   }
+  if(method==='GET'&&(path==='/events'||path==='/events/'||path==='/events.html'))return new Response(eventDirectoryPage,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'public, max-age=60','x-content-type-options':'nosniff'}});
   if(method==='GET'&&path==='/melofanty_screen_game.html')
    return new Response(game,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'public, max-age=60'}});
   if(method==='GET'&&(path==='/registration-admin'||path==='/registration-admin/'))
    return new Response(registrationAdminPage,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','x-frame-options':'DENY'}});
   if(path==='/api/registration/events'&&method==='GET')return regEvents(env,false,false);
+  if(path==='/api/registration/events/all'&&method==='GET')return regPublicDirectory(env);
   if(path==='/api/registration/register'&&method==='POST'){
     if(!regOriginOk(req))return regError('Недопустимый источник запроса',403);
     const b=await regBody(req);
