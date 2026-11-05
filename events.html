@@ -95,6 +95,11 @@ footer{padding:12px;font-size:11px}
  .action{min-height:32px;font-size:11px;padding:6px 3px}
 }
 @media(max-width:345px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.name{font-size:14px}.action{font-size:10px}}
+/* Site posters remain square and fully visible at every breakpoint. */
+.card .poster{aspect-ratio:1/1!important}
+.card .poster img{width:100%;height:100%;object-fit:contain;object-position:center}
+.card .description{font-size:13px;line-height:1.3;color:#d0ead8;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+@media(max-width:520px){.card .description{font-size:11px;-webkit-line-clamp:2}}
 </style></head><body>
 <header><a class="brand" href="/" aria-label="Мелофанты, главная">МЕЛО<span>ФАНТЫ</span></a><a class="back" href="/">← НА ГЛАВНУЮ</a></header>
 <main><div class="overline">АФИШИ · ИГРЫ · РЕГИСТРАЦИЯ</div><h1>ВСЕ <em>МЕРОПРИЯТИЯ</em></h1>
@@ -118,6 +123,7 @@ function build(e){
  poster.append(el('span','pill',e.is_demo?'ДЕМО · РЕГИСТРАЦИЯ':'РЕГИСТРАЦИЯ'));
  var info=el('div','info');
  info.append(el('div','date',when(e.starts_at)),el('h2','name',e.title),el('div','venue',e.venue));
+ if(e.description){var description=el('p','description',e.description);description.title=e.description;info.append(description);}
  var actions=el('div','actions'),link=el('a','action','ЗАРЕГИСТРИРОВАТЬСЯ');
  link.href=url;actions.append(link);info.append(actions);card.append(poster,info);
  return card;
@@ -125,7 +131,7 @@ function build(e){
 function draw(){
  grid.replaceChildren();
  var q=search.value.trim().toLocaleLowerCase('ru-RU');
- var visible=events.filter(function(e){return !q||(e.title+' '+e.venue+' '+when(e.starts_at)).toLocaleLowerCase('ru-RU').includes(q)});
+ var visible=events.filter(function(e){return !q||(e.title+' '+e.venue+' '+e.description+' '+when(e.starts_at)).toLocaleLowerCase('ru-RU').includes(q)});
  counter.textContent='Мероприятий: '+visible.length;
  if(!visible.length){
   var empty=el('div','empty');
@@ -150,7 +156,8 @@ async function refresh(){
 }
 search.addEventListener('input',draw);
 refresh();window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh()});
-setInterval(function(){if(!document.hidden)refresh()},90000);
+window.addEventListener('storage',function(e){if(e.key==='melofanty-events-updated')refresh();});
+setInterval(function(){if(!document.hidden)refresh()},15000);
 })();
 </script>
 </body></html>
