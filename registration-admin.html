@@ -225,8 +225,8 @@ body{display:flex;flex-direction:column;min-height:0}
 }
 
 .demo-note{padding:5px 9px;color:#ffdda3;font:500 12px Oswald,sans-serif;letter-spacing:.03em;line-height:1.2}
-.mast .header-refresh{order:99;width:38px;height:38px;padding:0!important;border-radius:50%!important;font:700 25px Arial,sans-serif;line-height:1;display:grid;place-items:center;color:#e8ffe8;border-color:#5bbd8b}
-@media(max-width:650px){.mast .header-refresh{width:32px;height:32px;font-size:23px}}
+.mast .actions #refreshBtn.header-refresh{order:99;box-sizing:border-box!important;flex:0 0 38px!important;width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;min-height:38px!important;max-height:38px!important;aspect-ratio:1/1!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center!important;font:700 24px/1 Arial,sans-serif!important;color:#e8ffe8;border-color:#5bbd8b}
+@media(max-width:650px){.mast .actions #refreshBtn.header-refresh{flex-basis:34px!important;width:34px!important;min-width:34px!important;max-width:34px!important;height:34px!important;min-height:34px!important;max-height:34px!important;font-size:22px!important}}
 
 /* Compact, two-action overlay card */
 .events-scroll .event-page .event-grid{max-width:790px!important}
@@ -775,6 +775,13 @@ function renderRegList(){
  var q=state.query.trim().toLowerCase(),arr=(state.details.registrations||[]).filter(function(r){
  return (state.status==='all'||r.status===state.status)&&(!q||[r.code,r.name,r.phone].join(' ').toLowerCase().indexOf(q)>=0);
  });
+ // Order by status even after live refresh or filtering.
+ var statusRank={pending:0,confirmed:1,cancelled:2};
+ arr.sort(function(a,b){
+  var left=Object.prototype.hasOwnProperty.call(statusRank,a.status)?statusRank[a.status]:3;
+  var right=Object.prototype.hasOwnProperty.call(statusRank,b.status)?statusRank[b.status]:3;
+  return left-right||(Number(b.seq)||0)-(Number(a.seq)||0);
+ });
  if(!arr.length){list.append(el('div','empty','Заявок по выбранным условиям пока нет.'));return;}
  arr.forEach(function(r){
   var card=el('article','registration'),info=el('div');
@@ -795,11 +802,15 @@ function renderRegList(){
   var popup=el('div','menu-popup');popup.hidden=true;
   var edit=el('button','','Изменить');edit.addEventListener('click',function(){popup.hidden=true;editRegistration(r);});
   var cancel=el('button','','Отменить');cancel.addEventListener('click',function(){popup.hidden=true;confirmCancelRegistration(r);});
+  var restore=el('button','','Восстановить и подтвердить');restore.addEventListener('click',function(){popup.hidden=true;confirmRegistration(r);});
   var remove=el('button','red','Удалить');remove.addEventListener('click',function(){popup.hidden=true;if(confirm('Удалить заявку ID '+r.code+'? Восстановить удалённую заявку нельзя.'))changeStatus(r,'deleted');});
-  popup.append(edit,cancel,remove);dots.addEventListener('click',function(){document.querySelectorAll('.menu-popup').forEach(function(p){if(p!==popup)p.hidden=true;});popup.hidden=!popup.hidden;});
+  popup.append(edit);
+  if(r.status==='cancelled')popup.append(restore);else popup.append(cancel);
+  popup.append(remove);dots.addEventListener('click',function(){document.querySelectorAll('.menu-popup').forEach(function(p){if(p!==popup)p.hidden=true;});popup.hidden=!popup.hidden;});
   menu.append(dots,popup);card.append(info,side);
   var actions=el('div','reg-actions');
-  if(r.status==='pending'||r.status==='cancelled')actions.append(button('ПОДТВЕРДИТЬ',r.status==='pending'?'primary confirm-pending':'primary',function(){confirmRegistration(r);}));
+  if(r.status==='pending')actions.append(button('ПОДТВЕРДИТЬ','primary confirm-pending',function(){confirmRegistration(r);}));
+  if(r.status==='cancelled')actions.append(button('ВОССТАНОВИТЬ','primary restore-cancelled',function(){confirmRegistration(r);}));
   if(r.status!=='cancelled')actions.append(button('ОТМЕНИТЬ','danger',function(){confirmCancelRegistration(r);}));
   if(r.status==='confirmed')actions.append(el('span','people','✓ Подтверждено'));
   actions.append(menu);card.append(actions);list.append(card);
@@ -807,7 +818,7 @@ function renderRegList(){
 }
 function confirmRegistration(r){
  var wrap=el('div');
- wrap.append(el('p','confirm-question','Подтвердить заявку ID '+r.code+'?'));
+ wrap.append(el('p','confirm-question',r.status==='cancelled'?'Восстановить отменённую заявку ID '+r.code+' и перевести её в подтверждённые?':'Подтвердить заявку ID '+r.code+'?'));
  wrap.append(el('p','confirm-details',r.name+' · '+persons(r.party_size)));
  var form=el('form','form confirm-approve-form');
  var field=el('label','field');
@@ -818,9 +829,9 @@ function confirmRegistration(r){
  field.append(comment);form.append(field);
  var controls=el('div','form-buttons');
  var cancel=button('ОТМЕНА','ghost',closeModal);
- cancel.setAttribute('aria-label','Не подтверждать заявку, оставить новой');
+ cancel.setAttribute('aria-label',r.status==='cancelled'?'Не восстанавливать заявку, оставить отменённой':'Не подтверждать заявку, оставить новой');
  controls.append(cancel);
- var approve=el('button','btn primary confirm-submit','ПОДТВЕРДИТЬ');
+ var approve=el('button','btn primary confirm-submit',r.status==='cancelled'?'ВОССТАНОВИТЬ':'ПОДТВЕРДИТЬ');
  approve.type='submit';controls.append(approve);form.append(controls);wrap.append(form);
  form.addEventListener('submit',async function(e){
   e.preventDefault();
@@ -830,10 +841,10 @@ function confirmRegistration(r){
    await api('/registration',mutation('PATCH',{event_id:state.selected,seq:r.seq,status:'confirmed',admin_comment:comment.value.trim()}));
    closeModal();
    await reloadDetails();
-   toast('Заявка ID '+r.code+' подтверждена');
+   toast(r.status==='cancelled'?'Заявка ID '+r.code+' восстановлена и подтверждена':'Заявка ID '+r.code+' подтверждена');
   }catch(err){errMessage(err);approve.disabled=false;}
  });
- showModal('ПОДТВЕРЖДЕНИЕ ЗАЯВКИ',wrap);
+ showModal(r.status==='cancelled'?'ВОССТАНОВЛЕНИЕ ЗАЯВКИ':'ПОДТВЕРЖДЕНИЕ ЗАЯВКИ',wrap);
  comment.focus({preventScroll:true});
 }
 function confirmCancelRegistration(r){
