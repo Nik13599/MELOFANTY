@@ -42,6 +42,20 @@ styles.textContent=[
 '.mf-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.mf-weekday{display:grid;place-items:center;color:#9fbaa9;font:500 12px Oswald,sans-serif;min-height:24px}.mf-calendar-empty{min-height:41px}.mf-calendar-day{height:42px;min-width:0;border:1px solid #1a4736;background:#071f16;border-radius:10px;color:#819b8c;font:600 16px Oswald,sans-serif;touch-action:manipulation}.mf-calendar-day:disabled{opacity:.42;cursor:default}.mf-calendar-day.available{color:#e7ffeb;border-color:#69ca8c;background:#14412c}.mf-calendar-day.available:after{content:"";display:block;width:4px;height:4px;border-radius:50%;background:#a5ff79;margin:-1px auto 0}.mf-calendar-day.available:hover{background:#236244}.mf-calendar-day.selected{color:#081c11;border-color:#b9ff7a;background:#b4fc7c;box-shadow:0 0 0 2px #b4fc7c33}.mf-calendar-day.selected:after{background:#185032}',
 '.mf-date-selection{border-top:1px solid #32785b;margin-top:16px;padding-top:13px}.mf-date-label{font:600 15px Oswald,sans-serif;color:#a6e8c0;margin-bottom:10px}.mf-date-list{display:grid;gap:9px}.mf-date-option{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #34785b;border-radius:13px;padding:9px;background:#0b2d20;color:#f5fff7;min-height:78px;touch-action:manipulation}.mf-date-option:hover,.mf-date-option:focus-visible{border-color:#b3ff79;background:#155239}.mf-date-poster{width:58px;height:68px;object-fit:cover;flex:none;border-radius:8px;background:radial-gradient(circle at top,#25785b,#06160e);border:1px solid #50966c}.mf-date-placeholder{display:grid;place-items:center;color:#baff8c;font:700 11px Oswald,sans-serif;letter-spacing:.06em;text-align:center}.mf-date-copy{display:grid;gap:4px;min-width:0;flex:1}.mf-date-title{font:600 19px/1.08 Oswald,sans-serif;overflow-wrap:anywhere}.mf-date-details{font:400 13px Roboto Condensed,Arial,sans-serif;color:#b9d6c4}.mf-date-demo{color:#ffc989}.mf-date-chevron{font:700 24px Oswald,sans-serif;color:#b4ff7a;margin-left:auto}',
 '.mf-picker-back{border:0;background:transparent;color:#a7ffb6;font:600 14px Oswald,sans-serif;padding:0 0 8px;text-align:left;cursor:pointer;touch-action:manipulation}',
+'/* Unclipped, circular carousel indicators with gentle state transitions. */',
+'#dots.dots{box-sizing:border-box!important;position:relative!important;display:flex!important;justify-content:center!important;align-items:center!important;flex:0 0 auto!important;width:100%!important;max-width:100%!important;min-height:59px!important;margin:4px auto 0!important;padding:13px 12px 17px!important;gap:5px!important;overflow:visible!important;overflow-x:visible!important;overflow-y:visible!important;scrollbar-width:none!important;isolation:isolate!important}',
+'#dots.dots>button{position:relative!important;box-sizing:border-box!important;display:grid!important;place-items:center!important;flex:0 0 33px!important;width:33px!important;min-width:33px!important;max-width:33px!important;height:33px!important;min-height:33px!important;max-height:33px!important;aspect-ratio:1/1!important;padding:0!important;margin:0!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;transform:none!important;overflow:visible!important;touch-action:manipulation!important;cursor:pointer}',
+'#dots.dots>button:before{content:"";position:relative;z-index:2;display:block;width:11px;height:11px;min-width:11px;min-height:11px;aspect-ratio:1/1;border-radius:50%;background:#286d55;box-shadow:inset 0 1px 2px #092d24;transform:scale(1);transition:transform 440ms cubic-bezier(.2,.8,.2,1),background-color 380ms ease,box-shadow 380ms ease}',
+'#dots.dots>button:after{content:"";position:absolute;z-index:1;inset:3px;border-radius:50%;background:radial-gradient(circle,#a7ff8eb0 0%,#99ff8748 33%,transparent 73%);filter:blur(4px);opacity:0;transform:scale(.62);transition:opacity 440ms ease,transform 540ms cubic-bezier(.2,.8,.2,1);pointer-events:none}',
+'#dots.dots>button.current:before{background:#adff80;transform:scale(1.26);box-shadow:0 0 7px #9bff85,0 0 13px #91ff8880}',
+'#dots.dots>button.current:after{opacity:1;transform:scale(1.35)}',
+'#dots.dots>button:hover:not(.current):before{background:#55a880;transform:scale(1.1)}',
+'#dots.dots>button:focus-visible{outline:2px solid #baff8c!important;outline-offset:-1px!important}',
+'#eventList .mf-card-motion{display:flex;width:100%;min-width:0;flex-direction:column;gap:10px;will-change:transform,opacity;transform:translate3d(0,0,0)}',
+'#eventList.mf-sliding{pointer-events:none}',
+'#eventList>.event-card{touch-action:pan-y!important}',
+'@media(max-width:760px){#dots.dots{min-height:56px!important;padding:12px 6px 15px!important;gap:3px!important}#dots.dots>button{flex-basis:32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;height:32px!important;min-height:32px!important;max-height:32px!important}#eventList .mf-card-motion{gap:9px}}',
+'@media(prefers-reduced-motion:reduce){#dots.dots>button:before,#dots.dots>button:after{transition:none!important}#eventList .mf-card-motion{will-change:auto!important}}',
 '@media(max-width:760px){.mf-overlay{padding:8px}.mf-dialog{max-height:calc(100dvh - 16px)}.mf-title{font-size:29px}.mf-field input{min-height:45px}}'
 ].join('');
 document.head.appendChild(styles);
@@ -233,32 +247,115 @@ function buildCard(e){
  var day=date.toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk',day:'numeric',month:'long',year:'numeric'});
  var time=date.toLocaleTimeString('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'});
  caption.append(el('span','mf-event-caption-date',day+' · '+time));
- button.append(frame,caption);
+ var motion=el('span','mf-card-motion');motion.append(frame,caption);button.append(motion);
  button.addEventListener('click',function(){eventForm(e);});return button;
 }
-function drawEvents(){
- var list=document.getElementById('eventList'),dots=document.getElementById('dots');if(!list||!dots)return;
- list.replaceChildren();dots.replaceChildren();
- if(!events.length){
-  var box=el('div','mf-empty');var inside=el('div');inside.append(el('strong','','СКОРО НОВЫЕ ИГРЫ'));inside.append(el('p','','Следите за анонсами. Регистрация откроется после публикации нового мероприятия.'));box.append(inside);list.append(box);
-  document.getElementById('eventsPrev').hidden=true;document.getElementById('eventsNext').hidden=true;return;
+var carouselBusy=false,refreshAfterSlide=false,dragOffset=0;
+function updateCarouselDots(dots){
+ if(dots.children.length!==events.length){
+  dots.replaceChildren();
+  for(var i=0;i<events.length;i++){
+   var dot=el('button');dot.type='button';
+   dot.setAttribute('aria-label','Показать мероприятие '+(i+1));
+   (function(n){dot.addEventListener('click',function(){
+    if(carouselBusy||index===n)return;
+    var forward=(n-index+events.length)%events.length;
+    var backward=(index-n+events.length)%events.length;
+    var direction=forward<=backward?1:-1;
+    index=n;drawEvents(direction);
+   });})(i);
+   dots.append(dot);
+  }
  }
- var width=window.matchMedia('(max-width:760px)').matches?1:3;
- document.getElementById('eventsPrev').hidden=events.length<=1;document.getElementById('eventsNext').hidden=events.length<=1;
- var start=events.length<=width?0:Math.min(index,events.length-width);
- var visible=events.slice(start,start+width);
- list.classList.toggle('mf-single-event',visible.length===1);
- list.style.gridTemplateColumns='repeat('+visible.length+',minmax(0,1fr))';
- visible.forEach(function(e){list.append(buildCard(e));});
- for(var i=0;i<events.length;i++){
-  var dot=el('button');dot.type='button';dot.className=i===Math.min(index,events.length-1)?'current':'';
-  dot.setAttribute('aria-label','Мероприятие '+(i+1));
-  (function(n){dot.addEventListener('click',function(){index=n;drawEvents();});})(i);dots.append(dot);
- }
+ Array.from(dots.children).forEach(function(dot,i){
+  var current=i===index;
+  dot.classList.toggle('current',current);
+  if(current)dot.setAttribute('aria-current','true');else dot.removeAttribute('aria-current');
+ });
 }
-function move(n){if(!events.length)return;index=(index+n+events.length)%events.length;drawEvents();}
+function visibleCarouselEvents(){
+ var amount=window.matchMedia('(max-width:760px)').matches?1:3;
+ var visible=[];
+ for(var i=0;i<Math.min(amount,events.length);i++)visible.push(events[(index+i)%events.length]);
+ return visible;
+}
+function drawEvents(direction){
+ var list=document.getElementById('eventList'),dots=document.getElementById('dots');
+ if(!list||!dots)return;
+ if(carouselBusy){refreshAfterSlide=true;return;}
+ if(!events.length){
+  dots.replaceChildren();list.replaceChildren();
+  var box=el('div','mf-empty'),inside=el('div');
+  inside.append(el('strong','','СКОРО НОВЫЕ ИГРЫ'));
+  inside.append(el('p','','Следите за анонсами. Регистрация откроется после публикации нового мероприятия.'));
+  box.append(inside);list.append(box);
+  document.getElementById('eventsPrev').hidden=true;
+  document.getElementById('eventsNext').hidden=true;return;
+ }
+ var prev=document.getElementById('eventsPrev'),next=document.getElementById('eventsNext');
+ prev.hidden=events.length<=1;next.hidden=events.length<=1;
+ var visible=visibleCarouselEvents(),incoming=visible.map(buildCard);
+ list.classList.toggle('mf-single-event',incoming.length===1);
+ list.style.gridTemplateColumns='repeat('+incoming.length+',minmax(0,1fr))';
+ updateCarouselDots(dots);
+ var outgoing=Array.from(list.children).filter(function(c){return c.classList.contains('event-card');});
+ var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(!direction||reduced||!outgoing.length||outgoing.length!==incoming.length||typeof outgoing[0].animate!=='function'){
+  list.replaceChildren.apply(list,incoming);dragOffset=0;return;
+ }
+ carouselBusy=true;
+ list.classList.add('mf-sliding');
+ var directionSign=direction>0?-1:1,animations=[];
+ outgoing.forEach(function(card,i){
+  card.style.gridColumn=String(i+1);
+  card.style.gridRow='1';
+  card.style.zIndex='1';
+  var motion=card.querySelector('.mf-card-motion');
+  if(motion){
+   animations.push(motion.animate([
+    {opacity:1,transform:'translate3d('+dragOffset+'px,0,0) scale(1)'},
+    {opacity:0,transform:'translate3d('+(directionSign*52)+'px,0,0) scale(.975)'}
+   ],{duration:350,easing:'cubic-bezier(.25,.78,.28,1)',fill:'forwards'}));
+  }
+ });
+ incoming.forEach(function(card,i){
+  card.style.gridColumn=String(i+1);
+  card.style.gridRow='1';
+  card.style.zIndex='2';
+  card.style.pointerEvents='none';
+  list.append(card);
+  var motion=card.querySelector('.mf-card-motion');
+  if(motion){
+   animations.push(motion.animate([
+    {opacity:0,transform:'translate3d('+(-directionSign*52)+'px,0,0) scale(.975)'},
+    {opacity:1,transform:'translate3d(0,0,0) scale(1)'}
+   ],{duration:450,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'}));
+  }
+ });
+ dragOffset=0;
+ Promise.all(animations.map(function(animation){return animation.finished.catch(function(){});})).then(function(){
+  if(!list.isConnected){carouselBusy=false;return;}
+  incoming.forEach(function(card){
+   card.style.gridColumn='';card.style.gridRow='';
+   card.style.zIndex='';card.style.pointerEvents='';
+  });
+  list.replaceChildren.apply(list,incoming);
+  list.classList.remove('mf-sliding');
+  carouselBusy=false;
+  if(refreshAfterSlide){refreshAfterSlide=false;drawEvents();}
+ });
+}
+function move(n){
+ if(!events.length||carouselBusy)return;
+ index=(index+n+events.length)%events.length;
+ drawEvents(n);
+}
 ['eventsPrev','eventsNext'].forEach(function(id){
- var node=document.getElementById(id);if(node)node.addEventListener('click',function(e){e.stopImmediatePropagation();move(id==='eventsPrev'?-1:1);},true);
+ var node=document.getElementById(id);
+ if(node)node.addEventListener('click',function(e){
+  e.stopImmediatePropagation();
+  move(id==='eventsPrev'?-1:1);
+ },true);
 });
 var selectedEventId=new URLSearchParams(location.search).get('event');
 var directEventOpened=false;
@@ -268,19 +365,36 @@ function openDirectEvent(){
  if(selected){directEventOpened=true;eventForm(selected);}
 }
 var swipeStart=null,ignoreTapUntil=0,eventRail=document.getElementById('eventList');
+function resetSwipeTransform(){
+ if(!eventRail)return;
+ eventRail.querySelectorAll('.mf-card-motion').forEach(function(motion){motion.style.transform='';motion.style.opacity='';});
+ dragOffset=0;
+}
 if(eventRail){
  eventRail.addEventListener('touchstart',function(e){
-  if(e.touches.length===1)swipeStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  if(carouselBusy||e.touches.length!==1){swipeStart=null;return;}
+  swipeStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  dragOffset=0;
+ },{passive:true});
+ eventRail.addEventListener('touchmove',function(e){
+  if(!swipeStart||carouselBusy||e.touches.length!==1)return;
+  var dx=e.touches[0].clientX-swipeStart.x,dy=e.touches[0].clientY-swipeStart.y;
+  if(Math.abs(dx)<=10||Math.abs(dx)<Math.abs(dy)*1.3)return;
+  dragOffset=Math.max(-62,Math.min(62,dx*.32));
+  eventRail.querySelectorAll('.mf-card-motion').forEach(function(motion){
+   motion.style.transform='translate3d('+dragOffset+'px,0,0)';
+  });
  },{passive:true});
  eventRail.addEventListener('touchend',function(e){
   if(!swipeStart||!e.changedTouches.length)return;
   var dx=e.changedTouches[0].clientX-swipeStart.x,dy=e.changedTouches[0].clientY-swipeStart.y;
   swipeStart=null;
-  if(Math.abs(dx)>38&&Math.abs(dx)>Math.abs(dy)*1.35){
-   ignoreTapUntil=Date.now()+450;
+  if(!carouselBusy&&Math.abs(dx)>38&&Math.abs(dx)>Math.abs(dy)*1.35){
+   ignoreTapUntil=Date.now()+500;
    move(dx<0?1:-1);
-  }
+  }else resetSwipeTransform();
  },{passive:true});
+ eventRail.addEventListener('touchcancel',function(){swipeStart=null;resetSwipeTransform();},{passive:true});
  eventRail.addEventListener('click',function(e){
   if(Date.now()<ignoreTapUntil){e.preventDefault();e.stopImmediatePropagation();}
  },true);
