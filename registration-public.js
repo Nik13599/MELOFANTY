@@ -216,8 +216,8 @@ function drawEvents(){
   var box=el('div','mf-empty');var inside=el('div');inside.append(el('strong','','СКОРО НОВЫЕ ИГРЫ'));inside.append(el('p','','Следите за анонсами. Регистрация откроется после публикации нового мероприятия.'));box.append(inside);list.append(box);
   document.getElementById('eventsPrev').hidden=true;document.getElementById('eventsNext').hidden=true;return;
  }
- document.getElementById('eventsPrev').hidden=events.length<=3;document.getElementById('eventsNext').hidden=events.length<=3;
- var width=3;
+ var width=window.matchMedia('(max-width:760px)').matches?1:3;
+ document.getElementById('eventsPrev').hidden=events.length<=1;document.getElementById('eventsNext').hidden=events.length<=1;
  var start=events.length<=width?0:Math.min(index,events.length-width);
  var visible=events.slice(start,start+width);
  list.classList.toggle('mf-single-event',visible.length===1);
@@ -226,19 +226,50 @@ function drawEvents(){
  for(var i=0;i<events.length;i++){
   var dot=el('button');dot.type='button';dot.className=i===Math.min(index,events.length-1)?'current':'';
   dot.setAttribute('aria-label','Мероприятие '+(i+1));
-  (function(n){dot.addEventListener('click',function(){index=n;drawEvents();var card=list.children[n-(events.length<=width?0:Math.min(index,events.length-width))];if(card&&card.scrollIntoView)card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});});})(i);dots.append(dot);
+  (function(n){dot.addEventListener('click',function(){index=n;drawEvents();});})(i);dots.append(dot);
  }
 }
 function move(n){if(!events.length)return;index=(index+n+events.length)%events.length;drawEvents();}
 ['eventsPrev','eventsNext'].forEach(function(id){
  var node=document.getElementById(id);if(node)node.addEventListener('click',function(e){e.stopImmediatePropagation();move(id==='eventsPrev'?-1:1);},true);
 });
+var selectedEventId=new URLSearchParams(location.search).get('event');
+var directEventOpened=false;
+function openDirectEvent(){
+ if(!selectedEventId||directEventOpened)return;
+ var selected=events.find(function(e){return e.id===selectedEventId;});
+ if(selected){directEventOpened=true;eventForm(selected);}
+}
+var swipeStart=null,ignoreTapUntil=0,eventRail=document.getElementById('eventList');
+if(eventRail){
+ eventRail.addEventListener('touchstart',function(e){
+  if(e.touches.length===1)swipeStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+ },{passive:true});
+ eventRail.addEventListener('touchend',function(e){
+  if(!swipeStart||!e.changedTouches.length)return;
+  var dx=e.changedTouches[0].clientX-swipeStart.x,dy=e.changedTouches[0].clientY-swipeStart.y;
+  swipeStart=null;
+  if(Math.abs(dx)>38&&Math.abs(dx)>Math.abs(dy)*1.35){
+   ignoreTapUntil=Date.now()+450;
+   move(dx<0?1:-1);
+  }
+ },{passive:true});
+ eventRail.addEventListener('click',function(e){
+  if(Date.now()<ignoreTapUntil){e.preventDefault();e.stopImmediatePropagation();}
+ },true);
+ eventRail.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();move(e.key==='ArrowRight'?1:-1);}
+ });
+}
+window.addEventListener('resize',function(){
+ if(events.length)drawEvents();
+});
 function openFirst(){openDatePicker();}
 document.querySelectorAll('a.main-btn').forEach(function(a){
  if(/РЕГИСТРАЦИЯ|ЗАРЕГИСТРИРОВАТЬСЯ/i.test(a.textContent||'')){a.removeAttribute('target');a.setAttribute('href','#events');a.addEventListener('click',function(ev){ev.preventDefault();ev.stopImmediatePropagation();openFirst();},true);}
 });
 var all=document.getElementById('allEvents');
-if(all)all.addEventListener('click',function(e){e.stopImmediatePropagation();if(events.length){index=0;drawEvents();document.getElementById('events').scrollIntoView({behavior:'smooth'});}},true);
+if(all&&all.tagName==='BUTTON')all.addEventListener('click',function(){location.href='/events';});
 var eventsFingerprint=null;
 async function refreshEvents(){
  try{
@@ -251,6 +282,7 @@ async function refreshEvents(){
    var oldId=events[index]&&events[index].id;
    events=next;
    if(all)all.textContent='ВСЕ МЕРОПРИЯТИЯ ('+events.length+') →';
+   openDirectEvent();
    index=Math.max(0,oldId?events.findIndex(function(e){return e.id===oldId;}):0);
    eventsFingerprint=fingerprint;
    drawEvents();
