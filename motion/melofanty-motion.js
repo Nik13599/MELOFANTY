@@ -12,12 +12,12 @@
  var isGame=!!doc.getElementById('gameStage');
  function each(selector,fn,root){(root||doc).querySelectorAll(selector).forEach(fn);}
  function aurora(){
-  var nodes=isHome?'.hero,.try-panel,.cta':isEvents?'main':isAdmin?'main':'';
+  var nodes=isHome?'.hero,.try-panel,.cta':isEvents?'main':isAdmin?'.mast':'';
   if(!nodes)return;
   each(nodes,function(el){
    if(el.querySelector(':scope > .mf-aurora-layer'))return;
    var layer=doc.createElement('span');layer.className='mf-aurora-layer';layer.setAttribute('aria-hidden','true');
-   if(isEvents||isAdmin){layer.style.opacity='.12';layer.style.height='min(380px,85vh)';layer.style.bottom='auto';}
+   if(isEvents){el.style.position='relative';layer.style.opacity='.12';layer.style.height='min(380px,85vh)';layer.style.bottom='auto';}
    el.appendChild(layer);
   });
  }
@@ -160,12 +160,5 @@
   doc.addEventListener('visibilitychange',function(){if(doc.hidden){items=[];if(frame)cancelAnimationFrame(frame);frame=0;ctx.clearRect(0,0,w,h);}});
   size();
  }
- function dialogMotion(){
-  // The actual dialogs, focus management and API calls are still controlled by the existing application.
-  doc.addEventListener('click',function(e){
-   var btn=e.target.closest&&e.target.closest('.mf-close,.close-modal,.close,.help-close');
-   if(btn)btn.blur();
-  },{passive:true});
- }
- aurora();reveals();spotlight();ripples();menu();parallax();smoke();dialogMotion();
+ aurora();reveals();spotlight();ripples();menu();parallax();smoke();
 })();
