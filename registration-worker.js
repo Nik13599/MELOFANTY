@@ -113,6 +113,29 @@ async function regInsert(env,event,person,manual){
   .bind(event.id,seq,code,name,phone,party,manual?'confirmed':'pending',event.is_demo?'demo':manual?'admin':'site',guestComment,adminComment).run();
  return regJson({ok:true,id:code,code,event_id:event.id,title:event.title,starts_at:event.starts_at,venue:event.venue,party_size:party,is_demo:!!event.is_demo,status:manual?'confirmed':'pending'},201);
 }
+// Compact versions for admin polling; no poster image bytes are transferred.
+function regAdminEventVersion(items){
+ return JSON.stringify(items.map(e=>[e.id,e.updated_at||'',e.starts_at,e.ends_at,Number(e.archived)||0,Number(e.next_seq)||0,Number(e.registered_guests)||0,Number(e.applications)||0,Number(e.demo_applications)||0]));
+}
+function regAdminDetailVersion(event,registrations){
+ return JSON.stringify([event.updated_at||'',Number(event.next_seq)||0,event.archived||0,registrations.map(r=>[r.seq,r.updated_at||'',r.status,r.party_size])]);
+}
+async function regAdminEventsVersion(env,archive){
+ const sql="SELECT e.id,e.updated_at,e.starts_at,e.ends_at,e.archived,e.next_seq,(SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests,(SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.status!='deleted') applications,(SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.source='demo' AND r.status!='deleted') demo_applications FROM events e ORDER BY e.starts_at ASC";
+ const items=(await env.DB.prepare(sql).all()).results||[];
+ const now=Date.now();
+ const filtered=items.filter(e=>{
+  const passed=e.archived||new Date(e.ends_at).getTime()<=now;
+  return archive?passed:!passed;
+ });
+ return regJson({version:regAdminEventVersion(archive?filtered.reverse():filtered)});
+}
+async function regAdminDetailVersionEndpoint(env,id){
+ const event=await env.DB.prepare('SELECT id,updated_at,next_seq,archived FROM events WHERE id=?').bind(id).first();
+ if(!event)return regError('Мероприятие не найдено',404);
+ const registrations=(await env.DB.prepare("SELECT seq,updated_at,status,party_size FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY seq DESC").bind(id).all()).results||[];
+ return regJson({version:regAdminDetailVersion(event,registrations)});
+}
 async function regEvents(env,admin,archive){
  const sql="SELECT e.*, (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests, (SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.status!='deleted') applications, (SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.source='demo' AND r.status!='deleted') demo_applications FROM events e ORDER BY e.starts_at DESC";
  const items=(await env.DB.prepare(sql).all()).results||[];
@@ -123,7 +146,8 @@ async function regEvents(env,admin,archive){
  });
  const ordered=filtered.slice().sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime());
  if(!admin)return regJson({events:ordered.map(regEventPublic),version:regPublicVersion(ordered)});
- return regJson({events:archive?ordered.reverse():ordered,archive:!!archive});
+ const visible=archive?ordered.reverse():ordered;
+ return regJson({events:visible,archive:!!archive,version:regAdminEventVersion(visible)});
 }
 async function regPublicDirectory(env){
  // Never expose archived or already finished events on the public events directory.
@@ -140,7 +164,7 @@ async function regEventDetails(env,id){
  const stats=(await env.DB.prepare(
    "SELECT COUNT(CASE WHEN status!='deleted' THEN 1 END) total_apps, COALESCE(SUM(CASE WHEN status IN ('pending','confirmed') THEN party_size ELSE 0 END),0) guests, COUNT(CASE WHEN status='cancelled' THEN 1 END) cancelled_apps, COALESCE(SUM(CASE WHEN status='cancelled' THEN party_size ELSE 0 END),0) cancelled_guests, COUNT(CASE WHEN status='pending' THEN 1 END) pending_apps, COUNT(CASE WHEN status='confirmed' THEN 1 END) confirmed_apps, COUNT(CASE WHEN source='demo' AND status!='deleted' THEN 1 END) demo_apps FROM registrations WHERE event_id=?"
  ).bind(id).first())||{};
- return regJson({event:e,registrations,stats});
+ return regJson({event:e,registrations,stats,version:regAdminDetailVersion(e,registrations)});
 }
 async function regSaveEvent(env,b,id){
  const title=regText(b.title,120),venue=regText(b.venue,160),description=regText(b.description,1800);
@@ -184,8 +208,8 @@ async function regManageRegistration(env,b){
   const booked=await env.DB.prepare("SELECT COALESCE(SUM(party_size),0) n FROM registrations WHERE event_id=? AND status IN ('pending','confirmed') AND seq!=?").bind(eventId,seq).first();
   if(booked.n+party>event.capacity)throw new Error('Превышена вместимость мероприятия');
  }
- await env.DB.prepare("UPDATE registrations SET name=?,phone=?,party_size=?,status=?,guest_comment=?,admin_comment=?,updated_at=datetime('now') WHERE event_id=? AND seq=?")
-  .bind(name,phone,party,nextStatus,guestComment,adminComment,eventId,seq).run();
+ await env.DB.prepare("UPDATE registrations SET name=?,phone=?,party_size=?,status=?,guest_comment=?,admin_comment=?,updated_at=? WHERE event_id=? AND seq=?")
+  .bind(name,phone,party,nextStatus,guestComment,adminComment,new Date().toISOString(),eventId,seq).run();
  return regJson({ok:true});
 }
 async function registrationRouter(req,env){
@@ -220,8 +244,11 @@ async function registrationRouter(req,env){
   if(path==='/api/registration/admin/logout'&&method==='POST'){
     const response=regJson({ok:true});response.headers.set('Set-Cookie','melofanty_admin=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0');return response;
   }
+  if(path==='/api/registration/admin/events/version'&&method==='GET')return regAdminEventsVersion(env,url.searchParams.get('archive')==='1');
   if(path==='/api/registration/admin/events'&&method==='GET')return regEvents(env,true,url.searchParams.get('archive')==='1');
   if(path==='/api/registration/admin/events'&&method==='POST')return regSaveEvent(env,await regBody(req),null);
+  const detailVersionPath=path.match(/^\/api\/registration\/admin\/events\/([a-z0-9-]+)\/version$/i);
+  if(detailVersionPath&&method==='GET')return regAdminDetailVersionEndpoint(env,detailVersionPath[1]);
   const eventPath=path.match(/^\/api\/registration\/admin\/events\/([a-z0-9-]+)$/i);
   if(eventPath){
    if(method==='GET')return regEventDetails(env,eventPath[1]);
