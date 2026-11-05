@@ -222,7 +222,7 @@ const hardTasks=[
 let trackPage=0;
 const phases=['config','jackpot','bet','shoot','song','challenge','outcome','report','final'];
 function blankState(){return {version:2,phase:'config',mode:'quick',teamCount:2,teams:[],selected:[],round:0,selectTeam:0,turnIndex:0,opened:[],playedSongs:[],taskHistory:{easy:[],hard:[]},current:null,history:[],lastOutcome:null,host:'Готов сыграть? Собираем команды, затем начинаем вечер.'};}
-let s=blankState(),storyIndex=0,soundEnabled=false,audioContext=null,clock=null,clockLeft=0,clockRunning=false;
+let s=blankState(),storyIndex=0,soundEnabled=false,audioContext=null,clock=null,clockLeft=0,clockRunning=false,clockDeadline=0;
 function readSaved(){try{const old=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(old&&old.version===2&&phases.includes(old.phase)&&Array.isArray(old.teams)&&old.teams.length<=4&&old.teams.length>0&&['quick','full'].includes(old.mode)){s=old;s.selected=Array.isArray(s.selected)?s.selected:[];s.opened=Array.isArray(s.opened)?s.opened:[];s.playedSongs=Array.isArray(s.playedSongs)?s.playedSongs:[];s.history=Array.isArray(s.history)?s.history:[];if(s.phase==='challenge')s.host='Продолжаем с того же фанта. Таймер можно запустить заново.';}}catch(e){s=blankState();}}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(s));}catch(e){}}
 function sanitize(input){return String(input??'').replace(/[<>\u0000-\u001F]/g,'').trim().slice(0,22);}
@@ -289,9 +289,52 @@ function chooseSong(song){
 function endChallenge(success){if(s.phase!=='challenge')return;stopClock();const t=activeTeam(),c=s.current;let taskPoints=success?(c.level==='easy'?100:250):0,hit=success&&t.bets[s.round-1].includes(c.song),betPoints=hit?50:0,gained=taskPoints+betPoints;t.score+=gained;t.shots++;if(success){t.completed++;s.playedSongs.push(c.song);}if(hit)t.matches++;s.lastOutcome={success,gained,taskPoints,betPoints,hit};s.history.push({round:s.round,team:t.name,number:c.number,song:c.song,level:c.level,success,gained});selectPhase('outcome',success?`Отлично, ${t.name}! Фант засчитан. ${hit?'И ещё: сыграла ставка на трек!':''}`:`Ничего страшного, ${t.name}. Здесь можно не справиться и всё равно продолжить вечеринку.`);if(success){burst();audio(1050);}else audio(270);}
 function advance(){if(s.phase!=='outcome')return;s.turnIndex++;if(s.turnIndex>=s.teams.length*modeTurns()){selectPhase('report',`Тур ${s.round} завершён! Подводим результаты команд.`);burst();}else selectPhase('shoot',`${teamLabel(activeTeam())}, теперь твой ход. Выбирай номер.`);}
 function nextRound(){if(s.phase!=='report')return;if(s.round>=MAX_ROUNDS){selectPhase('final','Все три тура завершены! Смотрим финальные ставки и счёт.');burst();return;}s.round++;s.turnIndex=0;s.selectTeam=0;s.selected=[];selectPhase('bet',`Начинаем тур ${s.round}! Каждая команда выбирает пять новых треков.`);}
-function stopClock(){if(clock!==null)clearInterval(clock);clock=null;clockRunning=false;}
-function startClock(){if(s.phase!=='challenge'||clockRunning)return;clockRunning=true;const b=$('#timerStart');if(b)b.textContent='⏸ ТАЙМЕР ИДЁТ';clock=setInterval(()=>{if(s.phase!=='challenge'){stopClock();return;}clockLeft=Math.max(0,clockLeft-1);const output=$('#clockNumber');if(output)output.textContent=clockLeft;if(clockLeft===0){stopClock();feedback('Время истекло! Ведущий решает, засчитать ли выполненное задание.');audio(520);}},1000);}
-function resetClock(){stopClock();if(s.phase==='challenge'){clockLeft=taskFor(s.current).secs;$('#clockNumber').textContent=clockLeft;$('#timerStart').textContent='⏱ ЗАПУСТИТЬ ТАЙМЕР';}}
+function stopClock(){
+ if(clock!==null)clearInterval(clock);
+ clock=null;clockRunning=false;clockDeadline=0;
+}
+function syncClock(){
+ if(!clockRunning||s.phase!=='challenge')return;
+ const remaining=Math.max(0,Math.ceil((clockDeadline-Date.now())/1000));
+ if(remaining!==clockLeft){
+  clockLeft=remaining;
+  const output=$('#clockNumber');if(output)output.textContent=clockLeft;
+ }
+ if(clockLeft===0){
+  stopClock();
+  const button=$('#timerStart');if(button)button.textContent='⏱ ВРЕМЯ ИСТЕКЛО';
+  feedback('Время истекло! Ведущий решает, засчитать ли выполненное задание.');
+  audio(520);
+ }
+}
+function startClock(){
+ if(s.phase!=='challenge')return;
+ const button=$('#timerStart');
+ if(clockRunning){
+  syncClock();stopClock();
+  if(button)button.textContent='▶ ПРОДОЛЖИТЬ ТАЙМЕР';
+  return;
+ }
+ if(clockLeft<=0){
+  clockLeft=taskFor(s.current).secs;
+  const output=$('#clockNumber');if(output)output.textContent=clockLeft;
+ }
+ clockRunning=true;
+ clockDeadline=Date.now()+clockLeft*1000;
+ if(button)button.textContent='⏸ ПАУЗА';
+ // The deadline is based on actual elapsed time, not throttled interval ticks.
+ clock=setInterval(syncClock,200);
+ syncClock();
+}
+function resetClock(){
+ stopClock();
+ if(s.phase==='challenge'){
+  clockLeft=taskFor(s.current).secs;
+  const display=$('#clockNumber');if(display)display.textContent=clockLeft;
+  const button=$('#timerStart');if(button)button.textContent='⏱ ЗАПУСТИТЬ ТАЙМЕР';
+ }
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncClock();});
 function fullReset(){stopClock();trackPage=0;s=blankState();save();render();}
 function copyResult(){const ranked=[...s.teams].sort((a,b)=>b.score-a.score);const txt=['МЕЛОФАНТЫ · результат интерактивного демо','3 тура, '+s.opened.length+' открытых чисел',...ranked.map(t=>`${t.name}: ${t.score} демо-баллов, ${t.completed} выполненных фантов, ${t.matches} совпадений в ставке, неоткрытых чисел джекпота ${t.jackpot.filter(n=>!s.opened.includes(n)).length}/5`),'Это демонстрационные, не официальные результаты.','https://www.instagram.com/melofanty.by/'].join('\n');navigator.clipboard?.writeText(txt).then(()=>feedback('Результат скопирован!')).catch(()=>fallbackCopy(txt));if(!navigator.clipboard)fallbackCopy(txt);}
 function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.append(ta);ta.select();let ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();feedback(ok?'Результат скопирован!':'Не удалось скопировать. Проверь настройки браузера.');}
