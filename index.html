@@ -484,7 +484,7 @@ const initCursor = () => {
   const canvas=document.createElement('canvas');
   canvas.id='mf-fluid-canvas';
   canvas.setAttribute('aria-hidden','true');
-  canvas.style.cssText='position:fixed;inset:0;width:100vw;height:100dvh;pointer-events:none!important;touch-action:auto;z-index:8;opacity:.68;mix-blend-mode:screen;contain:strict';
+  canvas.style.cssText='position:fixed;inset:0;width:100vw;height:100dvh;pointer-events:none!important;touch-action:auto;z-index:8;opacity:.60;mix-blend-mode:screen;contain:strict';
   document.body.appendChild(canvas);
   resizeCanvas();
 
@@ -493,13 +493,13 @@ const initCursor = () => {
     DYE_RESOLUTION: isTouch ? 360 : 720,
     CAPTURE_RESOLUTION: 512,
 
-    DENSITY_DISSIPATION: isTouch ? 1.45 : 1.7,
-    VELOCITY_DISSIPATION: 0.9,
+    DENSITY_DISSIPATION: 3.5,
+    VELOCITY_DISSIPATION: 1.5,
     PRESSURE: 0.1,
     PRESSURE_ITERATIONS: isTouch ? 10 : 16,
-    CURL: 14,
-    SPLAT_RADIUS: isTouch ? 1.15 : 0.95,
-    SPLAT_FORCE: isTouch ? 4200 : 5000,
+    CURL: 3,
+    SPLAT_RADIUS: 0.6,
+    SPLAT_FORCE: isTouch ? 5200 : 6500,
     SHADING: true,
     // COLOR_UPDATE_SPEED: 1.400,
     COLOR_UPDATE_SPEED: 10,
@@ -1530,9 +1530,9 @@ const initCursor = () => {
   function generateColor() {
     const t=Math.random();
     // Exact project accent hues, softened into fluid dye rather than a laser.
-    return {r:(.647*(1-t)+.086*t)*.52,
-            g:(.992*(1-t)+.902*t)*.52,
-            b:(.384*(1-t)+.816*t)*.52};
+    return {r:(.647*(1-t)+.086*t)*.30,
+            g:(.992*(1-t)+.902*t)*.30,
+            b:(.384*(1-t)+.816*t)*.30};
   }
   function HSVtoRGB(h, s, v) {
     let r, g, b, i, f, p, q, t;
