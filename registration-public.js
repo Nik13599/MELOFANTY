@@ -20,17 +20,19 @@ styles.textContent=[
 '.mf-empty strong{font:700 26px Oswald,sans-serif}.mf-empty p{color:#afcec4;margin-top:8px;font-size:17px}',
 '.mf-description{border:1px solid #286d52;border-radius:13px;background:#09271a;padding:12px;color:#cce9d7;line-height:1.4;white-space:pre-wrap;margin:3px 0 18px}',
 '.event-list.mf-single-event{grid-template-columns:minmax(0,min(410px,100%))!important;justify-content:start}',
-'.mf-event-hint{font:600 12px Oswald,sans-serif;color:#a9ff83;border:1px solid #7cffa060;border-radius:9px;padding:4px 7px;position:absolute;right:9px;top:9px;background:#012018cc}',
-'.mf-demo-event{background:radial-gradient(ellipse at 20% 25%,#195d4e 0%,#03271c 40%,#010907 100%)!important}',
-'.mf-demo-event .mf-event-hint{color:#ffe3a6;border-color:#fcd095aa;background:#3e2b13e9}',
-'/* Public event artwork is always displayed in a full square without cropping. */',
-'.event-list>.event-card{aspect-ratio:1/1!important}',
-'.event-list>.event-card img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important}',
-'.event-list>.event-card .event-info{padding:12px 0 2px;background:linear-gradient(0deg,#02110fe8 0%,#031a11b5 76%,transparent 100%)}',
-'.event-list>.event-card .event-info .event-title{white-space:normal!important;overflow-wrap:anywhere!important}',
-'.mf-card-description{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:2.6em;color:#e2ffef;font:400 clamp(11px,1.1vw,14px)/1.25 Roboto Condensed,Arial,sans-serif;text-shadow:0 1px 4px #000}',
+'/* The homepage showcases only square artwork. Event details open on tap. */',
+'.event-list>.event-card{position:relative!important;display:block!important;width:100%!important;height:auto!important;aspect-ratio:1/1!important;overflow:hidden!important;border:1px solid #6bae91!important;border-radius:clamp(13px,1.25vw,20px)!important;padding:0!important;background:#071b14!important;box-shadow:0 10px 25px #0009!important;isolation:isolate!important;touch-action:manipulation!important}',
+'.event-list>.event-card:after{content:none!important;display:none!important}',
+'.event-list>.event-card>img{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;z-index:1!important;transform:none!important;transition:none!important}',
+'.event-list>.event-card:hover,.event-list>.event-card:focus-visible{border-color:#a5ff79!important;box-shadow:0 0 0 2px #88ffa677,0 13px 26px #0009!important}',
+'.event-list>.event-card:hover>img{transform:none!important}',
+'.event-list>.event-card>.event-info,.event-list>.event-card>.mf-event-hint{display:none!important}',
+'.event-list>.event-card.mf-no-poster{background:radial-gradient(ellipse at 60% 15%,#275a44 0%,#09251b 48%,#03120e 100%)!important}',
+'.mf-cover-placeholder{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}',
+'.mf-cover-placeholder:before{content:"";width:69%;aspect-ratio:1/1;border-radius:50%;background:repeating-radial-gradient(circle,#132f29 0 4px,#244d3e 5px 6px,#081f19 7px 12px);border:2px solid #8fdfb055;box-shadow:0 18px 40px #000b,0 0 35px #7cff9d18}',
+'.mf-cover-placeholder:after{content:"";position:absolute;width:15%;aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle,#071c14 0 15%,#9fe5ad 17% 75%,#327d57 77%);box-shadow:0 0 18px #7fffb466}',
 '.mf-date-description{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;line-height:1.3}',
-'@media(max-width:760px){.event-wrap{height:auto!important}.event-list{height:auto!important;min-height:0!important}.event-list>.event-card{height:auto!important;aspect-ratio:1/1!important;max-width:100%!important;width:100%!important}.event-list>.event-card .event-info{padding-top:8px!important}.mf-card-description{font-size:clamp(10px,3vw,13px);-webkit-line-clamp:2}}',
+'@media(max-width:760px){.event-wrap{height:auto!important}.event-list{height:auto!important;min-height:0!important}.event-list>.event-card{height:auto!important;aspect-ratio:1/1!important;max-width:100%!important;width:100%!important;border-radius:16px!important}}',
 '.mf-calendar-caption{font:500 14px Oswald,sans-serif;color:#aad8c3;margin:-5px 0 14px;line-height:1.35}',
 '.mf-calendar-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 12px}.mf-calendar-month{font:600 22px Oswald,sans-serif;text-transform:capitalize;text-align:center}.mf-calendar-arrow{width:39px;height:39px;border-radius:11px;background:#113e2d;color:#e8ffe4;border:1px solid #3f9b73;font-size:23px}.mf-calendar-arrow:disabled{opacity:.25;cursor:default}',
 '.mf-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.mf-weekday{display:grid;place-items:center;color:#9fbaa9;font:500 12px Oswald,sans-serif;min-height:24px}.mf-calendar-empty{min-height:41px}.mf-calendar-day{height:42px;min-width:0;border:1px solid #1a4736;background:#071f16;border-radius:10px;color:#819b8c;font:600 16px Oswald,sans-serif;touch-action:manipulation}.mf-calendar-day:disabled{opacity:.42;cursor:default}.mf-calendar-day.available{color:#e7ffeb;border-color:#69ca8c;background:#14412c}.mf-calendar-day.available:after{content:"";display:block;width:4px;height:4px;border-radius:50%;background:#a5ff79;margin:-1px auto 0}.mf-calendar-day.available:hover{background:#236244}.mf-calendar-day.selected{color:#081c11;border-color:#b9ff7a;background:#b4fc7c;box-shadow:0 0 0 2px #b4fc7c33}.mf-calendar-day.selected:after{background:#185032}',
@@ -210,14 +212,18 @@ async function saveTicket(d){
  var msg=el('p','mf-note','Если изображение открылось отдельно, удерживайте его и выберите «Сохранить в Фото».');dialogBody.append(msg);
 }
 function buildCard(e){
- var button=el('button','event-card'+(e.is_demo?' mf-demo-event':''));button.type='button';
- var poster=e.poster;if(poster){var img=el('img');img.src=poster;img.alt='Афиша: '+e.title;img.loading='lazy';button.append(img);}
- button.append(el('span','mf-event-hint',e.is_demo?'ДЕМО · РЕГИСТРАЦИЯ':'РЕГИСТРАЦИЯ'));
- var info=el('span','event-info');info.append(el('span','event-title',e.title));
- info.append(el('span','event-date',new Date(e.starts_at).toLocaleDateString('ru-RU',{timeZone:'Europe/Minsk',day:'2-digit',month:'2-digit'})+' / '+new Date(e.starts_at).toLocaleTimeString('ru-RU',{timeZone:'Europe/Minsk',hour:'2-digit',minute:'2-digit'})));
- info.append(el('span','event-place','♧ '+e.venue));
- if(e.description){var desc=el('span','mf-card-description',e.description);desc.title=e.description;info.append(desc);}
- button.append(info);
+ // Only artwork appears in the homepage carousel. All details remain in eventForm().
+ var button=el('button','event-card');button.type='button';
+ button.setAttribute('aria-label','Открыть описание и регистрацию: '+e.title+' · '+localDate(e.starts_at));
+ button.title='Открыть мероприятие: '+e.title;
+ if(e.poster){
+  var img=el('img');img.src=e.poster;img.alt='';img.loading='lazy';img.decoding='async';
+  button.append(img);
+ }else{
+  button.classList.add('mf-no-poster');
+  var cover=el('span','mf-cover-placeholder');
+  cover.setAttribute('aria-hidden','true');button.append(cover);
+ }
  button.addEventListener('click',function(){eventForm(e);});return button;
 }
 function drawEvents(){
