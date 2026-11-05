@@ -1111,13 +1111,9 @@ function renderRegList(){
  var q=state.query.trim().toLowerCase(),arr=(state.details.registrations||[]).filter(function(r){
  return (state.status==='all'||r.status===state.status)&&(!q||[r.code,r.name,r.phone].join(' ').toLowerCase().indexOf(q)>=0);
  });
- // Order by status even after live refresh or filtering.
- var statusRank={pending:0,confirmed:1,cancelled:2};
- arr.sort(function(a,b){
-  var left=Object.prototype.hasOwnProperty.call(statusRank,a.status)?statusRank[a.status]:3;
-  var right=Object.prototype.hasOwnProperty.call(statusRank,b.status)?statusRank[b.status]:3;
-  return left-right||(Number(b.seq)||0)-(Number(a.seq)||0);
- });
+ // One chronological ID sequence for every status: newest ID is always first.
+ // Cancelling or restoring a registration must never change its original position.
+ arr.sort(function(a,b){return Number(b.seq)-Number(a.seq);});
  if(!arr.length){list.append(el('div','empty','Заявок по выбранным условиям пока нет.'));return;}
  arr.forEach(function(r){
   var card=el('article','registration'),info=el('div');
