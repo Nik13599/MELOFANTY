@@ -80,6 +80,23 @@ async function regLogin(req,env){
  response.headers.set('Set-Cookie','melofanty_admin='+value+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200');
  return response;
 }
+// Public registration protection. Reuses the indexed attempt table with a separate
+// HMAC namespace, so admin login attempts and guest registrations never mix.
+async function regPublicRateLimit(req,env){
+ const ip=req.headers.get('cf-connecting-ip')||'unknown';
+ const hashed=await regHmac('guest-registration:'+ip,env.ADMIN_SESSION_SECRET);
+ const now=Math.floor(Date.now()/1000);
+ const count=await env.DB.prepare(
+  'SELECT COUNT(*) total, COALESCE(SUM(CASE WHEN at>? THEN 1 ELSE 0 END),0) rapid FROM admin_attempts WHERE ip_hash=? AND at>?'
+ ).bind(now-60,hashed,now-900).first();
+ if(count&&(Number(count.rapid)>=25||Number(count.total)>=100)){
+  const response=regError('Слишком много заявок с одного подключения. Повторите регистрацию позже.',429);
+  response.headers.set('Retry-After','60');
+  return response;
+ }
+ await env.DB.prepare('INSERT INTO admin_attempts(ip_hash,at) VALUES(?,?)').bind(hashed,now).run();
+ return null;
+}
 async function regInsert(env,event,person,manual){
  const name=regText(person.name,100),phone=regPhone(person.phone),party=regPeople(person.party_size);
  const guestComment=regText(person.guest_comment,500),adminComment=manual?regText(person.admin_comment,1000):'';
@@ -190,6 +207,8 @@ async function registrationRouter(req,env){
     if(!regOriginOk(req))return regError('Недопустимый источник запроса',403);
     const b=await regBody(req);
     if(b.website)return regError('Недопустимые данные',400);
+    const blocked=await regPublicRateLimit(req,env);
+    if(blocked)return blocked;
     const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(regText(b.event_id,80)).first();
     return regInsert(env,e,b,false);
   }
