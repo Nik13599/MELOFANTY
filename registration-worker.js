@@ -108,15 +108,27 @@ async function regInsert(env,event,person,manual){
  if(name.length<2||!phone||!party)return regError('Проверьте имя, телефон и количество человек',400);
  if(!regActive(event))return regError('Регистрация на это мероприятие закрыта',409);
  const now=new Date().toISOString();
- // Atomic increment in D1 makes the sequence unique even under concurrent signups.
- const next=await env.DB.prepare(
-   "UPDATE events SET next_seq=next_seq+1 WHERE id=? AND archived=0 AND ends_at>? AND (capacity IS NULL OR (SELECT COALESCE(SUM(party_size),0) FROM registrations WHERE event_id=? AND status IN ('pending','confirmed'))+?<=capacity) RETURNING next_seq,starts_at"
- ).bind(event.id,now,event.id,party).first();
+ // D1 batch is a single transaction: the new ID is committed together
+ // with its registration, never alone. This also saves a database round trip.
+ const prefix=regDayMonth(event.starts_at);
+ const status=manual?'confirmed':'pending';
+ const source=event.is_demo?'demo':manual?'admin':'site';
+ const results=await env.DB.batch([
+  env.DB.prepare(
+   "UPDATE events SET next_seq=next_seq+1 WHERE id=? AND archived=0 AND ends_at>? AND starts_at=? AND (capacity IS NULL OR (SELECT COALESCE(SUM(party_size),0) FROM registrations WHERE event_id=? AND status IN ('pending','confirmed'))+?<=capacity) RETURNING next_seq,starts_at"
+  ).bind(event.id,now,event.starts_at,event.id,party),
+  env.DB.prepare(
+   "INSERT INTO registrations(event_id,seq,code,name,phone,party_size,status,source,guest_comment,admin_comment) SELECT id,next_seq,?||'-'||next_seq,?,?,?,?,?,?,? FROM events WHERE id=? AND changes()=1"
+  ).bind(prefix,name,phone,party,status,source,guestComment,adminComment,event.id)
+ ]);
+ const next=results[0]&&results[0].results&&results[0].results[0];
  if(!next)return regError('Регистрация закрыта или свободных мест недостаточно',409);
- const seq=next.next_seq,code=regIdFor(next,seq);
- await env.DB.prepare('INSERT INTO registrations(event_id,seq,code,name,phone,party_size,status,source,guest_comment,admin_comment) VALUES(?,?,?,?,?,?,?,?,?,?)')
-  .bind(event.id,seq,code,name,phone,party,manual?'confirmed':'pending',event.is_demo?'demo':manual?'admin':'site',guestComment,adminComment).run();
- return regJson({ok:true,id:code,code,event_id:event.id,title:event.title,starts_at:event.starts_at,venue:event.venue,party_size:party,is_demo:!!event.is_demo,status:manual?'confirmed':'pending'},201);
+ if(!results[1]||!results[1].meta||results[1].meta.changes!==1){
+  console.error('MELOFANTY: registration batch insert did not create a row',event.id);
+  return regError('Не удалось сохранить заявку. Проверьте регистрацию у организатора.',500);
+ }
+ const code=regIdFor(next,next.next_seq);
+ return regJson({ok:true,id:code,code,event_id:event.id,title:event.title,starts_at:event.starts_at,venue:event.venue,party_size:party,is_demo:!!event.is_demo,status},201);
 }
 // Compact versions for admin polling; no poster image bytes are transferred.
 function regAdminEventVersion(items){
