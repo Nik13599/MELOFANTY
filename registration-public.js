@@ -55,6 +55,8 @@ styles.textContent=[
 '#eventList.mf-sliding{pointer-events:none}',
 '#eventList>.event-card{touch-action:pan-y!important}',
 '@media(max-width:760px){#dots.dots{min-height:56px!important;padding:12px 6px 15px!important;gap:3px!important}#dots.dots>button{flex-basis:32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;height:32px!important;min-height:32px!important;max-height:32px!important}#eventList .mf-card-motion{gap:9px}}',
+'/* Desktop carousel: reserve side rails so arrows stay outside square posters. */',
+'@media(min-width:761px){#events .event-wrap{--mf-arrow-track:clamp(49px,5.4vw,77px);box-sizing:border-box!important;width:calc(100% - 2 * var(--mf-arrow-track))!important;max-width:none!important;margin-inline:auto!important;overflow:visible!important}#events .event-wrap .nav-arrow{box-sizing:border-box!important;position:absolute!important;top:var(--mf-arrow-center-y,50%)!important;display:grid!important;place-items:center!important;flex:none!important;width:clamp(42px,3.65vw,52px)!important;min-width:42px!important;max-width:52px!important;height:clamp(42px,3.65vw,52px)!important;min-height:42px!important;max-height:52px!important;aspect-ratio:1/1!important;padding:0!important;line-height:0!important;font-size:0!important;border-radius:50%!important;transform:translateY(-50%)!important;z-index:6!important}#events .event-wrap .nav-arrow.prev{left:calc(-1 * var(--mf-arrow-track) + 4px)!important;right:auto!important}#events .event-wrap .nav-arrow.next{right:calc(-1 * var(--mf-arrow-track) + 4px)!important;left:auto!important}#events .event-wrap .nav-arrow:before{content:"";display:block;box-sizing:border-box;width:13px;height:13px;border-top:2.6px solid currentColor;border-right:2.6px solid currentColor;border-radius:1px;transform-origin:center center}#events .event-wrap .nav-arrow.prev:before{transform:translateX(2px) rotate(-135deg)}#events .event-wrap .nav-arrow.next:before{transform:translateX(-2px) rotate(45deg)}#events .event-wrap .nav-arrow[hidden]{display:none!important}}',
 '/* Automatically center the entire carousel between the heading and the section bottom. */',
 '#events .event-wrap,#events #dots{transform:translate3d(0,var(--mf-centering-offset,0px),0)!important;transition:transform 240ms cubic-bezier(.2,.7,.2,1)!important}',
 '@media(prefers-reduced-motion:reduce){#events .event-wrap,#events #dots{transition:none!important}}',
@@ -266,6 +268,11 @@ function centerUpcomingGames(){
  }
  // The parent section's bottom is the boundary before the next website block.
  var boundary=section.parentElement&&section.parentElement.classList.contains('discover')?section.parentElement:section;
+ var wrap=section.querySelector('.event-wrap');
+ if(wrap){
+  var posterRect=poster.getBoundingClientRect(),wrapRect=wrap.getBoundingClientRect();
+  wrap.style.setProperty('--mf-arrow-center-y',(posterRect.top+posterRect.height/2-wrapRect.top).toFixed(1)+'px');
+ }
  var topGap=poster.getBoundingClientRect().top-heading.getBoundingClientRect().bottom;
  var bottomGap=boundary.getBoundingClientRect().bottom-dot.getBoundingClientRect().bottom;
  var next=carouselCenterOffset+(bottomGap-topGap)/2;
