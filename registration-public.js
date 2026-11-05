@@ -55,6 +55,9 @@ styles.textContent=[
 '#eventList.mf-sliding{pointer-events:none}',
 '#eventList>.event-card{touch-action:pan-y!important}',
 '@media(max-width:760px){#dots.dots{min-height:56px!important;padding:12px 6px 15px!important;gap:3px!important}#dots.dots>button{flex-basis:32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;height:32px!important;min-height:32px!important;max-height:32px!important}#eventList .mf-card-motion{gap:9px}}',
+'/* Automatically center the entire carousel between the heading and the section bottom. */',
+'#events .event-wrap,#events #dots{transform:translate3d(0,var(--mf-centering-offset,0px),0)!important;transition:transform 240ms cubic-bezier(.2,.7,.2,1)!important}',
+'@media(prefers-reduced-motion:reduce){#events .event-wrap,#events #dots{transition:none!important}}',
 '@media(prefers-reduced-motion:reduce){#dots.dots>button:before,#dots.dots>button:after{transition:none!important}#eventList .mf-card-motion{will-change:auto!important}}',
 '@media(max-width:760px){.mf-overlay{padding:8px}.mf-dialog{max-height:calc(100dvh - 16px)}.mf-title{font-size:29px}.mf-field input{min-height:45px}}'
 ].join('');
@@ -251,6 +254,31 @@ function buildCard(e){
  button.addEventListener('click',function(){eventForm(e);});return button;
 }
 var carouselBusy=false,refreshAfterSlide=false,dragOffset=0;
+var carouselCenterOffset=0,carouselCenterFrame=0;
+function centerUpcomingGames(){
+ var section=document.getElementById('events');
+ if(!section)return;
+ var heading=section.querySelector('.section-bar');
+ var poster=section.querySelector('#eventList .event-card .mf-poster-frame');
+ var dot=section.querySelector('#dots>button.current')||section.querySelector('#dots>button');
+ if(!heading||!poster||!dot){
+  carouselCenterOffset=0;section.style.setProperty('--mf-centering-offset','0px');return;
+ }
+ // The parent section's bottom is the boundary before the next website block.
+ var boundary=section.parentElement&&section.parentElement.classList.contains('discover')?section.parentElement:section;
+ var topGap=poster.getBoundingClientRect().top-heading.getBoundingClientRect().bottom;
+ var bottomGap=boundary.getBoundingClientRect().bottom-dot.getBoundingClientRect().bottom;
+ var next=carouselCenterOffset+(bottomGap-topGap)/2;
+ // Keep arrows and pagination within the section, including small phone screens.
+ next=Math.max(0,Math.min(72,next));
+ if(Math.abs(next-carouselCenterOffset)<.5)return;
+ carouselCenterOffset=next;
+ section.style.setProperty('--mf-centering-offset',next.toFixed(1)+'px');
+}
+function scheduleUpcomingCentering(){
+ if(carouselCenterFrame)cancelAnimationFrame(carouselCenterFrame);
+ carouselCenterFrame=requestAnimationFrame(function(){carouselCenterFrame=0;centerUpcomingGames();});
+}
 function updateCarouselDots(dots){
  if(dots.children.length!==events.length){
   dots.replaceChildren();
@@ -290,7 +318,8 @@ function drawEvents(direction){
   inside.append(el('p','','Следите за анонсами. Регистрация откроется после публикации нового мероприятия.'));
   box.append(inside);list.append(box);
   document.getElementById('eventsPrev').hidden=true;
-  document.getElementById('eventsNext').hidden=true;return;
+  document.getElementById('eventsNext').hidden=true;
+  scheduleUpcomingCentering();return;
  }
  var prev=document.getElementById('eventsPrev'),next=document.getElementById('eventsNext');
  prev.hidden=events.length<=1;next.hidden=events.length<=1;
@@ -301,7 +330,7 @@ function drawEvents(direction){
  var outgoing=Array.from(list.children).filter(function(c){return c.classList.contains('event-card');});
  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  if(!direction||reduced||!outgoing.length||outgoing.length!==incoming.length||typeof outgoing[0].animate!=='function'){
-  list.replaceChildren.apply(list,incoming);dragOffset=0;return;
+  list.replaceChildren.apply(list,incoming);dragOffset=0;scheduleUpcomingCentering();return;
  }
  carouselBusy=true;
  list.classList.add('mf-sliding');
@@ -342,6 +371,7 @@ function drawEvents(direction){
   list.replaceChildren.apply(list,incoming);
   list.classList.remove('mf-sliding');
   carouselBusy=false;
+  scheduleUpcomingCentering();
   if(refreshAfterSlide){refreshAfterSlide=false;drawEvents();}
  });
 }
@@ -404,7 +434,9 @@ if(eventRail){
 }
 window.addEventListener('resize',function(){
  if(events.length)drawEvents();
+ scheduleUpcomingCentering();
 });
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(scheduleUpcomingCentering);
 function openFirst(){openDatePicker();}
 document.querySelectorAll('a.main-btn').forEach(function(a){
  if(/РЕГИСТРАЦИЯ|ЗАРЕГИСТРИРОВАТЬСЯ/i.test(a.textContent||'')){a.removeAttribute('target');a.setAttribute('href','#events');a.addEventListener('click',function(ev){ev.preventDefault();ev.stopImmediatePropagation();openFirst();},true);}
