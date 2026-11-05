@@ -348,6 +348,12 @@ body>.mf-smoke{display:block;pointer-events:none!important;opacity:.52}
  .cta h2{font-size:clamp(37px,11vw,49px)!important}
 }
 
+
+/* Reveal motion must not shift nested titles into neighbouring blocks. */
+html.mf-motion-ready .mf-reveal .mf-reveal{translate:0 0!important}
+html.mf-motion-ready :is(h1,h2,h3,h4,.section-bar,.heading,.toolbar).mf-reveal{translate:0 0!important}
+html.mf-motion-ready #events .section-bar,html.mf-motion-ready #events #eventsTitle{translate:0 0!important}
+#events .section-bar{position:relative}
 </style>
 </head>
 <body>
