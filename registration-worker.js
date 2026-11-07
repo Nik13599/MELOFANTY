@@ -17,6 +17,7 @@ async function regBody(req){
 }
 function regText(v,max){return String(v===undefined?'':v).trim().slice(0,max);}
 function regPeople(v){const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=50?n:0;}
+function regTableNumber(v){const s=String(v==null?'':v).trim();if(s.length>24||/[\x00-\x1f\x7f]/.test(s))throw new Error('Номер стола: не более 24 символов, без переноса строк');return s;}
 function regPhone(v){const s=regText(v,40);return /^[+0-9 ()-]{8,40}$/.test(s)&&s.replace(/\D/g,'').length>=8?s:null;}
 function regPoster(v){const s=regText(v,300010);if(!s)return '';if(s.length>300000||!/^data:image\/webp;base64,[a-zA-Z0-9+/=]+$/.test(s))throw new Error('Сохранить можно только WebP до 220 КБ. Обновите админку: встроенный конвертер подготовит изображение автоматически.');return s;}
 function regDate(v){const s=String(v||'');const d=new Date(s);if(!Number.isFinite(d.getTime()))throw new Error('Укажите корректную дату и время');return d.toISOString();}
@@ -105,6 +106,7 @@ async function regPublicRateLimit(req,env){
 async function regInsert(env,event,person,manual){
  const name=regText(person.name,100),phone=regPhone(person.phone),party=regPeople(person.party_size);
  const guestComment=regText(person.guest_comment,500),adminComment=manual?regText(person.admin_comment,1000):'';
+ const tableNumber=manual?regTableNumber(person.table_number):'';
  if(name.length<2||!phone||!party)return regError('Проверьте имя, телефон и количество человек',400);
  if(!regActive(event))return regError('Регистрация на это мероприятие закрыта',409);
  const now=new Date().toISOString();
@@ -118,8 +120,8 @@ async function regInsert(env,event,person,manual){
    "UPDATE events SET next_seq=next_seq+1 WHERE id=? AND archived=0 AND ends_at>? AND starts_at=? AND (capacity IS NULL OR (SELECT COALESCE(SUM(party_size),0) FROM registrations WHERE event_id=? AND status IN ('pending','confirmed'))+?<=capacity) RETURNING next_seq,starts_at"
   ).bind(event.id,now,event.starts_at,event.id,party),
   env.DB.prepare(
-   "INSERT INTO registrations(event_id,seq,code,name,phone,party_size,status,source,guest_comment,admin_comment) SELECT id,next_seq,?||'-'||next_seq,?,?,?,?,?,?,? FROM events WHERE id=? AND changes()=1"
-  ).bind(prefix,name,phone,party,status,source,guestComment,adminComment,event.id)
+   "INSERT INTO registrations(event_id,seq,code,name,phone,party_size,status,source,guest_comment,admin_comment,table_number) SELECT id,next_seq,?||'-'||next_seq,?,?,?,?,?,?,?,? FROM events WHERE id=? AND changes()=1"
+  ).bind(prefix,name,phone,party,status,source,guestComment,adminComment,tableNumber,event.id)
  ]);
  const next=results[0]&&results[0].results&&results[0].results[0];
  if(!next)return regError('Регистрация закрыта или свободных мест недостаточно',409);
@@ -176,7 +178,7 @@ async function regEventDetails(env,id){
  const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
  if(!e)return regError('Мероприятие не найдено',404);
  const registrations=(await env.DB.prepare(
-   "SELECT seq,code,name,phone,party_size,status,source,guest_comment,admin_comment,created_at,updated_at FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY seq DESC"
+   "SELECT seq,code,name,phone,party_size,status,source,guest_comment,admin_comment,table_number,created_at,updated_at FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY seq DESC"
  ).bind(id).all()).results||[];
  const stats=(await env.DB.prepare(
    "SELECT COUNT(CASE WHEN status!='deleted' THEN 1 END) total_apps, COALESCE(SUM(CASE WHEN status IN ('pending','confirmed') THEN party_size ELSE 0 END),0) guests, COUNT(CASE WHEN status='cancelled' THEN 1 END) cancelled_apps, COALESCE(SUM(CASE WHEN status='cancelled' THEN party_size ELSE 0 END),0) cancelled_guests, COUNT(CASE WHEN status='pending' THEN 1 END) pending_apps, COUNT(CASE WHEN status='confirmed' THEN 1 END) confirmed_apps, COUNT(CASE WHEN source='demo' AND status!='deleted' THEN 1 END) demo_apps FROM registrations WHERE event_id=?"
@@ -219,6 +221,7 @@ async function regManageRegistration(env,b){
  const party=b.party_size===undefined?existing.party_size:regPeople(b.party_size);
  const guestComment=b.guest_comment===undefined?existing.guest_comment:regText(b.guest_comment,500);
  const adminComment=b.admin_comment===undefined?existing.admin_comment:regText(b.admin_comment,1000);
+  const tableNumber=b.table_number===undefined?existing.table_number:regTableNumber(b.table_number);
  if(name.length<2||!phone||!party)throw new Error('Проверьте имя, телефон и количество гостей');
  const event=await env.DB.prepare('SELECT capacity FROM events WHERE id=?').bind(eventId).first();
  if(event&&event.capacity!==null&&['pending','confirmed'].includes(nextStatus)){
@@ -228,9 +231,9 @@ async function regManageRegistration(env,b){
  // Capacity is checked again INSIDE the write statement, so two concurrent
  // admin confirmations cannot both overbook the last available place.
  const activeUpdate=nextStatus==='pending'||nextStatus==='confirmed';
- const sql="UPDATE registrations SET name=?,phone=?,party_size=?,status=?,guest_comment=?,admin_comment=?,updated_at=? WHERE event_id=? AND seq=?"+
+ const sql="UPDATE registrations SET name=?,phone=?,party_size=?,status=?,guest_comment=?,admin_comment=?,table_number=?,updated_at=? WHERE event_id=? AND seq=?"+
   (activeUpdate?" AND EXISTS(SELECT 1 FROM events e WHERE e.id=? AND (e.capacity IS NULL OR (SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed') AND r.seq!=?)+?<=e.capacity))":"");
- const bind=[name,phone,party,nextStatus,guestComment,adminComment,new Date().toISOString(),eventId,seq];
+ const bind=[name,phone,party,nextStatus,guestComment,adminComment,tableNumber,new Date().toISOString(),eventId,seq];
  if(activeUpdate)bind.push(eventId,seq,party);
  const changed=await env.DB.prepare(sql).bind(...bind).run();
  if(changed.meta&&changed.meta.changes===0)return regError('Мест недостаточно или заявка была изменена другим администратором. Обновите список.',409);
