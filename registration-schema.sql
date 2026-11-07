@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS registrations (
  source TEXT NOT NULL DEFAULT 'site',
  guest_comment TEXT NOT NULL DEFAULT '',
  admin_comment TEXT NOT NULL DEFAULT '',
+ table_number TEXT NOT NULL DEFAULT '',
  created_at TEXT NOT NULL DEFAULT (datetime('now')),
  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
  PRIMARY KEY(event_id,seq)
@@ -44,3 +45,6 @@ CREATE INDEX IF NOT EXISTS idx_attempts ON admin_attempts(ip_hash,at);
 -- Existing D1 instances: run only if the column is absent.
 -- ALTER TABLE events ADD COLUMN admin_poster TEXT NOT NULL DEFAULT '';
 -- This migration has already been applied to the existing MELOFANTY D1 database.
+
+-- Existing D1 instances: execute once before deploying the updated Worker:
+-- ALTER TABLE registrations ADD COLUMN table_number TEXT NOT NULL DEFAULT '';
