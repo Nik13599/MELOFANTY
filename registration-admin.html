@@ -271,6 +271,7 @@ body{display:flex;flex-direction:column;min-height:0}
 .export-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
 .export-choice .btn{min-height:52px;display:flex;align-items:center;justify-content:center}
 .export-hint{font-size:13px;color:#bfd5c8;line-height:1.45;margin:10px 0}
+.reg-table-badge{display:inline-flex;align-items:center;width:max-content;max-width:100%;margin-top:3px;padding:3px 7px;border:1px solid #58a58099;border-radius:5px;color:#d1ffe4;font-size:12px;line-height:1.2;overflow-wrap:anywhere}
 @media(max-width:500px){.export-choice{grid-template-columns:1fr 1fr;gap:7px}.export-choice .btn{font-size:13px;padding:8px}}
 
 .registrations-scroll .person a.phone-link{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:2px 5px;margin:-2px -5px;color:#a9ffd1;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;border-radius:7px;touch-action:manipulation}
@@ -910,10 +911,11 @@ function pdfReportCanvas(event,registrations){
  }
  function tableHead(c,y){
   c.fillStyle='#0f4937';c.fillRect(M,y,W-2*M,headH);
-  text(c,'ID',M+16,y+32,170,'bold 23px Arial','#ffffff');
-  text(c,'ИМЯ',M+200,y+32,300,'bold 23px Arial','#ffffff');
-  text(c,'НОМЕР ТЕЛЕФОНА',M+530,y+32,380,'bold 23px Arial','#ffffff');
-  text(c,'ЧЕЛ.',W-M-115,y+32,100,'bold 23px Arial','#ffffff');
+  text(c,'ID',M+16,y+32,160,'bold 23px Arial','#ffffff');
+  text(c,'ИМЯ',M+185,y+32,275,'bold 23px Arial','#ffffff');
+  text(c,'ТЕЛЕФОН',M+490,y+32,280,'bold 23px Arial','#ffffff');
+  text(c,'ЧЕЛ.',M+815,y+32,90,'bold 23px Arial','#ffffff');
+  text(c,'№ СТОЛА',M+945,y+32,145,'bold 22px Arial','#ffffff');
   return y+headH;
  }
  function wrapped(c,value,maxWidth){
@@ -938,10 +940,12 @@ function pdfReportCanvas(event,registrations){
  }
  function row(c,r,y,i,size){
   if(i%2===0){c.fillStyle='#edf4f0';c.fillRect(M,y,W-2*M,size.height);}
-  text(c,r.code,M+16,y+33,180,'23px Arial','#17362b');
-  text(c,r.name,M+200,y+33,308,'23px Arial','#152c22');
-  text(c,r.phone,M+530,y+33,384,'23px Arial','#17362b');
-  text(c,r.party_size,W-M-115,y+33,95,'bold 24px Arial','#17362b');
+  text(c,r.code,M+16,y+33,155,'23px Arial','#17362b');
+  text(c,r.name,M+185,y+33,285,'23px Arial','#152c22');
+  text(c,r.phone,M+490,y+33,295,'23px Arial','#17362b');
+  text(c,r.party_size,M+815,y+33,90,'bold 24px Arial','#17362b');
+  c.strokeStyle='#9bb8a9';c.lineWidth=1.5;c.strokeRect(M+937,y+7,156,37);
+  text(c,r.table_number||'',M+950,y+33,129,'bold 23px Arial','#17362b');
   if(size.guest.length||size.admin.length){
    c.fillStyle='#e2ece5';c.fillRect(M+10,y+46,W-2*M-20,1);
    text(c,'КОММЕНТАРИЙ ГОСТЯ',M+15,y+72,460,'bold 16px Arial','#0c6c47');
@@ -1028,12 +1032,12 @@ function reportExcelXlsx(event,registrations){
  data.push(row(4,c('A',4,'Заявок',5)+c('B',4,active.length,3,true)+c('D',4,'Гостей',5)+c('E',4,guests,3,true),29));
  data.push(row(5,c('A',5,demo?'ДЕМО · Тестовые данные, не реальные гости':'Действующие заявки: новые и подтверждённые',5),25));
  data.push(row(6,c('A',6,'Отменённые заявки в отчёт не включены',5),24));
- var heads=['ID','Имя','Номер телефона','Человек','Комментарий гостя','Комментарий администратора'];
- data.push(row(7,heads.map(function(t,i){return c('ABCDEF'[i],7,t,1)}).join(''),29));
+ var heads=['ID','Имя','Номер телефона','Человек','№ стола','Комментарий гостя','Комментарий администратора'];
+ data.push(row(7,heads.map(function(t,i){return c('ABCDEFG'[i],7,t,1)}).join(''),29));
  active.forEach(function(a,i){
   var n=i+8,style=i%2?0:4;
   data.push(row(n,c('A',n,a.code,style)+c('B',n,a.name,style)+c('C',n,a.phone,style)+
-   c('D',n,a.party_size,3,true)+c('E',n,a.guest_comment||'',6)+c('F',n,a.admin_comment||'',6),
+   c('D',n,a.party_size,3,true)+c('E',n,a.table_number||'',style)+c('F',n,a.guest_comment||'',6)+c('G',n,a.admin_comment||'',6),
    Math.min(95,Math.max(27,27+Math.ceil(Math.max((a.guest_comment||'').length,(a.admin_comment||'').length)/48)*11))));
  });
  var end=Math.max(7,active.length+7);
@@ -1042,9 +1046,10 @@ function reportExcelXlsx(event,registrations){
  '<pane ySplit="7" topLeftCell="A8" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+
  '<cols><col min="1" max="1" width="19" customWidth="1"/><col min="2" max="2" width="31" customWidth="1"/>'+
  '<col min="3" max="3" width="24" customWidth="1"/><col min="4" max="4" width="13" customWidth="1"/>'+
- '<col min="5" max="5" width="48" customWidth="1"/><col min="6" max="6" width="48" customWidth="1"/></cols>'+
- '<sheetData>'+data.join('')+'</sheetData><mergeCells count="4"><mergeCell ref="A1:F1"/><mergeCell ref="A2:F2"/>'+
- '<mergeCell ref="A5:F5"/><mergeCell ref="A6:F6"/></mergeCells><autoFilter ref="A7:F'+end+'"/></worksheet>';
+ '<col min="5" max="5" width="17" customWidth="1"/><col min="6" max="6" width="48" customWidth="1"/>'+ 
+ '<col min="7" max="7" width="48" customWidth="1"/></cols>'+
+ '<sheetData>'+data.join('')+'</sheetData><mergeCells count="4"><mergeCell ref="A1:G1"/><mergeCell ref="A2:G2"/>'+
+ '<mergeCell ref="A5:G5"/><mergeCell ref="A6:G6"/></mergeCells><autoFilter ref="A7:G'+end+'"/></worksheet>';
  var style='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
  '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
  '<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/></font><font><b/><color rgb="FF14563A"/><sz val="17"/><name val="Calibri"/></font></fonts>'+
@@ -1088,7 +1093,7 @@ function reportExcelXlsx(event,registrations){
 
 function chooseEventExport(event){
  var wrap=el('div');
- wrap.append(el('p','export-hint','Выгрузка содержит сводку и полный список действующих заявок: ID, имя, телефон, количество гостей, комментарии гостя и администратора. Отменённые заявки исключены.'));
+ wrap.append(el('p','export-hint','Выгрузка содержит сводку и полный список действующих заявок: ID, имя, телефон, количество гостей, № стола, комментарии гостя и администратора. В Excel номер стола можно вписать или изменить прямо в ячейке. В PDF оставлено место для записи от руки. Отменённые заявки исключены.'));
  var row=el('div','export-choice');
  row.append(button('СОХРАНИТЬ PDF','primary',function(){saveEventReport(event,'pdf');}));
  row.append(button('СОХРАНИТЬ EXCEL','primary',function(){saveEventReport(event,'xlsx');}));
@@ -1270,6 +1275,7 @@ function renderRegList(){
    if(digits.length>=7){phone.href='tel:'+(rawPhone.charAt(0)==='+'?'+':'')+digits;phone.setAttribute('aria-label','Позвонить по номеру '+rawPhone);phone.title=r.source==='demo'?'Тестовый номер · Открыть набор номера':'Позвонить';}
    person.append(phone);info.append(person);
   info.append(el('div','people',persons(r.party_size)));
+  if(r.table_number)info.append(el('div','reg-table-badge','СТОЛ № '+r.table_number));
   if(r.guest_comment)info.append(el('div','reg-comment','ГОСТЬ: '+r.guest_comment));
   if(r.admin_comment)info.append(el('div','reg-comment reg-comment-admin','АДМИНИСТРАТОР: '+r.admin_comment));
   info.append(el('div','date-mini',(r.source==='admin'?'Добавлено вручную · ':'')+r.created_at));
@@ -1278,10 +1284,11 @@ function renderRegList(){
   var menu=el('div','menu-box'),dots=el('button','dots-btn','•••');dots.type='button';dots.title='Действия';
   var popup=el('div','menu-popup');popup.hidden=true;
   var edit=el('button','','Изменить');edit.addEventListener('click',function(){popup.hidden=true;editRegistration(r);});
+  var assign=el('button','','Назначить стол');assign.addEventListener('click',function(){popup.hidden=true;assignTable(r);});
   var cancel=el('button','','Отменить');cancel.addEventListener('click',function(){popup.hidden=true;confirmCancelRegistration(r);});
   var restore=el('button','','Восстановить и подтвердить');restore.addEventListener('click',function(){popup.hidden=true;confirmRegistration(r);});
   var remove=el('button','red','Удалить');remove.addEventListener('click',function(){popup.hidden=true;if(confirm('Удалить заявку ID '+r.code+'? Восстановить удалённую заявку нельзя.'))changeStatus(r,'deleted');});
-  popup.append(edit);
+  popup.append(edit,assign);
   if(r.status==='cancelled')popup.append(restore);else popup.append(cancel);
   popup.append(remove);dots.addEventListener('click',function(){document.querySelectorAll('.menu-popup').forEach(function(p){if(p!==popup)p.hidden=true;});popup.hidden=!popup.hidden;});
   menu.append(dots,popup);card.append(info,side);
@@ -1292,6 +1299,22 @@ function renderRegList(){
   if(r.status==='confirmed')actions.append(el('span','people','✓ Подтверждено'));
   actions.append(menu);card.append(actions);list.append(card);
  });
+}
+function assignTable(r){
+ var f=el('form','form'),field=el('label','field');
+ field.append(document.createTextNode('НОМЕР СТОЛА'));
+ var input=el('input');input.type='text';input.maxLength=24;input.autocomplete='off';input.placeholder='Например: 12 или VIP-2';input.value=r.table_number||'';
+ field.append(input);f.append(field);
+ f.append(el('p','export-hint','Оставьте поле пустым, чтобы снять назначение. Изменение сохраняется для этого мероприятия и автоматически попадёт в следующий отчёт.'));
+ var actions=el('div','form-buttons'),cancel=button('ОТМЕНА','ghost',closeModal),save=el('button','btn primary','СОХРАНИТЬ');
+ save.type='submit';actions.append(cancel,save);f.append(actions);
+ f.addEventListener('submit',async function(e){
+  e.preventDefault();if(save.disabled)return;save.disabled=true;
+  try{await api('/registration',mutation('PATCH',{event_id:state.selected,seq:r.seq,table_number:input.value.trim()}));
+   closeModal();await reloadDetails();toast('Стол для ID '+r.code+' сохранён');
+  }catch(error){errMessage(error);save.disabled=false;}
+ });
+ showModal('НАЗНАЧИТЬ СТОЛ · ID '+r.code,f);input.focus({preventScroll:true});
 }
 function confirmRegistration(r){
  var wrap=el('div');
@@ -1528,13 +1551,13 @@ async function compressImage(file,square){
 }
 function personEditor(existing){
  var f=el('form','form');
- f.innerHTML='<label class="field">ИМЯ<input name="name" required minlength="2" maxlength="100" autocomplete="off"></label><label class="field">НОМЕР ТЕЛЕФОНА<input name="phone" type="tel" required maxlength="40"></label><label class="field">КОЛИЧЕСТВО ЧЕЛОВЕК<input name="party_size" type="number" min="1" max="50" required></label><label class="field">КОММЕНТАРИЙ ГОСТЯ<textarea name="guest_comment" maxlength="500" rows="3" placeholder="Пожелания, полученные от гостя"></textarea></label><label class="field">КОММЕНТАРИЙ АДМИНИСТРАТОРА<textarea name="admin_comment" maxlength="1000" rows="3" placeholder="Внутренняя заметка, доступна только администраторам"></textarea></label><div class="form-buttons"><button type="button" id="cancelPerson" class="btn ghost">ОТМЕНА</button><button class="btn primary" type="submit">СОХРАНИТЬ</button></div>';
- f.elements.name.value=existing?existing.name:'';f.elements.phone.value=existing?existing.phone:'';f.elements.party_size.value=existing?existing.party_size:1;f.elements.guest_comment.value=existing?existing.guest_comment||'':'';f.elements.admin_comment.value=existing?existing.admin_comment||'':'';
+ f.innerHTML='<label class="field">ИМЯ<input name="name" required minlength="2" maxlength="100" autocomplete="off"></label><label class="field">НОМЕР ТЕЛЕФОНА<input name="phone" type="tel" required maxlength="40"></label><label class="field">КОЛИЧЕСТВО ЧЕЛОВЕК<input name="party_size" type="number" min="1" max="50" required></label><label class="field">НОМЕР СТОЛА (НЕОБЯЗАТЕЛЬНО)<input name="table_number" maxlength="24" placeholder="Например: 12 или VIP-2"></label><label class="field">КОММЕНТАРИЙ ГОСТЯ<textarea name="guest_comment" maxlength="500" rows="3" placeholder="Пожелания, полученные от гостя"></textarea></label><label class="field">КОММЕНТАРИЙ АДМИНИСТРАТОРА<textarea name="admin_comment" maxlength="1000" rows="3" placeholder="Внутренняя заметка, доступна только администраторам"></textarea></label><div class="form-buttons"><button type="button" id="cancelPerson" class="btn ghost">ОТМЕНА</button><button class="btn primary" type="submit">СОХРАНИТЬ</button></div>';
+ f.elements.name.value=existing?existing.name:'';f.elements.phone.value=existing?existing.phone:'';f.elements.party_size.value=existing?existing.party_size:1;f.elements.table_number.value=existing?existing.table_number||'':'';f.elements.guest_comment.value=existing?existing.guest_comment||'':'';f.elements.admin_comment.value=existing?existing.admin_comment||'':'';
  f.querySelector('#cancelPerson').addEventListener('click',closeModal);
  f.addEventListener('submit',async function(e){
   e.preventDefault();var submit=f.querySelector('[type=submit]');submit.disabled=true;
   try{
-   var b={name:f.elements.name.value,phone:f.elements.phone.value,party_size:Number(f.elements.party_size.value),guest_comment:f.elements.guest_comment.value,admin_comment:f.elements.admin_comment.value};
+   var b={name:f.elements.name.value,phone:f.elements.phone.value,party_size:Number(f.elements.party_size.value),table_number:f.elements.table_number.value.trim(),guest_comment:f.elements.guest_comment.value,admin_comment:f.elements.admin_comment.value};
    if(existing){b.seq=existing.seq;b.event_id=state.selected;await api('/registration',mutation('PATCH',b));}
    else await api('/events/'+state.selected+'/manual',mutation('POST',b));
    closeModal();toast(existing?'Заявка изменена':'Компания добавлена');await reloadDetails();
