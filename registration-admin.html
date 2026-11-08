@@ -1299,6 +1299,8 @@ function crmDrawCards(grid,rows){
  });
 }
 function crmUpdateLoading(){
+ var empty=document.getElementById('crmEmpty');
+ if(empty)empty.textContent=crmLoading?'Загружаем клиентов…':crmLoadError?'Не удалось получить список клиентов.':'Клиентов по выбранному запросу пока нет.';
  var line=document.getElementById('crmLoadStatus');
  if(!line)return;
  line.replaceChildren();
@@ -1358,27 +1360,55 @@ function openClient(key){
  history.replaceState(null,'','#client='+key);
  loadClientDetail(0);
 }
+
 async function loadClientDetail(offset){
  if(!state.crmKey)return;
+ if(offset>0&&(crmHistoryLoading||crmHistoryError||!state.crmDetail||!state.crmDetail.has_more))return;
  crmHeader();
+ if(offset===0){crmHistoryError=false;state.crmHistory=[];}
  var key=state.crmKey,token=++crmDetailToken;
+ crmHistoryLoading=true;crmUpdateHistoryLoading();
  try{
   var d=await api('/clients/'+encodeURIComponent(key)+'?offset='+offset);
   if(!state.crmMode||state.crmKey!==key||token!==crmDetailToken)return;
   state.crmDetail=d;
   state.crmHistory=offset===0?d.history||[]:state.crmHistory.concat(d.history||[]);
-  renderClientDetail();
- }catch(e){if(token===crmDetailToken)errMessage(e);}
+  renderClientDetail(offset>0);
+ }catch(e){
+  if(token===crmDetailToken){crmHistoryError=true;errMessage(e);}
+ }finally{
+  if(token===crmDetailToken){
+   crmHistoryLoading=false;crmUpdateHistoryLoading();
+   if(!crmHistoryError)crmMaybeLoadHistory();
+  }
+ }
+}
+function crmUpdateHistoryLoading(){
+ var line=document.getElementById('crmHistoryLoadStatus');
+ if(!line)return;
+ line.replaceChildren();
+ if(crmHistoryLoading){line.textContent='Загружаем историю…';return;}
+ if(crmHistoryError){
+  line.append(document.createTextNode('Не удалось загрузить историю.'));
+  line.append(button('ПОВТОРИТЬ','ghost',function(){crmHistoryError=false;loadClientDetail(state.crmHistory.length);}));
+ }else line.textContent=state.crmDetail&&state.crmDetail.has_more?
+  'Прокрутите вниз для загрузки остальных заявок.':'Вся история заявок показана.';
+}
+function crmMaybeLoadHistory(){
+ if(!state.crmMode||!state.crmKey||crmHistoryLoading||crmHistoryError||!state.crmDetail||!state.crmDetail.has_more)return;
+ var scroll=document.getElementById('crmHistoryScroll');
+ if(scroll&&scroll.scrollHeight-scroll.scrollTop-scroll.clientHeight<420)loadClientDetail(state.crmHistory.length);
 }
 function crmStat(label,value){
  var b=el('div','crm-metric');b.append(el('strong','',String(value==null?'—':value)));b.append(el('small','',label));return b;
 }
-function renderClientDetail(){
+function renderClientDetail(keepScroll){
  if(!state.crmMode||!state.crmKey||!state.crmDetail)return;
+ var previous=document.getElementById('crmHistoryScroll'),oldScroll=keepScroll&&previous?previous.scrollTop:0;
  var d=state.crmDetail,c=d.client,stats=d.stats||{};
  app.replaceChildren();
  var top=el('div','view-top crm-top');top.append(head('КАРТОЧКА КЛИЕНТА','Основной идентификатор: номер телефона. Личного кабинета нет.'));app.append(top);
- var scroll=el('div','view-scroll crm-scroll');app.append(scroll);
+ var scroll=el('div','view-scroll crm-scroll');scroll.id='crmHistoryScroll';app.append(scroll);
  var profile=el('div','crm-profile'),left=el('section','crm-panel crm-profile-main');
  left.append(el('div','crm-profile-name',c.display_name));
  var phone=el('a','crm-phone',c.phone||c.phone_key);
@@ -1418,11 +1448,11 @@ function renderClientDetail(){
   history.append(item);
  });
  scroll.append(history);
- if(d.has_more){
-  var more=button('ПОКАЗАТЬ ЕЩЁ','ghost',function(){loadClientDetail(state.crmHistory.length);});
-  var wrap=el('div','crm-pagination');wrap.append(more);scroll.append(wrap);
- }
+ var status=el('div','crm-load-status');status.id='crmHistoryLoadStatus';status.setAttribute('role','status');scroll.append(status);
+ scroll.addEventListener('scroll',crmMaybeLoadHistory,{passive:true});
  crmDock(true);
+ scroll.scrollTop=oldScroll;
+ crmUpdateHistoryLoading();
 }
 function editClientProfile(){
  var data=state.crmDetail&&state.crmDetail.client;if(!data)return;
