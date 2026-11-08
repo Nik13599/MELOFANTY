@@ -1225,6 +1225,12 @@ function crmFlagRow(tags){
  tags.forEach(function(tag){group.append(el('span','crm-tag crm-'+tag,CRM_TAG_LABELS[tag]));});
  return group;
 }
+function crmDate(value){
+ if(!value)return '—';
+ var normalized=/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value)?value.replace(' ','T')+'Z':value;
+ var time=new Date(normalized);
+ return Number.isFinite(time.getTime())?wrapDate(normalized):String(value);
+}
 function crmHeader(){
  state.crmMode=true;
  document.querySelector('.admin-page-label').textContent='CLIENTS / CRM';
@@ -1285,7 +1291,7 @@ function renderClients(){
   });
   card.append(metrics);
   card.append(el('div','crm-subtle','Игр с заявками: '+(c.games||0)+' · Подтверждено: '+(c.confirmed||0)));
-  if(c.last_registration)card.append(el('div','crm-subtle','Последняя заявка: '+wrapDate(c.last_registration)));
+  if(c.last_registration)card.append(el('div','crm-subtle','Последняя заявка: '+crmDate(c.last_registration)));
   card.addEventListener('click',function(){openClient(c.phone_key);});grid.append(card);
  });
  var nav=el('div','crm-pagination');
@@ -1326,7 +1332,7 @@ function renderClientDetail(){
  var phone=el('a','crm-phone',c.phone||c.phone_key);
  phone.href='tel:+'+c.phone_key;phone.title='Позвонить';left.append(phone);
  left.append(el('div','crm-subtle','Первое имя в заявке: '+c.original_name));
- left.append(el('div','crm-subtle','Первая регистрация: '+wrapDate(c.first_seen)));
+ left.append(el('div','crm-subtle','Первая регистрация: '+crmDate(c.first_seen)));
  var tags=crmTagList(c.tags);
  if(tags.length)left.append(crmFlagRow(tags));
  var edit=button('✎ РЕДАКТИРОВАТЬ КАРТОЧКУ','primary',editClientProfile);left.append(edit);
@@ -1348,7 +1354,7 @@ function renderClientDetail(){
  state.crmHistory.forEach(function(h){
   var item=el('article','crm-history-item'),main=el('div');
   main.append(el('div','crm-history-title',(h.event_title||'Мероприятие')+' · ID '+h.code));
-  main.append(el('div','crm-history-meta','Дата игры: '+(h.starts_at?wrapDate(h.starts_at):'не указана')+' · Заявка: '+wrapDate(h.created_at)));
+  main.append(el('div','crm-history-meta','Дата игры: '+(h.starts_at?wrapDate(h.starts_at):'не указана')+' · Заявка: '+crmDate(h.created_at)));
   main.append(el('div','crm-history-meta','Имя в заявке: '+h.application_name+' · '+persons(Number(h.party_size)||0)));
   if(h.table_number)main.append(el('div','crm-history-meta','Стол: '+h.table_number));
   var side=el('div','crm-history-actions');
