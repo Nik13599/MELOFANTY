@@ -1554,7 +1554,8 @@ function renderRegList(){
   var card=el('article','registration'),info=el('div');
   info.append(el('div','reg-code','ID '+r.code));
   if(r.source==='demo'){card.classList.add('demo-entry');info.append(el('span','demo-mark','ТЕСТОВАЯ ЗАЯВКА'));}
-  var person=el('div','person');person.append(document.createTextNode(r.name+' · '));
+  var person=el('div','person');var clientName=r.source!=='demo'&&r.client_name?r.client_name:r.name;person.append(document.createTextNode(clientName+' · '));
+  if(clientName!==r.name)info.append(el('div','crm-subtle','Указано в заявке: '+r.name));
    var rawPhone=String(r.phone||'').trim(),digits=rawPhone.replace(/\D/g,'');
    var phone=el(digits.length>=7?'a':'span','phone-link',rawPhone||'Номер не указан');
    if(digits.length>=7){phone.href='tel:'+(rawPhone.charAt(0)==='+'?'+':'')+digits;phone.setAttribute('aria-label','Позвонить по номеру '+rawPhone);phone.title=r.source==='demo'?'Тестовый номер · Открыть набор номера':'Позвонить';}
