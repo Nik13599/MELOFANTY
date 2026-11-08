@@ -168,6 +168,11 @@ body{display:flex;flex-direction:column;background:#061210;min-width:0}
  .game-stage{padding:clamp(5px,1.6vw,10px)!important}
  .game-stage .stage-view{max-width:100%}
  .game-shell{max-width:100%}
+ .stage-view,.stage-help,.setup-row,.team-fields{min-width:0!important;max-width:100%!important;box-sizing:border-box}
+ .team-fields{width:100%!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .team-entry{min-width:0!important;max-width:100%!important;width:100%!important;overflow:hidden;display:flex;align-items:center}
+ .team-entry input{min-width:0!important;width:100%!important;max-width:100%!important;flex:1 1 0}
+ .setup-row select{min-width:0!important;width:100%!important;max-width:100%!important}
  .stage-actions .btn{flex:1 1 auto}
  .stage-eyebrow{letter-spacing:.04em!important}
  .song-choice-card .song-id{overflow-wrap:anywhere}
@@ -430,11 +435,12 @@ readSaved();render();renderStory();
     const baseW=Math.max(view.scrollWidth,view.getBoundingClientRect().width);
     if(!baseH||!baseW)return;
     const minimum=matchMedia('(max-width:690px)').matches ? 0.60 : 0.68;
-    let factor=Math.max(minimum,Math.min(1,freeH/baseH,freeW/baseW)*.985);
+    const rawFactor=Math.min(1,freeH/baseH,freeW/baseW);
+    let factor=rawFactor>=.985?1:Math.max(minimum,rawFactor*.99);
     for(let n=0;n<4;n++){
       view.style.zoom=String(factor);
-      view.style.width=(100/factor)+'%';
-      view.style.maxWidth='none';
+      view.style.width='100%';
+      view.style.maxWidth='100%';
       const bounds=view.getBoundingClientRect();
       if(bounds.height<=freeH+1&&bounds.width<=freeW+1)break;
       const shrink=Math.min(freeH/Math.max(bounds.height,1),freeW/Math.max(bounds.width,1));
