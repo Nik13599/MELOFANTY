@@ -137,7 +137,7 @@ function regAdminEventVersion(items){
  return JSON.stringify(items.map(e=>[e.id,e.updated_at||'',e.starts_at,e.ends_at,Number(e.archived)||0,Number(e.next_seq)||0,Number(e.registered_guests)||0,Number(e.applications)||0,Number(e.demo_applications)||0]));
 }
 function regAdminDetailVersion(event,registrations){
- return JSON.stringify([event.updated_at||'',Number(event.next_seq)||0,event.archived||0,registrations.map(r=>[r.seq,r.updated_at||'',r.status,r.party_size])]);
+ return JSON.stringify([event.updated_at||'',Number(event.next_seq)||0,event.archived||0,registrations.map(r=>[r.seq,r.updated_at||'',r.status,r.party_size,r.client_updated_at||''])]);
 }
 async function regAdminEventsVersion(env,archive){
  const sql="SELECT e.id,e.updated_at,e.starts_at,e.ends_at,e.archived,e.next_seq,(SELECT COALESCE(SUM(r.party_size),0) FROM registrations r WHERE r.event_id=e.id AND r.status IN ('pending','confirmed')) registered_guests,(SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.status!='deleted') applications,(SELECT COUNT(*) FROM registrations r WHERE r.event_id=e.id AND r.source='demo' AND r.status!='deleted') demo_applications FROM events e ORDER BY e.starts_at ASC";
@@ -152,7 +152,7 @@ async function regAdminEventsVersion(env,archive){
 async function regAdminDetailVersionEndpoint(env,id){
  const event=await env.DB.prepare('SELECT id,updated_at,next_seq,archived FROM events WHERE id=?').bind(id).first();
  if(!event)return regError('Мероприятие не найдено',404);
- const registrations=(await env.DB.prepare("SELECT seq,updated_at,status,party_size FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY seq DESC").bind(id).all()).results||[];
+ const registrations=(await env.DB.prepare("SELECT r.seq,r.updated_at,r.status,r.party_size,p.updated_at client_updated_at FROM registrations r LEFT JOIN client_profiles p ON p.phone_key="+regClientPhoneSQL("r.phone")+" WHERE r.event_id=? AND r.status!='deleted' ORDER BY r.seq DESC").bind(id).all()).results||[];
  return regJson({version:regAdminDetailVersion(event,registrations)});
 }
 async function regEvents(env,admin,archive){
@@ -174,11 +174,93 @@ async function regPublicDirectory(env){
  const rows=(await env.DB.prepare(sql).bind(new Date().toISOString()).all()).results||[];
  return regJson({events:rows.map(regEventPublic),version:regPublicVersion(rows)});
 }
+
+// MELOFANTY CRM. Client identity is the normalized phone, not a guest account.
+// Belarus 8-0xx / 0xx / 9-digit local numbers normalize to 375xx; foreign
+// country codes retain their full digits to avoid last-nine-digits collisions.
+function regClientPhoneSQL(field){
+ const digits="REPLACE(REPLACE(REPLACE(REPLACE(REPLACE("+field+",' ',''),'+',''),'(',''),')',''),'-','')";
+ return "(CASE WHEN LENGTH("+digits+")=11 AND SUBSTR("+digits+",1,2)='80' THEN '375'||SUBSTR("+digits+",3)"+
+  " WHEN LENGTH("+digits+")=10 AND SUBSTR("+digits+",1,1)='0' THEN '375'||SUBSTR("+digits+",2)"+
+  " WHEN LENGTH("+digits+")=9 THEN '375'||"+digits+" ELSE "+digits+" END)";
+}
+const REG_CLIENT_TAGS=['vip','regular','attention','conflict','blacklist'];
+async function regClients(env,url){
+ const q=regText(url.searchParams.get('q')||'',80).toLowerCase();
+ const order=url.searchParams.get('sort')==='recent'?'last_registration DESC,applications DESC':'applications DESC,last_registration DESC';
+ const offset=Math.min(100000,Math.max(0,Number.parseInt(url.searchParams.get('offset')||'0',10)||0));
+ const phone=regClientPhoneSQL('r.phone');
+ const sql="WITH numbered AS ("+
+  "SELECT r.*, "+phone+" phone_key,ROW_NUMBER() OVER(PARTITION BY "+phone+" ORDER BY r.created_at ASC,r.event_id ASC,r.seq ASC) rn "+
+  "FROM registrations r WHERE r.source!='demo'),"+
+  "summary AS (SELECT n.phone_key,COALESCE(NULLIF(MAX(p.display_name),''),MAX(CASE WHEN n.rn=1 THEN n.name END)) display_name,"+
+  "MAX(CASE WHEN n.rn=1 THEN n.phone END) phone,COALESCE(MAX(p.tags),'[]') tags,"+
+  "SUM(CASE WHEN n.status!='deleted' THEN 1 ELSE 0 END) applications,"+
+  "SUM(CASE WHEN n.status='cancelled' THEN 1 ELSE 0 END) cancellations,"+
+  "SUM(CASE WHEN n.status='confirmed' THEN 1 ELSE 0 END) confirmed,"+
+  "COUNT(DISTINCT CASE WHEN n.status!='deleted' THEN n.event_id END) games,"+
+  "ROUND(AVG(CASE WHEN n.status IN ('pending','confirmed') THEN n.party_size END),1) avg_group,"+
+  "MAX(n.created_at) last_registration "+
+  "FROM numbered n LEFT JOIN client_profiles p ON p.phone_key=n.phone_key GROUP BY n.phone_key) "+
+  "SELECT * FROM summary WHERE applications>0 AND (?='' OR LOWER(display_name) LIKE ? OR phone_key LIKE ?) "+
+  "ORDER BY "+order+" LIMIT 51 OFFSET ?";
+ const search='%'+q+'%';
+ const rows=(await env.DB.prepare(sql).bind(q,search,search,offset).all()).results||[];
+ return regJson({clients:rows.slice(0,50),has_more:rows.length>50,offset});
+}
+async function regClientDetails(env,key,url){
+ if(!/^[0-9]{8,18}$/.test(key))return regError('Некорректный номер телефона',400);
+ const offset=Math.min(100000,Math.max(0,Number.parseInt(url.searchParams.get('offset')||'0',10)||0));
+ const norm=regClientPhoneSQL('r.phone');
+ const filter="r.source!='demo' AND "+norm+"=?";
+ const first=await env.DB.prepare("SELECT name,phone,created_at FROM registrations r WHERE "+filter+" ORDER BY r.created_at ASC,r.event_id ASC,r.seq ASC LIMIT 1").bind(key).first();
+ if(!first)return regError('Клиент не найден',404);
+ const profile=await env.DB.prepare("SELECT display_name,notes,wishes,tags,linked_user_id,updated_at FROM client_profiles WHERE phone_key=?").bind(key).first();
+ const stats=await env.DB.prepare(
+  "SELECT SUM(CASE WHEN r.status!='deleted' THEN 1 ELSE 0 END) applications,"+
+  "SUM(CASE WHEN r.status='cancelled' THEN 1 ELSE 0 END) cancellations,"+
+  "SUM(CASE WHEN r.status='confirmed' THEN 1 ELSE 0 END) confirmed,"+
+  "COUNT(DISTINCT CASE WHEN r.status!='deleted' THEN r.event_id END) games,"+
+  "ROUND(AVG(CASE WHEN r.status IN ('pending','confirmed') THEN r.party_size END),1) avg_group,"+
+  "MAX(r.created_at) last_registration FROM registrations r WHERE "+filter
+ ).bind(key).first();
+ const history=(await env.DB.prepare(
+  "SELECT r.event_id,r.seq,r.code,r.name application_name,r.phone,r.party_size,r.status,r.source,r.created_at,"+
+  "r.guest_comment,r.admin_comment,r.table_number,e.title event_title,e.starts_at,e.ends_at "+
+  "FROM registrations r LEFT JOIN events e ON e.id=r.event_id WHERE "+filter+
+  " ORDER BY r.created_at DESC,r.event_id DESC,r.seq DESC LIMIT 101 OFFSET ?"
+ ).bind(key,offset).all()).results||[];
+ return regJson({client:{phone_key:key,phone:first.phone,original_name:first.name,
+  display_name:profile&&profile.display_name||first.name,
+  notes:profile&&profile.notes||'',wishes:profile&&profile.wishes||'',
+  tags:profile&&profile.tags||'[]',linked_user_id:profile&&profile.linked_user_id||null,
+  first_seen:first.created_at,updated_at:profile&&profile.updated_at||null},
+  stats:stats||{},history:history.slice(0,100),has_more:history.length>100,offset});
+}
+async function regSaveClient(env,key,body){
+ if(!/^[0-9]{8,18}$/.test(key))return regError('Некорректный номер телефона',400);
+ const exists=await env.DB.prepare("SELECT 1 present FROM registrations r WHERE r.source!='demo' AND "+regClientPhoneSQL('r.phone')+"=? LIMIT 1").bind(key).first();
+ if(!exists)return regError('Клиент не найден',404);
+ const name=regText(body.display_name,100),notes=regText(body.notes,2000),wishes=regText(body.wishes,1000);
+ if(name&&name.length<2)return regError('Имя должно содержать минимум два символа',400);
+ if(!Array.isArray(body.tags)||body.tags.length>REG_CLIENT_TAGS.length||body.tags.some(t=>!REG_CLIENT_TAGS.includes(t)))
+  return regError('Некорректные метки',400);
+ const tags=JSON.stringify([...new Set(body.tags)]);
+ await env.DB.prepare(
+  "INSERT INTO client_profiles(phone_key,display_name,notes,wishes,tags,updated_at) VALUES(?,?,?,?,?,?) "+
+  "ON CONFLICT(phone_key) DO UPDATE SET display_name=excluded.display_name,notes=excluded.notes,wishes=excluded.wishes,tags=excluded.tags,updated_at=excluded.updated_at"
+ ).bind(key,name,notes,wishes,tags,new Date().toISOString()).run();
+ return regJson({ok:true});
+}
+
 async function regEventDetails(env,id){
  const e=await env.DB.prepare('SELECT * FROM events WHERE id=?').bind(id).first();
  if(!e)return regError('Мероприятие не найдено',404);
  const registrations=(await env.DB.prepare(
-   "SELECT seq,code,name,phone,party_size,status,source,guest_comment,admin_comment,table_number,created_at,updated_at FROM registrations WHERE event_id=? AND status!='deleted' ORDER BY seq DESC"
+   "SELECT r.seq,r.code,r.name,r.phone,r.party_size,r.status,r.source,r.guest_comment,r.admin_comment,r.table_number,r.created_at,r.updated_at,"+
+   regClientPhoneSQL("r.phone")+" client_key,COALESCE(p.tags,'[]') client_tags,"+
+   "COALESCE(NULLIF(p.display_name,''),(SELECT old.name FROM registrations old WHERE old.source!='demo' AND "+regClientPhoneSQL("old.phone")+"="+regClientPhoneSQL("r.phone")+" ORDER BY old.created_at ASC,old.event_id ASC,old.seq ASC LIMIT 1)) client_name,"+
+   "p.updated_at client_updated_at FROM registrations r LEFT JOIN client_profiles p ON p.phone_key="+regClientPhoneSQL("r.phone")+" WHERE r.event_id=? AND r.status!='deleted' ORDER BY r.seq DESC"
  ).bind(id).all()).results||[];
  const stats=(await env.DB.prepare(
    "SELECT COUNT(CASE WHEN status!='deleted' THEN 1 END) total_apps, COALESCE(SUM(CASE WHEN status IN ('pending','confirmed') THEN party_size ELSE 0 END),0) guests, COUNT(CASE WHEN status='cancelled' THEN 1 END) cancelled_apps, COALESCE(SUM(CASE WHEN status='cancelled' THEN party_size ELSE 0 END),0) cancelled_guests, COUNT(CASE WHEN status='pending' THEN 1 END) pending_apps, COUNT(CASE WHEN status='confirmed' THEN 1 END) confirmed_apps, COUNT(CASE WHEN source='demo' AND status!='deleted' THEN 1 END) demo_apps FROM registrations WHERE event_id=?"
@@ -271,6 +353,10 @@ async function registrationRouter(req,env){
   if(path==='/api/registration/admin/logout'&&method==='POST'){
     const response=regJson({ok:true});response.headers.set('Set-Cookie','melofanty_admin=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0');return response;
   }
+  if(path==='/api/registration/admin/clients'&&method==='GET')return regClients(env,url);
+  const clientPath=path.match(/^\/api\/registration\/admin\/clients\/([0-9]{8,18})$/);
+  if(clientPath&&method==='GET')return regClientDetails(env,clientPath[1],url);
+  if(clientPath&&method==='PATCH')return regSaveClient(env,clientPath[1],await regBody(req));
   if(path==='/api/registration/admin/events/version'&&method==='GET')return regAdminEventsVersion(env,url.searchParams.get('archive')==='1');
   if(path==='/api/registration/admin/events'&&method==='GET')return regEvents(env,true,url.searchParams.get('archive')==='1');
   if(path==='/api/registration/admin/events'&&method==='POST')return regSaveEvent(env,await regBody(req),null);

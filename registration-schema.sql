@@ -48,3 +48,16 @@ CREATE INDEX IF NOT EXISTS idx_attempts ON admin_attempts(ip_hash,at);
 
 -- Existing D1 instances: execute once before deploying the updated Worker:
 -- ALTER TABLE registrations ADD COLUMN table_number TEXT NOT NULL DEFAULT '';
+
+-- CRM profiles are optional overlays on registration-derived clients.
+-- See crm-migration.sql for the safe migration of an already existing D1 database.
+CREATE TABLE IF NOT EXISTS client_profiles (
+  phone_key TEXT PRIMARY KEY,
+  display_name TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  wishes TEXT NOT NULL DEFAULT '',
+  tags TEXT NOT NULL DEFAULT '[]',
+  linked_user_id TEXT UNIQUE DEFAULT NULL,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+-- linked_user_id is reserved for future opt-in guest accounts; no accounts are created now.
