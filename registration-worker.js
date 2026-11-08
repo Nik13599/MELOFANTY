@@ -258,7 +258,9 @@ async function regEventDetails(env,id){
  if(!e)return regError('Мероприятие не найдено',404);
  const registrations=(await env.DB.prepare(
    "SELECT r.seq,r.code,r.name,r.phone,r.party_size,r.status,r.source,r.guest_comment,r.admin_comment,r.table_number,r.created_at,r.updated_at,"+
-   regClientPhoneSQL("r.phone")+" client_key,COALESCE(p.tags,'[]') client_tags,p.display_name client_name,p.updated_at client_updated_at FROM registrations r LEFT JOIN client_profiles p ON p.phone_key="+regClientPhoneSQL("r.phone")+" WHERE r.event_id=? AND r.status!='deleted' ORDER BY r.seq DESC"
+   regClientPhoneSQL("r.phone")+" client_key,COALESCE(p.tags,'[]') client_tags,"+
+   "COALESCE(NULLIF(p.display_name,''),(SELECT old.name FROM registrations old WHERE old.source!='demo' AND "+regClientPhoneSQL("old.phone")+"="+regClientPhoneSQL("r.phone")+" ORDER BY old.created_at ASC,old.event_id ASC,old.seq ASC LIMIT 1)) client_name,"+
+   "p.updated_at client_updated_at FROM registrations r LEFT JOIN client_profiles p ON p.phone_key="+regClientPhoneSQL("r.phone")+" WHERE r.event_id=? AND r.status!='deleted' ORDER BY r.seq DESC"
  ).bind(id).all()).results||[];
  const stats=(await env.DB.prepare(
    "SELECT COUNT(CASE WHEN status!='deleted' THEN 1 END) total_apps, COALESCE(SUM(CASE WHEN status IN ('pending','confirmed') THEN party_size ELSE 0 END),0) guests, COUNT(CASE WHEN status='cancelled' THEN 1 END) cancelled_apps, COALESCE(SUM(CASE WHEN status='cancelled' THEN party_size ELSE 0 END),0) cancelled_guests, COUNT(CASE WHEN status='pending' THEN 1 END) pending_apps, COUNT(CASE WHEN status='confirmed' THEN 1 END) confirmed_apps, COUNT(CASE WHEN source='demo' AND status!='deleted' THEN 1 END) demo_apps FROM registrations WHERE event_id=?"
