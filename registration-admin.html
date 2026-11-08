@@ -687,6 +687,76 @@ body{display:flex;flex-direction:column;min-height:0}
 @media(min-width:761px) and (max-width:979px){
  .registrations-scroll .list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
+
+/* Clients CRM: compact, responsive, isolated from the existing event cards. */
+#clientsBtn.crm-active{border-color:var(--lime);color:var(--lime);background:#14402b}
+.crm-top{padding:8px 0!important}
+.crm-top .heading{margin:0 0 8px}
+.crm-top .heading h1{font-size:clamp(22px,3vw,34px)!important}
+.crm-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.crm-toolbar .search{height:34px!important;min-height:34px!important;padding:5px 10px!important;font-size:13px!important;border-radius:9px!important;width:min(100%,320px)}
+.crm-toolbar .btn{min-height:34px;padding:5px 12px;font-size:12px}
+.crm-counter{color:var(--muted);font-size:12px}
+.crm-scroll{padding:10px 0 16px!important}
+.crm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-items:start}
+.crm-card,.crm-panel,.crm-history-item{border:1px solid #29654d;border-radius:13px;background:linear-gradient(120deg,#09291e,#06180f);padding:12px;min-width:0}
+.crm-card{cursor:pointer;display:grid;gap:7px;text-align:left;color:var(--text);font:inherit;width:100%}
+.crm-card:hover,.crm-card:focus-visible{border-color:var(--lime);background:#103525}
+.crm-card-head{display:flex;align-items:center;justify-content:space-between;gap:7px;min-width:0}
+.crm-client-name{font:600 clamp(17px,1.5vw,21px) Oswald,sans-serif;overflow-wrap:anywhere;line-height:1.15}
+.crm-phone{color:var(--sea);font:500 13px Oswald,sans-serif}
+.crm-subtle{color:var(--muted);font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+.crm-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.crm-metric{border-radius:7px;background:#0e3828;padding:6px 4px;text-align:center}
+.crm-metric strong{display:block;font:600 20px Oswald,sans-serif}
+.crm-metric small{display:block;color:var(--muted);font-size:10px}
+.crm-tags{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.crm-tag{display:inline-flex;align-items:center;border:1px solid #478368;border-radius:5px;padding:2px 6px;color:#b0ffd2;font:600 10px Oswald,sans-serif;letter-spacing:.015em;line-height:1.3}
+.crm-tag.crm-vip{border-color:#b0c863;color:#d6f89a}
+.crm-tag.crm-regular{border-color:#459b92;color:#8bebdb}
+.crm-tag.crm-attention{border-color:#d8ae59;background:#4f390c65;color:#ffd88b}
+.crm-tag.crm-conflict{border-color:#d68355;background:#4d260c6b;color:#ffbd95}
+.crm-tag.crm-blacklist{border-color:#df6464;background:#5b1d1d82;color:#ffaaa7}
+.crm-reg-tags{display:flex;flex-wrap:wrap;gap:3px;margin:4px 0}
+.crm-open{border:1px solid #3b986e;background:#13432d;border-radius:6px;padding:2px 6px;color:#b6ffca;font:600 11px Oswald,sans-serif;min-height:23px}
+.crm-open:hover{border-color:var(--lime)}
+.crm-profile{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,2fr);gap:10px;margin:3px 0 12px}
+.crm-profile-main{display:grid;gap:8px}
+.crm-profile-name{font:700 clamp(21px,2.3vw,29px) Oswald,sans-serif;line-height:1.1;overflow-wrap:anywhere}
+.crm-detail-notes{white-space:pre-wrap;overflow-wrap:anywhere;color:#d6f4e3;font-size:13px;line-height:1.35}
+.crm-section-title{font:600 18px Oswald,sans-serif;margin:9px 0}
+.crm-quick-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.crm-quick-stats .crm-metric{padding:10px 4px}
+.crm-quick-stats .crm-metric strong{font-size:clamp(19px,2.2vw,28px)}
+.crm-history{display:grid;gap:7px}
+.crm-history-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:9px 11px}
+.crm-history-title{font:600 15px Oswald,sans-serif;overflow-wrap:anywhere}
+.crm-history-meta{color:var(--muted);font-size:12px;line-height:1.35}
+.crm-history-actions{display:flex;gap:7px;align-items:center}
+.crm-history-actions .btn{padding:4px 9px;min-height:29px;font-size:11px}
+.crm-history-note{font-size:12px;color:#ddf3e6;white-space:pre-wrap;grid-column:1/-1;overflow-wrap:anywhere}
+.crm-pagination{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0}
+.crm-pagination .btn{min-height:32px;padding:5px 14px;font-size:12px}
+.crm-tag-choices{display:flex;flex-wrap:wrap;gap:8px}
+.crm-tag-choices label{display:flex;align-items:center;gap:5px;border:1px solid #345e49;border-radius:8px;padding:6px 9px;font-size:13px}
+.crm-tag-choices input{accent-color:#a5ff79}
+@media(max-width:970px){.crm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.crm-profile{grid-template-columns:1fr}.crm-top .heading h1{font-size:26px!important}}
+@media(max-width:600px){
+ .crm-grid{grid-template-columns:1fr}
+ .crm-card{padding:10px}
+ .crm-phone{font-size:12px}
+ .crm-top .heading h1{font-size:23px!important}
+ .crm-toolbar{gap:6px}
+ .crm-toolbar .search{flex:1 1 100%;width:100%}
+ .crm-toolbar .btn{flex:1 1 auto}
+ .crm-quick-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .crm-history-item{grid-template-columns:1fr}
+ .crm-history-actions{justify-content:flex-start}
+ .crm-client-name{font-size:18px}
+ .crm-panel{padding:10px}
+ .crm-history-item{padding:8px}
+ #clientsBtn{font-size:11px!important;padding:7px 9px!important}
+}
 </style><style id="disable-double-tap-zoom">
 @media (pointer:coarse) {
   html, body, button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
@@ -809,7 +879,7 @@ html.mf-motion-ready .mf-reveal .mf-reveal{translate:0 0!important}
 html.mf-motion-ready :is(h1,h2,h3,h4,.section-bar,.heading,.toolbar).mf-reveal{translate:0 0!important}
 </style>
 </head><body>
-<header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
+<header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="clientsBtn" class="btn ghost" hidden>КЛИЕНТЫ / CRM</button><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
 <div id="bottomBar" class="bottom-bar" role="toolbar" aria-label="Управление регистрацией" hidden></div>
 <div id="dialog" class="shade" hidden><div class="sheet"><div class="sheet-head"><h2 id="dialogTitle">Добавить</h2><button type="button" id="dialogClose" class="close" aria-label="Закрыть">×</button></div><div id="dialogBody"></div></div></div>
@@ -821,6 +891,8 @@ var base='/api/registration/admin',state={archive:false,events:[],selected:null,
 // Tokens prevent outdated network responses from repainting another page or undoing edits.
 var listLoadToken=0,detailsLoadToken=0,mutationRevision=0,backgroundRefreshing=false;
 state.eventsVersion=null;state.detailsVersion=null;
+state.crmMode=false;state.crmKey=null;state.crmQuery='';state.crmSort='applications';state.crmOffset=0;state.crmClients=[];state.crmMore=false;state.crmDetail=null;state.crmHistory=[];
+var crmLoadToken=0,crmDetailToken=0,crmSearchTimer=0;
 function el(tag,className,text){var e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;}
 function button(text,cls,action){var b=el('button','btn '+(cls||''),text);b.type='button';if(action)b.addEventListener('click',action);return b;}
 function wrapDate(s){return new Date(s).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Minsk'});}
@@ -846,6 +918,9 @@ document.getElementById('dialogClose').addEventListener('click',closeModal);
 modal.addEventListener('click',function(e){if(e.target===modal)closeModal();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!modal.hidden)closeModal();});
 async function restoreAdminView(){
+ var clientDeep=location.hash.match(/^#client=([0-9]{8,18})$/);
+ if(clientDeep){state.crmMode=true;state.crmKey=clientDeep[1];await loadClientDetail(0);return;}
+ if(location.hash==='#clients'){state.crmMode=true;await loadClients();return;}
  var deep=location.hash.match(/^#event=([a-z0-9-]+)$/i);
  if(deep){
   state.selected=deep[1];
@@ -860,7 +935,7 @@ async function init(){
  try{await api('/session');loggedIn(true);await restoreAdminView();}
  catch(e){loggedIn(false);showLogin();}
 }
-function loggedIn(yes){['archiveBtn','addEventBtn','logoutBtn','refreshBtn'].forEach(function(id){document.getElementById(id).hidden=!yes;});if(!yes)document.getElementById('bottomBar').hidden=true;}
+function loggedIn(yes){['clientsBtn','archiveBtn','addEventBtn','logoutBtn','refreshBtn'].forEach(function(id){document.getElementById(id).hidden=!yes;});if(!yes)document.getElementById('bottomBar').hidden=true;}
 function showLogin(){
  document.getElementById('bottomBar').hidden=true;
  app.replaceChildren();var c=el('div','sheet login');c.append(el('div','eyebrow','ЗАКРЫТАЯ ПАНЕЛЬ'));c.append(el('h2','','ВХОД АДМИНИСТРАТОРА'));
@@ -869,6 +944,9 @@ function showLogin(){
  f.addEventListener('submit',async function(e){e.preventDefault();var btn=f.querySelector('button');btn.disabled=true;try{await api('/login',mutation('POST',{password:f.elements.password.value}));loggedIn(true);await restoreAdminView();}catch(x){errMessage(x);}finally{btn.disabled=false;}});
 }
 async function loadEvents(){
+ if(state.crmMode)return;
+ document.querySelector('.admin-page-label').textContent='REGISTRATION';
+ document.getElementById('clientsBtn').classList.remove('crm-active');
  var id=++listLoadToken,archive=state.archive,revision=mutationRevision;
  try{
   var d=await api('/events?archive='+(archive?'1':'0'));
@@ -1114,6 +1192,192 @@ async function saveEventReport(event,format){
  }catch(e){errMessage(e);}
 }
 
+
+// Client CRM is an administrator-only view. Public registration stays account-free.
+var CRM_TAG_LABELS={vip:'★ VIP',regular:'Постоянный',attention:'Внимание',conflict:'Конфликтный',blacklist:'⛔ Чёрный список'};
+function crmTagList(raw){
+ try{var v=typeof raw==='string'?JSON.parse(raw):raw;return Array.isArray(v)?v.filter(function(t){return Object.prototype.hasOwnProperty.call(CRM_TAG_LABELS,t);}):[];}
+ catch(_){return [];}
+}
+function crmFlagRow(tags){
+ var group=el('div','crm-tags');
+ tags.forEach(function(tag){group.append(el('span','crm-tag crm-'+tag,CRM_TAG_LABELS[tag]));});
+ return group;
+}
+function crmHeader(){
+ state.crmMode=true;
+ document.querySelector('.admin-page-label').textContent='CLIENTS / CRM';
+ document.getElementById('clientsBtn').classList.add('crm-active');
+}
+function crmDock(detail){
+ var bar=document.getElementById('bottomBar');bar.replaceChildren();bar.hidden=false;bar.dataset.mode='crm';
+ bar.append(button('← МЕРОПРИЯТИЯ','ghost',function(){
+  state.crmMode=false;state.crmKey=null;state.selected=null;
+  history.replaceState(null,'',location.pathname);loadEvents();
+ }));
+ if(detail)bar.append(button('← КЛИЕНТЫ','primary',function(){
+  state.crmKey=null;history.replaceState(null,'','#clients');loadClients();
+ }));
+}
+async function loadClients(){
+ crmHeader();
+ var token=++crmLoadToken;
+ var q=encodeURIComponent(state.crmQuery),sort=encodeURIComponent(state.crmSort);
+ try{
+  var d=await api('/clients?q='+q+'&sort='+sort+'&offset='+state.crmOffset);
+  if(!state.crmMode||state.crmKey||token!==crmLoadToken)return;
+  state.crmClients=d.clients||[];state.crmMore=!!d.has_more;
+  renderClients();
+ }catch(e){if(token===crmLoadToken)errMessage(e);}
+}
+function renderClients(){
+ if(!state.crmMode||state.crmKey)return;
+ var isSearchFocused=document.activeElement&&document.activeElement.id==='crmSearch';
+ var selection=isSearchFocused?document.activeElement.selectionStart:null;
+ app.replaceChildren();
+ var top=el('div','view-top crm-top');top.append(head('КЛИЕНТЫ / CRM','История заявок по номеру телефона. Демо-регистрации не учитываются.'));
+ var filters=el('div','crm-toolbar');
+ var search=el('input','search');search.id='crmSearch';search.type='search';search.placeholder='Поиск по имени или номеру';search.value=state.crmQuery;search.maxLength=80;
+ search.setAttribute('aria-label','Поиск клиентов');
+ search.addEventListener('input',function(){
+  state.crmQuery=search.value;state.crmOffset=0;clearTimeout(crmSearchTimer);
+  crmSearchTimer=setTimeout(function(){if(state.crmMode&&!state.crmKey)loadClients();},260);
+ });
+ filters.append(search);
+ var sort=el('select','search');sort.setAttribute('aria-label','Сортировка клиентов');
+ [['applications','Больше всего заявок'],['recent','Последние заявки']].forEach(function(p){
+  var o=el('option','',p[1]);o.value=p[0];sort.append(o);
+ });sort.value=state.crmSort;
+ sort.addEventListener('change',function(){state.crmSort=sort.value;state.crmOffset=0;loadClients();});
+ filters.append(sort);
+ filters.append(el('span','crm-counter','Показано: '+state.crmClients.length+(state.crmOffset?' · начиная с '+(state.crmOffset+1):'')));
+ top.append(filters);app.append(top);
+ var scroll=el('div','view-scroll crm-scroll'),grid=el('div','crm-grid');scroll.append(grid);app.append(scroll);
+ if(!state.crmClients.length)grid.append(el('div','empty','Клиентов по выбранному запросу не найдено.'));
+ state.crmClients.forEach(function(c){
+  var card=el('button','crm-card');card.type='button';card.setAttribute('aria-label','Карточка клиента '+c.display_name+' '+c.phone);
+  var header=el('div','crm-card-head');header.append(el('div','crm-client-name',c.display_name||'Без имени'));header.append(el('span','crm-phone',c.phone||c.phone_key));card.append(header);
+  var tags=crmTagList(c.tags);if(tags.length)card.append(crmFlagRow(tags));
+  var metrics=el('div','crm-metrics');
+  [['Заявок',c.applications],['Отмен',c.cancellations],['Средняя группа',c.avg_group==null?'—':c.avg_group]].forEach(function(pair){
+   var m=el('div','crm-metric');m.append(el('strong','',String(pair[1]||0)));m.append(el('small','',pair[0]));metrics.append(m);
+  });
+  card.append(metrics);
+  card.append(el('div','crm-subtle','Игр с заявками: '+(c.games||0)+' · Подтверждено: '+(c.confirmed||0)));
+  if(c.last_registration)card.append(el('div','crm-subtle','Последняя заявка: '+wrapDate(c.last_registration)));
+  card.addEventListener('click',function(){openClient(c.phone_key);});grid.append(card);
+ });
+ var nav=el('div','crm-pagination');
+ var prev=button('← НАЗАД','ghost',function(){state.crmOffset=Math.max(0,state.crmOffset-50);loadClients();});prev.disabled=state.crmOffset===0;
+ var next=button('ДАЛЕЕ →','ghost',function(){state.crmOffset+=50;loadClients();});next.disabled=!state.crmMore;
+ nav.append(prev,el('span','crm-counter','Страница '+(Math.floor(state.crmOffset/50)+1)),next);
+ scroll.append(nav);crmDock(false);
+ if(isSearchFocused){search.focus({preventScroll:true});try{search.setSelectionRange(selection,selection);}catch(_){}}
+}
+function openClient(key){
+ state.crmMode=true;state.crmKey=key;state.selected=null;
+ history.replaceState(null,'','#client='+key);
+ loadClientDetail(0);
+}
+async function loadClientDetail(offset){
+ if(!state.crmKey)return;
+ crmHeader();
+ var key=state.crmKey,token=++crmDetailToken;
+ try{
+  var d=await api('/clients/'+encodeURIComponent(key)+'?offset='+offset);
+  if(!state.crmMode||state.crmKey!==key||token!==crmDetailToken)return;
+  state.crmDetail=d;
+  state.crmHistory=offset===0?d.history||[]:state.crmHistory.concat(d.history||[]);
+  renderClientDetail();
+ }catch(e){if(token===crmDetailToken)errMessage(e);}
+}
+function crmStat(label,value){
+ var b=el('div','crm-metric');b.append(el('strong','',String(value==null?'—':value)));b.append(el('small','',label));return b;
+}
+function renderClientDetail(){
+ if(!state.crmMode||!state.crmKey||!state.crmDetail)return;
+ var d=state.crmDetail,c=d.client,stats=d.stats||{};
+ app.replaceChildren();
+ var top=el('div','view-top crm-top');top.append(head('КАРТОЧКА КЛИЕНТА','Основной идентификатор: номер телефона. Личного кабинета нет.'));app.append(top);
+ var scroll=el('div','view-scroll crm-scroll');app.append(scroll);
+ var profile=el('div','crm-profile'),left=el('section','crm-panel crm-profile-main');
+ left.append(el('div','crm-profile-name',c.display_name));
+ var phone=el('a','crm-phone',c.phone||c.phone_key);
+ phone.href='tel:+'+c.phone_key;phone.title='Позвонить';left.append(phone);
+ left.append(el('div','crm-subtle','Первое имя в заявке: '+c.original_name));
+ left.append(el('div','crm-subtle','Первая регистрация: '+wrapDate(c.first_seen)));
+ var tags=crmTagList(c.tags);
+ if(tags.length)left.append(crmFlagRow(tags));
+ var edit=button('✎ РЕДАКТИРОВАТЬ КАРТОЧКУ','primary',editClientProfile);left.append(edit);
+ var right=el('section','crm-panel');
+ right.append(el('div','crm-section-title','Статистика клиента'));
+ var quick=el('div','crm-quick-stats');
+ quick.append(crmStat('Регистраций',stats.applications||0),crmStat('Отмен',stats.cancellations||0),crmStat('Подтверждены',stats.confirmed||0),crmStat('Средняя группа',stats.avg_group==null?'—':stats.avg_group));
+ right.append(quick);
+ right.append(el('div','crm-subtle','Игр с заявками: '+(stats.games||0)+'. Фактическое посещение не подтверждается одной регистрацией.'));
+ right.append(el('div','crm-section-title','Комментарии менеджера'));
+ right.append(el('div','crm-detail-notes',c.notes||'Комментариев пока нет.'));
+ right.append(el('div','crm-section-title','Пожелания и особенности'));
+ right.append(el('div','crm-detail-notes',c.wishes||'Не указаны.'));
+ profile.append(left,right);scroll.append(profile);
+ var header=el('div','crm-section-title','ИСТОРИЯ РЕГИСТРАЦИЙ · '+state.crmHistory.length);scroll.append(header);
+ var history=el('div','crm-history');
+ if(!state.crmHistory.length)history.append(el('div','empty','История пока пуста.'));
+ var statusText={pending:'НОВАЯ',confirmed:'ПОДТВЕРЖДЕНА',cancelled:'ОТМЕНЕНА',deleted:'УДАЛЕНА'};
+ state.crmHistory.forEach(function(h){
+  var item=el('article','crm-history-item'),main=el('div');
+  main.append(el('div','crm-history-title',(h.event_title||'Мероприятие')+' · ID '+h.code));
+  main.append(el('div','crm-history-meta','Дата игры: '+(h.starts_at?wrapDate(h.starts_at):'не указана')+' · Заявка: '+wrapDate(h.created_at)));
+  main.append(el('div','crm-history-meta','Имя в заявке: '+h.application_name+' · '+persons(Number(h.party_size)||0)));
+  if(h.table_number)main.append(el('div','crm-history-meta','Стол: '+h.table_number));
+  var side=el('div','crm-history-actions');
+  side.append(el('span','status '+h.status,statusText[h.status]||h.status));
+  if(h.status!=='deleted'&&h.event_id){side.append(button('ОТКРЫТЬ ИГРУ','ghost',function(){openDetails(h.event_id);}));}
+  item.append(main,side);
+  if(h.guest_comment)item.append(el('div','crm-history-note','Пожелание гостя: '+h.guest_comment));
+  if(h.admin_comment)item.append(el('div','crm-history-note','Комментарий к заявке: '+h.admin_comment));
+  history.append(item);
+ });
+ scroll.append(history);
+ if(d.has_more){
+  var more=button('ПОКАЗАТЬ ЕЩЁ','ghost',function(){loadClientDetail(state.crmHistory.length);});
+  var wrap=el('div','crm-pagination');wrap.append(more);scroll.append(wrap);
+ }
+ crmDock(true);
+}
+function editClientProfile(){
+ var data=state.crmDetail&&state.crmDetail.client;if(!data)return;
+ var form=el('form','form');
+ function addField(label,name,value,long,max){
+  var row=el('label','field');row.append(document.createTextNode(label));
+  var input=el(long?'textarea':'input');
+  input.name=name;input.maxLength=max;input.value=value||'';
+  if(long)input.rows=3;else input.type='text';
+  row.append(input);form.append(row);
+ }
+ addField('ИМЯ КЛИЕНТА / ФИО','display_name',data.display_name,false,100);
+ addField('КОММЕНТАРИЙ МЕНЕДЖЕРА','notes',data.notes,true,2000);
+ addField('ПОЖЕЛАНИЯ И ОСОБЕННОСТИ','wishes',data.wishes,true,1000);
+ var box=el('div','field');box.append(el('div','','МЕТКИ КЛИЕНТА'));var labels=el('div','crm-tag-choices'),current=crmTagList(data.tags);
+ Object.keys(CRM_TAG_LABELS).forEach(function(key){
+  var label=el('label'),check=el('input');check.type='checkbox';check.name='tag';check.value=key;check.checked=current.includes(key);
+  label.append(check,document.createTextNode(CRM_TAG_LABELS[key]));labels.append(label);
+ });
+ box.append(labels);form.append(box);
+ form.append(el('p','crm-subtle','Метки видны администратору в каждой новой заявке этого номера. Они не означают автоматический отказ гостю.'));
+ var actions=el('div','form-buttons');actions.append(button('ОТМЕНА','ghost',closeModal));
+ var save=el('button','btn primary','СОХРАНИТЬ');save.type='submit';actions.append(save);form.append(actions);
+ form.addEventListener('submit',async function(e){
+  e.preventDefault();save.disabled=true;
+  var tags=Array.from(form.querySelectorAll('input[name=tag]:checked')).map(function(x){return x.value;});
+  var payload={display_name:form.elements.display_name.value.trim(),notes:form.elements.notes.value.trim(),wishes:form.elements.wishes.value.trim(),tags:tags};
+  try{await api('/clients/'+encodeURIComponent(data.phone_key),mutation('PATCH',payload));
+   closeModal();await loadClientDetail(0);toast('Карточка клиента сохранена');
+  }catch(err){errMessage(err);}finally{save.disabled=false;}
+ });
+ showModal('РЕДАКТИРОВАТЬ КЛИЕНТА',form);
+}
+
 function renderEvents(){
  var previous=document.querySelector('.events-scroll');
  var oldScroll=previous?previous.scrollTop:0;
@@ -1188,6 +1452,9 @@ function bottomDock(mode){
  }
 }
 async function openDetails(id){
+ state.crmMode=false;state.crmKey=null;
+ document.querySelector('.admin-page-label').textContent='REGISTRATION';
+ document.getElementById('clientsBtn').classList.remove('crm-active');
  state.selected=id;state.query='';state.status='all';
  await reloadDetails();location.hash='event='+encodeURIComponent(id);
 }
@@ -1273,6 +1540,11 @@ function renderRegList(){
    var phone=el(digits.length>=7?'a':'span','phone-link',rawPhone||'Номер не указан');
    if(digits.length>=7){phone.href='tel:'+(rawPhone.charAt(0)==='+'?'+':'')+digits;phone.setAttribute('aria-label','Позвонить по номеру '+rawPhone);phone.title=r.source==='demo'?'Тестовый номер · Открыть набор номера':'Позвонить';}
    person.append(phone);info.append(person);
+  if(r.source!=='demo'&&r.client_key){
+   var clientFlags=crmTagList(r.client_tags);if(clientFlags.length)info.append(crmFlagRow(clientFlags));
+   var clientLink=el('button','crm-open','◷ ИСТОРИЯ КЛИЕНТА');clientLink.type='button';clientLink.title='Все заявки этого номера телефона';
+   clientLink.addEventListener('click',function(){openClient(r.client_key);});info.append(clientLink);
+  }
   info.append(el('div','people',persons(r.party_size)));
   if(r.table_number)info.append(el('div','reg-table-badge','СТОЛ № '+r.table_number));
   if(r.guest_comment)info.append(el('div','reg-comment','ГОСТЬ: '+r.guest_comment));
@@ -1566,12 +1838,13 @@ function personEditor(existing){
 }
 function manualEditor(){personEditor(null);}
 function editRegistration(r){personEditor(r);}
-document.getElementById('archiveBtn').addEventListener('click',function(){state.selected=null;state.archive=!state.archive;this.textContent=state.archive?'← АКТИВНЫЕ':'АРХИВ';history.replaceState(null,'',location.pathname);loadEvents();});
+document.getElementById('clientsBtn').addEventListener('click',function(){state.crmMode=true;state.crmKey=null;state.selected=null;history.replaceState(null,'','#clients');loadClients();});
+document.getElementById('archiveBtn').addEventListener('click',function(){state.crmMode=false;state.crmKey=null;state.selected=null;state.archive=!state.archive;this.textContent=state.archive?'← АКТИВНЫЕ':'АРХИВ';history.replaceState(null,'',location.pathname);loadEvents();});
 document.getElementById('addEventBtn').addEventListener('click',function(){eventEditor(null);});
-document.getElementById('refreshBtn').addEventListener('click',async function(){this.disabled=true;try{if(state.selected)await reloadDetails();else await loadEvents();toast('Данные обновлены');}catch(e){errMessage(e)}finally{this.disabled=false}});
-document.getElementById('logoutBtn').addEventListener('click',async function(){try{await api('/logout',{method:'POST'});}catch(e){}loggedIn(false);state.selected=null;showLogin();});
+document.getElementById('refreshBtn').addEventListener('click',async function(){this.disabled=true;try{if(state.crmMode){if(state.crmKey)await loadClientDetail(0);else await loadClients();}else if(state.selected)await reloadDetails();else await loadEvents();toast('Данные обновлены');}catch(e){errMessage(e)}finally{this.disabled=false}});
+document.getElementById('logoutBtn').addEventListener('click',async function(){try{await api('/logout',{method:'POST'});}catch(e){}loggedIn(false);state.selected=null;state.crmMode=false;state.crmKey=null;showLogin();});
 async function liveRefresh(){
- if(backgroundRefreshing||document.hidden||!modal.hidden)return;
+ if(state.crmMode||backgroundRefreshing||document.hidden||!modal.hidden)return;
  if(document.activeElement&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;
  backgroundRefreshing=true;
  var selected=state.selected,archive=state.archive,revision=mutationRevision;
