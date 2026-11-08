@@ -768,9 +768,8 @@ body:has(#grid) main { position:relative; isolation:isolate; }
 :where(h1,h2,h3,h4,p,small,label,.subtitle,.description,.name,.event-title,.event-venue,.reg-code,.person,.stage-heading){overflow-wrap:break-word}
 :where(.card,.event-card,.event-info,.event-list,.heading,.toolbar,.filters,.stat,.registration,.screen-main,.game-stage,.stage-card,.song-choice-card){min-width:0}
 :where(button,a,input,textarea,select){max-width:100%}
-body>.mf-smoke{display:block;pointer-events:none!important;opacity:.52}
-@media(max-width:820px),(pointer:coarse){body>.mf-smoke{display:block!important;opacity:.4!important}}
-@media(prefers-reduced-motion:reduce){body>.mf-smoke{display:none!important}}
+/* The registration admin uses the standard mouse pointer, without smoke trails. */
+body>.mf-smoke,body>#mf-fluid-canvas,body>#mf-smoke-fallback{display:none!important}
 
 :where(.mast,.logo,.actions,.heading,.event-grid,.event-info,.registration,.reg-main,.reg-side,.reg-actions,.bottom-bar,.details-top,.sheet,.form-row){min-width:0}
 :where(.sub,.event-title,.event-venue,.reg-code,.person,.reg-comment,.reg-comment-admin,.demo-note,.stat span,.stat strong){overflow-wrap:anywhere}
@@ -1803,7 +1802,7 @@ init();
   });
   size();
  }
- aurora();reveals();spotlight();ripples();menu();parallax();smoke();
+ aurora();reveals();ripples();menu();
 })();
 </script>
 </body></html>
