@@ -430,7 +430,7 @@ readSaved();render();renderStory();
     view.style.zoom='1';view.style.width='100%';view.style.maxWidth='';
     const cs=getComputedStyle(stage);
     const freeH=Math.max(90,stage.clientHeight-parseFloat(cs.paddingTop||0)-parseFloat(cs.paddingBottom||0)-3);
-    const freeW=Math.max(140,stage.clientWidth-parseFloat(cs.paddingLeft||0)-parseFloat(cs.paddingRight||0)-3);
+    const freeW=Math.max(140,stage.clientWidth-parseFloat(cs.paddingLeft||0)-parseFloat(cs.paddingRight||0));
     const baseH=Math.max(view.scrollHeight,view.getBoundingClientRect().height);
     const baseW=Math.max(view.scrollWidth,view.getBoundingClientRect().width);
     if(!baseH||!baseW)return;
