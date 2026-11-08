@@ -695,8 +695,8 @@ body{display:flex;flex-direction:column;min-height:0}
 .crm-top{padding:8px 0!important}
 .crm-top .heading{margin:0 0 8px}
 .crm-top .heading h1{font-size:clamp(22px,3vw,34px)!important}
-.crm-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
-.crm-toolbar .search{height:34px!important;min-height:34px!important;padding:5px 10px!important;font-size:13px!important;border-radius:9px!important;width:min(100%,320px)}
+.crm-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(135px,210px);align-items:center;gap:8px;margin:7px 0;width:100%;min-width:0}
+.crm-toolbar .search{height:34px!important;min-height:34px!important;padding:5px 10px!important;font-size:13px!important;border-radius:9px!important;width:100%!important;max-width:none!important;min-width:0!important}
 .crm-toolbar .btn{min-height:34px;padding:5px 12px;font-size:12px}
 .crm-counter{color:var(--muted);font-size:12px}
 .crm-scroll{padding:10px 0 16px!important}
@@ -737,6 +737,8 @@ body{display:flex;flex-direction:column;min-height:0}
 .crm-history-actions{display:flex;gap:7px;align-items:center}
 .crm-history-actions .btn{padding:4px 9px;min-height:29px;font-size:11px}
 .crm-history-note{font-size:12px;color:#ddf3e6;white-space:pre-wrap;grid-column:1/-1;overflow-wrap:anywhere}
+.crm-load-status{padding:13px 6px;text-align:center;color:var(--muted);font-size:12px;min-height:34px}
+.crm-load-status .btn{min-height:28px;padding:4px 10px;margin-left:9px;font-size:11px}
 .crm-pagination{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0}
 .crm-pagination .btn{min-height:32px;padding:5px 14px;font-size:12px}
 .crm-tag-choices{display:flex;flex-wrap:wrap;gap:8px}
@@ -748,9 +750,9 @@ body{display:flex;flex-direction:column;min-height:0}
  .crm-card{padding:10px}
  .crm-phone{font-size:12px}
  .crm-top .heading h1{font-size:23px!important}
- .crm-toolbar{gap:6px}
- .crm-toolbar .search{flex:1 1 100%;width:100%}
- .crm-toolbar .btn{flex:1 1 auto}
+ .crm-toolbar{grid-template-columns:minmax(0,1fr) minmax(118px,39%);gap:6px}
+ .crm-toolbar .search{font-size:12px!important;padding:4px 7px!important}
+ .crm-toolbar select.search{padding-right:4px!important}
  .crm-quick-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
  .crm-history-item{grid-template-columns:1fr}
  .crm-history-actions{justify-content:flex-start}
@@ -914,6 +916,7 @@ var listLoadToken=0,detailsLoadToken=0,mutationRevision=0,backgroundRefreshing=f
 state.eventsVersion=null;state.detailsVersion=null;
 state.crmMode=false;state.crmKey=null;state.crmQuery='';state.crmSort='applications';state.crmOffset=0;state.crmClients=[];state.crmMore=false;state.crmDetail=null;state.crmHistory=[];
 var crmLoadToken=0,crmDetailToken=0,crmSearchTimer=0;
+var crmLoading=false,crmLoadError=false,crmHistoryLoading=false,crmHistoryError=false;
 function el(tag,className,text){var e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;}
 function button(text,cls,action){var b=el('button','btn '+(cls||''),text);b.type='button';if(action)b.addEventListener('click',action);return b;}
 function wrapDate(s){return new Date(s).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Minsk'});}
@@ -1246,43 +1249,43 @@ function crmDock(detail){
   state.crmKey=null;history.replaceState(null,'','#clients');loadClients();
  }));
 }
-async function loadClients(){
+
+async function loadClients(append){
  crmHeader();
- var token=++crmLoadToken;
- var q=encodeURIComponent(state.crmQuery),sort=encodeURIComponent(state.crmSort);
- try{
-  var d=await api('/clients?q='+q+'&sort='+sort+'&offset='+state.crmOffset);
-  if(!state.crmMode||state.crmKey||token!==crmLoadToken)return;
-  state.crmClients=d.clients||[];state.crmMore=!!d.has_more;
+ if(!append){
+  ++crmLoadToken;crmLoading=false;crmLoadError=false;
+  state.crmOffset=0;state.crmClients=[];state.crmMore=true;
   renderClients();
- }catch(e){if(token===crmLoadToken)errMessage(e);}
+ }else if(crmLoading||crmLoadError||!state.crmMore)return;
+ var token=++crmLoadToken,offset=state.crmOffset;
+ var query=state.crmQuery,sort=state.crmSort;
+ crmLoading=true;crmUpdateLoading();
+ try{
+  var d=await api('/clients?q='+encodeURIComponent(query)+'&sort='+encodeURIComponent(sort)+'&offset='+offset);
+  if(!state.crmMode||state.crmKey||token!==crmLoadToken||query!==state.crmQuery||sort!==state.crmSort)return;
+  var rows=d.clients||[];
+  state.crmOffset=offset+rows.length;
+  state.crmMore=!!d.has_more;
+  state.crmClients=state.crmClients.concat(rows.filter(function(c){return !state.crmClients.some(function(old){return old.phone_key===c.phone_key;});}));
+  var grid=document.getElementById('crmGrid');
+  if(grid){
+   var empty=document.getElementById('crmEmpty');if(empty&&state.crmClients.length)empty.remove();
+   crmDrawCards(grid,rows);
+   var count=document.getElementById('crmShownCount');if(count)count.textContent=String(state.crmClients.length);
+  }else renderClients();
+ }catch(e){
+  if(token===crmLoadToken){crmLoadError=true;errMessage(e);}
+ }finally{
+  if(token===crmLoadToken){
+   crmLoading=false;crmUpdateLoading();
+   if(!crmLoadError)crmMaybeLoadMore();
+  }
+ }
 }
-function renderClients(){
- if(!state.crmMode||state.crmKey)return;
- var isSearchFocused=document.activeElement&&document.activeElement.id==='crmSearch';
- var selection=isSearchFocused?document.activeElement.selectionStart:null;
- app.replaceChildren();
- var top=el('div','view-top crm-top');top.append(head('КЛИЕНТЫ / CRM','История заявок по номеру телефона. Демо-регистрации не учитываются.'));
- var filters=el('div','crm-toolbar');
- var search=el('input','search');search.id='crmSearch';search.type='search';search.placeholder='Поиск по имени или номеру';search.value=state.crmQuery;search.maxLength=80;
- search.setAttribute('aria-label','Поиск клиентов');
- search.addEventListener('input',function(){
-  state.crmQuery=search.value;state.crmOffset=0;clearTimeout(crmSearchTimer);
-  crmSearchTimer=setTimeout(function(){if(state.crmMode&&!state.crmKey)loadClients();},260);
- });
- filters.append(search);
- var sort=el('select','search');sort.setAttribute('aria-label','Сортировка клиентов');
- [['applications','Больше всего заявок'],['recent','Последние заявки']].forEach(function(p){
-  var o=el('option','',p[1]);o.value=p[0];sort.append(o);
- });sort.value=state.crmSort;
- sort.addEventListener('change',function(){state.crmSort=sort.value;state.crmOffset=0;loadClients();});
- filters.append(sort);
- filters.append(el('span','crm-counter','Показано: '+state.crmClients.length+(state.crmOffset?' · начиная с '+(state.crmOffset+1):'')));
- top.append(filters);app.append(top);
- var scroll=el('div','view-scroll crm-scroll'),grid=el('div','crm-grid');scroll.append(grid);app.append(scroll);
- if(!state.crmClients.length)grid.append(el('div','empty','Клиентов по выбранному запросу не найдено.'));
- state.crmClients.forEach(function(c){
-  var card=el('button','crm-card');card.type='button';card.setAttribute('aria-label','Карточка клиента '+c.display_name+' '+c.phone);
+function crmDrawCards(grid,rows){
+ rows.forEach(function(c){
+  if(grid.querySelector('[data-client-key="'+c.phone_key+'"]'))return;
+  var card=el('button','crm-card');card.type='button';card.dataset.clientKey=c.phone_key;card.setAttribute('aria-label','Карточка клиента '+c.display_name+' '+c.phone);
   var header=el('div','crm-card-head');header.append(el('div','crm-client-name',c.display_name||'Без имени'));header.append(el('span','crm-phone',c.phone||c.phone_key));card.append(header);
   var tags=crmTagList(c.tags);if(tags.length)card.append(crmFlagRow(tags));
   var metrics=el('div','crm-metrics');
@@ -1294,39 +1297,118 @@ function renderClients(){
   if(c.last_registration)card.append(el('div','crm-subtle','Последняя заявка: '+crmDate(c.last_registration)));
   card.addEventListener('click',function(){openClient(c.phone_key);});grid.append(card);
  });
- var nav=el('div','crm-pagination');
- var prev=button('← НАЗАД','ghost',function(){state.crmOffset=Math.max(0,state.crmOffset-50);loadClients();});prev.disabled=state.crmOffset===0;
- var next=button('ДАЛЕЕ →','ghost',function(){state.crmOffset+=50;loadClients();});next.disabled=!state.crmMore;
- nav.append(prev,el('span','crm-counter','Страница '+(Math.floor(state.crmOffset/50)+1)),next);
- scroll.append(nav);crmDock(false);
- if(isSearchFocused){search.focus({preventScroll:true});try{search.setSelectionRange(selection,selection);}catch(_){}}
+}
+function crmUpdateLoading(){
+ var empty=document.getElementById('crmEmpty');
+ if(empty)empty.textContent=crmLoading?'Загружаем клиентов…':crmLoadError?'Не удалось получить список клиентов.':'Клиентов по выбранному запросу пока нет.';
+ var line=document.getElementById('crmLoadStatus');
+ if(!line)return;
+ line.replaceChildren();
+ if(crmLoading){line.textContent='Подгружаем клиентов…';return;}
+ if(crmLoadError){
+  line.append(document.createTextNode('Не удалось загрузить клиентов.'));
+  line.append(button('ПОВТОРИТЬ','ghost',function(){crmLoadError=false;loadClients(true);}));
+  return;
+ }
+ line.textContent=state.crmMore?'Прокрутите вниз, остальные клиенты загрузятся автоматически.':'Все найденные клиенты показаны.';
+}
+function crmMaybeLoadMore(){
+ if(!state.crmMode||state.crmKey||crmLoading||crmLoadError||!state.crmMore)return;
+ var scroll=document.getElementById('crmListScroll');
+ if(scroll&&scroll.scrollHeight-scroll.scrollTop-scroll.clientHeight<480)loadClients(true);
+}
+function renderClients(){
+ if(!state.crmMode||state.crmKey)return;
+ var focused=document.activeElement&&document.activeElement.id==='crmSearch';
+ var selection=focused?document.activeElement.selectionStart:null;
+ app.replaceChildren();
+ var top=el('div','view-top crm-top');
+ top.append(head('КЛИЕНТЫ / CRM','История заявок по телефону · Показано: '));
+ var count=el('span','',String(state.crmClients.length));count.id='crmShownCount';
+ top.querySelector('.sub').append(count);
+ var filters=el('div','crm-toolbar');
+ var search=el('input','search');search.id='crmSearch';search.type='search';search.placeholder='Имя или телефон';search.value=state.crmQuery;search.maxLength=80;
+ search.setAttribute('aria-label','Поиск клиентов по имени или телефону');
+ search.addEventListener('input',function(){
+  state.crmQuery=search.value;
+  ++crmLoadToken;crmLoading=false;
+  clearTimeout(crmSearchTimer);
+  crmSearchTimer=setTimeout(function(){if(state.crmMode&&!state.crmKey)loadClients();},260);
+ });
+ filters.append(search);
+ var sort=el('select','search');sort.id='crmSort';sort.setAttribute('aria-label','Сортировка клиентов');
+ [['applications','По заявкам ↓'],['recent','По дате ↓']].forEach(function(p){
+  var o=el('option','',p[1]);o.value=p[0];sort.append(o);
+ });sort.value=state.crmSort;
+ sort.addEventListener('change',function(){state.crmSort=sort.value;loadClients();});
+ filters.append(sort);
+ top.append(filters);app.append(top);
+ var scroll=el('div','view-scroll crm-scroll');scroll.id='crmListScroll';
+ var grid=el('div','crm-grid');grid.id='crmGrid';scroll.append(grid);app.append(scroll);
+ if(!state.crmClients.length){
+  var empty=el('div','empty',crmLoading?'Загружаем клиентов…':'Клиентов по выбранному запросу пока нет.');
+  empty.id='crmEmpty';grid.append(empty);
+ }else crmDrawCards(grid,state.crmClients);
+ var status=el('div','crm-load-status');status.id='crmLoadStatus';status.setAttribute('role','status');scroll.append(status);
+ scroll.addEventListener('scroll',crmMaybeLoadMore,{passive:true});
+ crmDock(false);
+ crmUpdateLoading();
+ if(focused){search.focus({preventScroll:true});try{search.setSelectionRange(selection,selection);}catch(_){}}
 }
 function openClient(key){
  state.crmMode=true;state.crmKey=key;state.selected=null;
  history.replaceState(null,'','#client='+key);
  loadClientDetail(0);
 }
+
 async function loadClientDetail(offset){
  if(!state.crmKey)return;
+ if(offset>0&&(crmHistoryLoading||crmHistoryError||!state.crmDetail||!state.crmDetail.has_more))return;
  crmHeader();
+ if(offset===0){crmHistoryError=false;state.crmHistory=[];}
  var key=state.crmKey,token=++crmDetailToken;
+ crmHistoryLoading=true;crmUpdateHistoryLoading();
  try{
   var d=await api('/clients/'+encodeURIComponent(key)+'?offset='+offset);
   if(!state.crmMode||state.crmKey!==key||token!==crmDetailToken)return;
   state.crmDetail=d;
   state.crmHistory=offset===0?d.history||[]:state.crmHistory.concat(d.history||[]);
-  renderClientDetail();
- }catch(e){if(token===crmDetailToken)errMessage(e);}
+  renderClientDetail(offset>0);
+ }catch(e){
+  if(token===crmDetailToken){crmHistoryError=true;errMessage(e);}
+ }finally{
+  if(token===crmDetailToken){
+   crmHistoryLoading=false;crmUpdateHistoryLoading();
+   if(!crmHistoryError)crmMaybeLoadHistory();
+  }
+ }
+}
+function crmUpdateHistoryLoading(){
+ var line=document.getElementById('crmHistoryLoadStatus');
+ if(!line)return;
+ line.replaceChildren();
+ if(crmHistoryLoading){line.textContent='Загружаем историю…';return;}
+ if(crmHistoryError){
+  line.append(document.createTextNode('Не удалось загрузить историю.'));
+  line.append(button('ПОВТОРИТЬ','ghost',function(){crmHistoryError=false;loadClientDetail(state.crmHistory.length);}));
+ }else line.textContent=state.crmDetail&&state.crmDetail.has_more?
+  'Прокрутите вниз для загрузки остальных заявок.':'Вся история заявок показана.';
+}
+function crmMaybeLoadHistory(){
+ if(!state.crmMode||!state.crmKey||crmHistoryLoading||crmHistoryError||!state.crmDetail||!state.crmDetail.has_more)return;
+ var scroll=document.getElementById('crmHistoryScroll');
+ if(scroll&&scroll.scrollHeight-scroll.scrollTop-scroll.clientHeight<420)loadClientDetail(state.crmHistory.length);
 }
 function crmStat(label,value){
  var b=el('div','crm-metric');b.append(el('strong','',String(value==null?'—':value)));b.append(el('small','',label));return b;
 }
-function renderClientDetail(){
+function renderClientDetail(keepScroll){
  if(!state.crmMode||!state.crmKey||!state.crmDetail)return;
+ var previous=document.getElementById('crmHistoryScroll'),oldScroll=keepScroll&&previous?previous.scrollTop:0;
  var d=state.crmDetail,c=d.client,stats=d.stats||{};
  app.replaceChildren();
  var top=el('div','view-top crm-top');top.append(head('КАРТОЧКА КЛИЕНТА','Основной идентификатор: номер телефона. Личного кабинета нет.'));app.append(top);
- var scroll=el('div','view-scroll crm-scroll');app.append(scroll);
+ var scroll=el('div','view-scroll crm-scroll');scroll.id='crmHistoryScroll';app.append(scroll);
  var profile=el('div','crm-profile'),left=el('section','crm-panel crm-profile-main');
  left.append(el('div','crm-profile-name',c.display_name));
  var phone=el('a','crm-phone',c.phone||c.phone_key);
@@ -1366,11 +1448,11 @@ function renderClientDetail(){
   history.append(item);
  });
  scroll.append(history);
- if(d.has_more){
-  var more=button('ПОКАЗАТЬ ЕЩЁ','ghost',function(){loadClientDetail(state.crmHistory.length);});
-  var wrap=el('div','crm-pagination');wrap.append(more);scroll.append(wrap);
- }
+ var status=el('div','crm-load-status');status.id='crmHistoryLoadStatus';status.setAttribute('role','status');scroll.append(status);
+ scroll.addEventListener('scroll',crmMaybeLoadHistory,{passive:true});
  crmDock(true);
+ scroll.scrollTop=oldScroll;
+ crmUpdateHistoryLoading();
 }
 function editClientProfile(){
  var data=state.crmDetail&&state.crmDetail.client;if(!data)return;
