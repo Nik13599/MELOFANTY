@@ -106,7 +106,7 @@ body{display:flex;flex-direction:column;background:#061210;min-width:0}
 .screen-exit{font:600 13px var(--bold);padding:9px 12px;border-radius:20px;background:var(--lime);color:#06140e;white-space:nowrap}
 .screen-main{flex:1;min-height:0;width:100%;display:flex}
 .game-zone{padding:10px clamp(8px,2vw,25px) 12px;flex:1;width:100%;height:100%;min-height:0;display:flex;background:radial-gradient(ellipse 70% 90% at 80% 40%,#0d362c33,transparent 65%),#061210}
-.game-shell{width:100%;max-width:1440px;height:100%;min-height:0;margin:auto;display:flex;flex-direction:column;border-radius:19px;background:#081914;overflow:hidden;box-shadow:0 14px 60px #0009}
+.game-shell{width:100%;max-width:1180px;height:100%;min-height:0;margin:auto;display:flex;flex-direction:column;border-radius:19px;background:#081914;overflow:hidden;box-shadow:0 14px 60px #0009}
 .screen-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:43px;border-bottom:1px solid var(--line);padding:0 12px}
 .game-steps{padding:0;display:flex;align-items:center;gap:4px;border:0;min-width:0;max-width:62%;flex:1}
 .game-step{flex:1;padding:10px 4px 8px;font-size:clamp(10px,1.1vw,15px);white-space:nowrap}
@@ -119,7 +119,7 @@ body{display:flex;flex-direction:column;background:#061210;min-width:0}
 .aside-stat{padding:3px 2px 6px}.aside-stat span{font-size:10px}.aside-stat strong{font-size:20px}
 .score-header{padding:7px;font-size:13px}.team-score{padding:8px 6px;gap:5px}.team-rank{flex:none}.team-meta b{font-size:12px}.team-meta small{font-size:9px}.team-points{font-size:18px}.rules-note{padding:10px;font-size:10px;line-height:1.35}.rules-note p{margin:4px 0 0;font-size:10px}
 .game-stage{position:relative;min-height:0;overflow:hidden!important;padding:12px clamp(12px,3vw,32px)!important;order:0;display:flex;align-items:flex-start;justify-content:center}
-.stage-view{width:100%;max-width:920px;min-width:0;transform-origin:top left;will-change:contents}
+.stage-view{width:100%;max-width:850px;min-width:0;transform-origin:top left;contain:layout style}
 .stage-eyebrow{font-size:10px!important;letter-spacing:.11em;margin:0 0 3px!important}
 .stage-heading{font-size:clamp(28px,3.3vw,48px)!important;line-height:1.03!important;margin:0 0 6px!important}
 .stage-heading br{display:none}.stage-heading span{display:inline}
@@ -158,6 +158,33 @@ body{display:flex;flex-direction:column;background:#061210;min-width:0}
 .winner-card .trophy{width:max-content;margin-bottom:4px}.winner-card .trophy .award-svg{width:54px;height:54px}
 .game-stage .result-icon{display:grid;place-items:center;font:700 35px var(--bold);color:#7cf8a2;background:#154232;border:1px solid #64e2a0;border-radius:12px;width:58px;height:58px}
 
+
+/* Adaptive compact demo: preserve every control on narrow/short viewports. */
+.game-stage{min-width:0;min-height:0;scrollbar-width:thin;scrollbar-color:#356e55 transparent}
+.game-stage .stage-view{flex:0 0 auto;max-width:min(100%,850px)}
+.game-stage .stage-actions{justify-content:center}
+.game-stage .stage-actions .btn{min-width:0}
+@media(max-width:690px){
+ .game-stage{padding:clamp(5px,1.6vw,10px)!important}
+ .game-stage .stage-view{max-width:100%}
+ .game-shell{max-width:100%}
+ .stage-actions .btn{flex:1 1 auto}
+ .stage-eyebrow{letter-spacing:.04em!important}
+ .song-choice-card .song-id{overflow-wrap:anywhere}
+ .screen-toolbar{flex:0 0 auto}
+}
+@media(max-height:570px){
+ .screen-head{height:40px!important;min-height:40px!important}
+ .screen-toolbar .game-steps{height:23px!important}
+ .screen-score{height:23px!important}
+ .game-bottom{display:none!important}
+ .game-zone{padding:0!important}
+ .game-stage .stage-heading{font-size:clamp(22px,4.5vh,30px)!important}
+ .game-stage .stage-help{margin:2px 0!important}
+ .game-stage .number-tile{min-height:23px!important;height:clamp(23px,4.4vh,31px)!important}
+ .game-stage .stage-card{padding:4px 8px!important;margin:3px 0!important}
+ .game-stage .stage-actions{margin-top:5px!important}
+}
 </style>
 <style id="disable-double-tap-zoom">
 @media (pointer:coarse) {
@@ -392,18 +419,35 @@ readSaved();render();renderStory();
   const stage=document.getElementById('gameStage'), scores=document.getElementById('compactScores');
   const help=document.getElementById('helpDialog');
   function fit(){
-    const view=document.getElementById('stageView'); if(!view||!stage)return;
-    view.style.zoom='1';view.style.width='100%';
-    const maxH=Math.max(100,stage.clientHeight-2);
-    let natural=view.scrollHeight;
-    if(natural>maxH){
-      let f=Math.max(.48,Math.min(1,maxH/natural));
-      for(let i=0;i<3;i++){
-        view.style.zoom=String(f);view.style.width=`${100/f}%`;
-        const visualH=view.getBoundingClientRect().height;
-        if(visualH<=maxH-1) break;
-        f=Math.max(.45,f*(maxH-2)/visualH);
-      }
+    const view=document.getElementById('stageView');if(!view||!stage)return;
+    stage.style.removeProperty('overflow-y');
+    stage.style.removeProperty('align-items');
+    view.style.zoom='1';view.style.width='100%';view.style.maxWidth='';
+    const cs=getComputedStyle(stage);
+    const freeH=Math.max(90,stage.clientHeight-parseFloat(cs.paddingTop||0)-parseFloat(cs.paddingBottom||0)-3);
+    const freeW=Math.max(140,stage.clientWidth-parseFloat(cs.paddingLeft||0)-parseFloat(cs.paddingRight||0)-3);
+    const baseH=Math.max(view.scrollHeight,view.getBoundingClientRect().height);
+    const baseW=Math.max(view.scrollWidth,view.getBoundingClientRect().width);
+    if(!baseH||!baseW)return;
+    const minimum=matchMedia('(max-width:690px)').matches ? 0.60 : 0.68;
+    let factor=Math.max(minimum,Math.min(1,freeH/baseH,freeW/baseW)*.985);
+    for(let n=0;n<4;n++){
+      view.style.zoom=String(factor);
+      view.style.width=(100/factor)+'%';
+      view.style.maxWidth='none';
+      const bounds=view.getBoundingClientRect();
+      if(bounds.height<=freeH+1&&bounds.width<=freeW+1)break;
+      const shrink=Math.min(freeH/Math.max(bounds.height,1),freeW/Math.max(bounds.width,1));
+      if(!Number.isFinite(shrink)||factor<=minimum+.001)break;
+      factor=Math.max(minimum,factor*shrink*.99);
+    }
+    const rect=view.getBoundingClientRect();
+    if(rect.height>freeH+2||rect.width>freeW+2){
+      stage.style.setProperty('overflow-y','auto','important');
+      stage.style.setProperty('align-items','flex-start','important');
+      stage.style.overscrollBehavior='contain';
+    }else{
+      stage.style.overscrollBehavior='';
     }
   }
   window.fitMeloStage=fit;
@@ -424,6 +468,8 @@ readSaved();render();renderStory();
   stageObserver.observe(stage,{childList:true});
   window.addEventListener('resize',()=>requestAnimationFrame(fit));
   window.addEventListener('orientationchange',()=>requestAnimationFrame(fit));
+  if(window.visualViewport)window.visualViewport.addEventListener('resize',()=>requestAnimationFrame(fit),{passive:true});
+  if('ResizeObserver' in window)new ResizeObserver(()=>requestAnimationFrame(fit)).observe(stage);
   function showHelp(on){help.hidden=!on;if(on)document.getElementById('helpClose').focus();else document.getElementById('infoToggle').focus();}
   document.getElementById('infoToggle').addEventListener('click',()=>showHelp(true));
   document.getElementById('helpClose').addEventListener('click',()=>showHelp(false));
