@@ -878,6 +878,25 @@ body>.mf-smoke,body>#mf-fluid-canvas,body>#mf-smoke-fallback{display:none!import
 html.mf-motion-ready .mf-reveal .mf-reveal{translate:0 0!important}
 html.mf-motion-ready :is(h1,h2,h3,h4,.section-bar,.heading,.toolbar).mf-reveal{translate:0 0!important}
 </style>
+<style id="mf-motion-system">
+:root{--mf-motion-accent:var(--lime,#a5fd62);--mf-motion-cyan:var(--cyan,#16e6d0)}
+@media(prefers-reduced-motion:no-preference){
+html{scroll-behavior:smooth}
+.mf-reveal{opacity:1;transform:none;filter:none;transition:none}
+.mf-reveal.mf-visible{opacity:1;transform:none;filter:none}
+.mf-motion-card{transition:transform .32s cubic-bezier(.2,.8,.2,1),box-shadow .32s ease,filter .32s ease!important;will-change:auto}
+@media(hover:hover) and (pointer:fine){.mf-motion-card:hover{transform:translate3d(0,-4px,0) scale(1.012);filter:brightness(1.07);box-shadow:0 14px 38px #16e6d019,0 0 22px #a5fd6218}}
+.mf-motion-button{transition:transform .2s ease,box-shadow .25s ease,filter .2s ease!important}
+.mf-motion-button:active{transform:scale(.965)!important}
+.mf-motion-button:focus-visible{outline:2px solid var(--mf-motion-accent);outline-offset:3px}
+.mf-motion-ripple{position:absolute;pointer-events:none;border-radius:50%;background:radial-gradient(circle,#a5fd6255 0%,#16e6d022 48%,transparent 70%);transform:translate(-50%,-50%) scale(0);animation:mf-ripple .55s ease-out forwards}
+@keyframes mf-ripple{to{opacity:0;transform:translate(-50%,-50%) scale(2.7)}}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}.mf-reveal{opacity:1!important;transform:none!important;filter:none!important}.mf-motion-card,.mf-motion-button{transition:none!important}}
+
+/* Never obscure content while waiting for a scroll observer. */
+.mf-reveal,.mf-reveal.mf-visible{opacity:1!important;filter:none!important;transform:none!important;transition:none!important}
+</style>
 </head><body>
 <header class="mast"><div class="logo"><span class="logo-mark">♫</span><span>MELOFANTY<small>REGISTRATION · ADMIN</small></span></div><div class="admin-page-label">REGISTRATION</div><div class="actions"><button id="clientsBtn" class="btn ghost" hidden>КЛИЕНТЫ / CRM</button><button id="archiveBtn" class="btn ghost" hidden>АРХИВ</button><button id="addEventBtn" class="btn primary" hidden>+ ДОБАВИТЬ</button><button id="logoutBtn" class="btn ghost" hidden>ВЫХОД</button><button id="refreshBtn" class="btn ghost header-refresh" aria-label="Обновить данные" title="Обновить" hidden>↻</button></div></header>
 <main id="app"><div class="empty">Проверяем доступ к панели регистрации…</div></main>
@@ -2076,6 +2095,30 @@ init();
   size();
  }
  aurora();reveals();ripples();menu();
+})();
+</script>
+<script id="mf-motion-runtime">
+(()=>{'use strict';
+if(window.__mfMotionInitialized)return;window.__mfMotionInitialized=true;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+if(reduce.matches)return;
+const revealSelector='.hero-copy,.hero-title,.hero-subtitle,section h2,section h3,.section-title,.event-card,.event-tile,.registration-event-card,.archive-event-card,.feature-card,.rule-card';
+const cardSelector='.event-card,.event-tile,.registration-event-card,.archive-event-card,.feature-card,.rule-card';
+const buttonSelector='button,.main-btn,[role="button"]';
+const seen=new WeakSet();
+const observer=('IntersectionObserver'in window)?new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){entry.target.classList.add('mf-visible');observer.unobserve(entry.target)}}},{threshold:.08,rootMargin:'0px 0px -16px 0px'}):null;
+function enhance(root){
+if(!(root instanceof Element||root instanceof Document))return;
+const query=s=>[...(root instanceof Element&&root.matches(s)?[root]:[]),...root.querySelectorAll(s)];
+for(const el of query(revealSelector)){if(seen.has(el))continue;seen.add(el);if(el.closest('[hidden],[aria-hidden="true"],.modal,[role="dialog"]'))continue;el.classList.add('mf-reveal');if(observer)observer.observe(el);else el.classList.add('mf-visible')}
+for(const el of query(cardSelector))el.classList.add('mf-motion-card');
+for(const el of query(buttonSelector))el.classList.add('mf-motion-button');
+}
+let pending=false;
+function schedule(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;enhance(document)})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
+const mo=new MutationObserver(schedule);mo.observe(document.documentElement,{childList:true,subtree:true});
+document.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||reduce.matches)return;const b=e.target.closest('.mf-motion-button');if(!b||b.disabled)return;const rect=b.getBoundingClientRect();if(!rect.width||!rect.height)return;const style=getComputedStyle(b);if(style.position==='static')b.style.position='relative';if(style.overflow==='visible')b.style.overflow='hidden';const r=document.createElement('span');r.className='mf-motion-ripple';r.style.left=(e.clientX-rect.left)+'px';r.style.top=(e.clientY-rect.top)+'px';r.style.width=r.style.height=Math.max(rect.width,rect.height)+'px';b.append(r);r.addEventListener('animationend',()=>r.remove(),{once:true})},{passive:true});
 })();
 </script>
 </body></html>
